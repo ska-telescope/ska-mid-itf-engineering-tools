@@ -3,14 +3,17 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-SKA Tango Examples
-==================
+SKA MID ITF Engineering tools
+=============================
 
-This project demonstrates how to structure an SKA project
-that provides some simple Tango devices coded in PyTango.
+SKA MID ITF Engineering tools
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents
 
-   README.md
+.. toctree::
+   :maxdepth: 2
+   :caption: Readme
+   
+   README

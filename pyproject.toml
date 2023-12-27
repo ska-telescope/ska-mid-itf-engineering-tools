@@ -23,6 +23,8 @@ ska_ser_logging = "^0.4.1"
 ska-control-model = "^0.3.1"
 pyyaml = "^6.0.1"
 nbqa = "^1.7.1"
+ska-ser-sphinx-theme = "^0.1.2"
+nbsphinx = "^0.9.3"
 
 [tool.poetry.group.docs.dependencies]
 Sphinx = "^5.1.1"
