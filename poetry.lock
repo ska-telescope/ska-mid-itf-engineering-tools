@@ -3749,7 +3749,7 @@ reference = 'skao'
 name = "ska-ser-sphinx-theme"
 version = "0.1.2"
 description = "A Sphinx ReadTheDocs theme for SKA"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.8.1,<4.0.0"
 files = [
@@ -3893,7 +3893,7 @@ test = ["cython", "html5lib", "pytest (>=4.6)", "typed_ast"]
 name = "sphinx-rtd-theme"
 version = "1.3.0"
 description = "Read the Docs theme for Sphinx"
-category = "main"
+category = "dev"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
 files = [
@@ -3970,7 +3970,7 @@ test = ["html5lib", "pytest"]
 name = "sphinxcontrib-jquery"
 version = "4.1"
 description = "Extension to include jQuery on newer Sphinx releases"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7"
 files = [
@@ -4667,4 +4667,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11"
-content-hash = "0e6cd87cf4464303774c1bae8c4f29208d0402a128a377e09d58a046abd0d721"
+content-hash = "07077216b0d391fc0e29d8307d62a259215f9256351ce88243a4962c684d2ce9"
