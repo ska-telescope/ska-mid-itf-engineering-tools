@@ -41,3 +41,9 @@ include:
 # changelog release page
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/changelog.gitlab-ci.yml'
+
+notebook-lint:
+  allow_failure: true
+
+notebook-test:
+  when: manual
