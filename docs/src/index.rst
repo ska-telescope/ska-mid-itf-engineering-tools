@@ -10,10 +10,6 @@ SKA MID ITF Engineering tools
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents
-
-.. toctree::
-   :maxdepth: 2
    :caption: Readme
    
    README
