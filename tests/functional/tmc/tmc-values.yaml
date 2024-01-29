@@ -15,4 +15,4 @@ tmc:
     subarraynode:
       DishIDs: ["SKA001", "SKA036", "SKA063", "SKA100"]
     dishleafnode:
-      instances: ["01", "36", "63", "100"]
+      instances: ["001", "036", "063", "100"]
