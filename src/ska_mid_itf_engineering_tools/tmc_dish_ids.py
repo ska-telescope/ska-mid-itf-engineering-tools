@@ -12,7 +12,7 @@ def instance(x: str) -> str:
     :return: DishID for deviceserver instance name
     :rtype: str
     """
-    return x[-2:] if int(x[-3:]) < 100 else x[-3:]
+    return x[-3:]
 
 
 def instances(ids: str = "SKA000") -> list[str]:
