@@ -1,7 +1,11 @@
 """."""
+import logging
 import os
 
+from ska_ser_logging import configure_logging
 from yaml import safe_dump
+
+logger = logging.getLogger(__name__)
 
 
 def instance(x: str) -> str:
@@ -99,7 +103,7 @@ def dish_fqdns(
     :rtype: _type_
     """
     arr_dish_ids = dish_ids_array_from_str(dish_ids)
-    print(arr_dish_ids)
+    logger.debug(f"dish_ids: {arr_dish_ids}")
 
     def single_dish_fqdn(
         hostname: str = "tango-databaseds",
@@ -195,13 +199,15 @@ def tmc_values(
 
 
 def main():
-    """Create tmc-values.yaml file in charts/system-under-test folder for TMC to use."""
+    """Create tmc-values.yaml file in $SUT_CHART_DIR folder for TMC to use."""
+    assert "SUT_CHART_DIR" in os.environ, "SUT_CHART_DIR environment variable not set"
+
+    configure_logging(logging.DEBUG)
     values = tmc_values()
-    cur = os.path.dirname(os.path.abspath(__file__))
-    with open(
-        os.path.join(cur, "..", "..", "charts", "system-under-test", "tmc-values.yaml"),
-        "w",
-    ) as file:
+    chart_dir = os.environ["SUT_CHART_DIR"]
+    values_file_path = os.path.join(chart_dir, "tmc-values.yaml")
+    logger.debug(f"values_file_path: {values_file_path}")
+    with open(values_file_path, "w") as file:
         safe_dump(values, file)
 
 
@@ -210,5 +216,4 @@ if __name__ == "__main__":
         "CLUSTER_DOMAIN_POSTFIX" in os.environ
     ), "CLUSTER_DOMAIN_POSTFIX environment variable not set."
     assert "DISH_IDS" in os.environ, "DISH_IDS environment variable not set."
-    # print(os.environ)
     main()
