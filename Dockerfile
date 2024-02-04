@@ -1,11 +1,12 @@
-FROM artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.9.0
+FROM artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.9.0 as base
 
 ARG POETRY_VERSION=1.3.2
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=Etc/UTC
 
 RUN apt-get update && \
-    apt-get install gnupg2 gawk yamllint vim telnet expect sshpass inetutils-ping netcat -y
+    apt-get install --no-install-recommends gnupg2 gawk yamllint vim telnet expect sshpass inetutils-ping netcat -y && \
+    rm -rf /var/lib/apt/lists/*
 
 ENV PATH=/root/.local/bin:$PATH
 
@@ -18,6 +19,7 @@ RUN python3 -m pip install --user pipx && \
 
 WORKDIR /app
 
+FROM base
 COPY . /app
 
 RUN poetry install

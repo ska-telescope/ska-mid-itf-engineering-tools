@@ -28,9 +28,12 @@ def main():
             sys.exit(1)
 
     CSP.cbfSimulationMode = False
+    print(f"CSP cbfSimulationMode is now {CSP.cbfSimulationMode}")
     CSP.commandTimeout = TIMEOUT
+    print("Turning CSP ON - this may take a while...")
     CSP.on([])
     while CSP.State() != DevState.ON:
+        print(f"Waiting for CSP to change state from {CSP.State()} to ON")
         time.sleep(1)
     print("CSP is ON")
     return
