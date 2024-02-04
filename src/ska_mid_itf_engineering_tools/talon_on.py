@@ -10,15 +10,22 @@ TIMEOUT = 60
 def main():
     """Call the CSP On command."""
     CSP = DeviceProxy("mid-csp/control/0")
-    CSP.adminmode = 0
-    print(CSP.adminmode)
+    if CSP.adminmode != 0:
+        print("Setting CSP adminmode to ONLINE")
+        CSP.adminmode = 0
+        while CSP.adminmode != 0:
+            time.sleep(1)
+    print(f"CSP adminmode is now {CSP.adminmode}")
     print(CSP.State())
     if CSP.State() == DevState.ON and CSP.adminmode == 0:
         print("CSP is already ON")
         sys.exit(0)
-    if CSP.adminmode != 0:
-        print("CSP admin mode not set to ONLINE")
-        sys.exit(1)
+    while CSP.State() != DevState.OFF:
+        print(f"Waiting for CSP to change state from {CSP.State()} to OFF")
+        time.sleep(1)
+        if CSP.State() == DevState.FAULT:
+            print("CSP is in FAULT state. Exiting.")
+            sys.exit(1)
 
     CSP.cbfSimulationMode = False
     CSP.commandTimeout = TIMEOUT
