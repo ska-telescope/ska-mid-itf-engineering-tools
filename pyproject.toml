@@ -13,6 +13,7 @@ url = 'https://artefact.skao.int/repository/pypi-internal/simple'
 
 [tool.poetry.scripts]
 tmc_dish_ids = 'src.ska_mid_itf_engineering_tools.tmc_dish_ids:main'
+talon_on = 'src.ska_mid_itf_engineering_tools.talon_on:main'
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
