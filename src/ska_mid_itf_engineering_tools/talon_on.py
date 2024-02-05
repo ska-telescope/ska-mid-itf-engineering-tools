@@ -1,3 +1,5 @@
+"""This script turns on the TalonDx using CSP On command."""
+
 import logging
 import sys
 import time
