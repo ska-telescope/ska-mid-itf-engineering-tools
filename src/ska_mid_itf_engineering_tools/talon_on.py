@@ -14,11 +14,11 @@ def main():
     """Call the CBF On command."""
     configure_logging(logging.DEBUG)
     logger = logging.getLogger(__name__)
-    CBF = DeviceProxy(
-        "mid_csp_cbf/sub_elt/controller"
-    )  # This is a direct call on the CBF MCS, not via the CSP.
+
     CSP = DeviceProxy("mid-csp/control/0")
     CSPSubarray = DeviceProxy("mid-csp/subarray/01")
+
+    CBF = DeviceProxy("mid_csp_cbf/sub_elt/controller")
     CBFSubarray = DeviceProxy("mid_csp_cbf/sub_elt/subarray_01")
 
     # Exit if CSP is already ON
