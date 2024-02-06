@@ -62,9 +62,15 @@ def main():
     CSP.commandTimeout = TIMEOUT
     logger.info("Turning CSP ON - this may take a while...")
     CSP.on([])
+    k = 1
     while CSP.State() != DevState.ON:
-        logger.info(f"Waiting for CSP to change state from {CSP.State()} to ON")
-        time.sleep(1)
+        logger.info(f"Waiting for CSP to change state from {CSP.State()} to ON for {k} seconds")
+
+        def fib(n):
+            return n if n <= 1 else fib(n - 1) + fib(n - 2)
+
+        time.sleep(fib(k))
+        k += 1
     logger.info("CSP is ON")
     return
 
