@@ -36,6 +36,7 @@ def main():
         ):
             if CSP.adminmode != 0:
                 logger.info(f"Waiting for CSP to change adminmode from {CSP.adminmode} to ONLINE")
+                logger.info(f"Hoping CSP will change state from {CSP.State()} to OFF")
             if CSPSubarray.State() != DevState.OFF:
                 logger.info(
                     f"Waiting for CSP Subarray to change state from {CSPSubarray.State()} to OFF"
