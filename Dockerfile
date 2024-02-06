@@ -1,4 +1,5 @@
-FROM artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.9.0 as base
+ARG OCI_IMAGE_VERSION
+FROM $OCI_IMAGE_VERSION as base
 
 ARG POETRY_VERSION=1.3.2
 ARG DEBIAN_FRONTEND=noninteractive
