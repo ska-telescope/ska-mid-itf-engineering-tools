@@ -2,6 +2,8 @@
 
 import logging
 import sys
+import os
+import json
 import time
 
 from ska_ser_logging import configure_logging
@@ -51,6 +53,13 @@ def main():
         logger.info(f"CSP Subarray State is now {CSPSubarray.State()}")
         logger.info(f"CBF Subarray State is now {CBFSubarray.State()}")
 
+    with open(
+        os.path.join(
+            os.path.dirname(__file__), "..", "..", "resources", "data", "init_sys_param.json"
+        ),
+        "r",
+    ) as f:
+        init_sys_param = json.load(f)
     if CSP.State() == DevState.FAULT:
         logger.info("CSP is in FAULT state. Exiting.")
         sys.exit(1)
