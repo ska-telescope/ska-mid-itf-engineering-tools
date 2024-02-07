@@ -30,6 +30,10 @@ def main():
 
     if CSP.adminmode != 0:
         logger.info("Setting CSP adminmode to ONLINE")
+        CBF.adminmode = 0
+        while CBF.State() != DevState.OFF:
+            logger.info(f"Waiting for CBF to change state from {CBF.State()} to OFF")
+            time.sleep(1)
         CSP.adminmode = 0
         while (
             CSP.adminmode != 0
@@ -53,13 +57,23 @@ def main():
         logger.info(f"CSP Subarray State is now {CSPSubarray.State()}")
         logger.info(f"CBF Subarray State is now {CBFSubarray.State()}")
 
-    with open(
-        os.path.join(
-            os.path.dirname(__file__), "..", "..", "resources", "data", "init_sys_param.json"
-        ),
-        "r",
-    ) as f:
-        init_sys_param = json.load(f)
+    dish_config = {
+        "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
+        "dish_parameters": {
+            "SKA001": {"vcc": 1, "k": 11},
+            "SKA036": {"vcc": 2, "k": 101},
+            "SKA063": {"vcc": 3, "k": 1127},
+            "SKA100": {"vcc": 4, "k": 620},
+        },
+    }  # with open(
+    #     os.path.join(
+    #         os.path.dirname(__file__), "..", "..", "resources", "data", "init_sys_param.json"
+    #     ),
+    #     "r",
+    # ) as f:
+    #     dish_config = json.load(f)
+    CSP.loaddishcfg(json.dumps(dish_config))
+
     if CSP.State() == DevState.FAULT:
         logger.info("CSP is in FAULT state. Exiting.")
         sys.exit(1)
@@ -69,21 +83,19 @@ def main():
     logger.info(f"CBF simulationMode is now {CBF.simulationMode}")
 
     # Timeout for long-running command
-    CSP.commandTimeout = TIMEOUT
+    CBF.commandTimeout = TIMEOUT
     logger.info("Turning CSP ON - this may take a while...")
-    CSP.on([])
+    CBF.on([])
     k = 1
-    while CSP.State() != DevState.ON:
-        logger.info(f"Waiting for CSP to change state from {CSP.State()} to ON for {k} seconds")
+    while CBF.State() != DevState.ON:
+        logger.info(
+            f"Waiting for CBF to change state from {CBF.State()} to ON for {fib(k)} seconds"
+        )
 
         def fib(n):
             return n if n <= 1 else fib(n - 1) + fib(n - 2)
 
         time.sleep(fib(k))
         k += 1
-    logger.info("CSP is ON")
+    logger.info("CBF is ON")
     return
-
-
-if __name__ == "__main__":
-    main()
