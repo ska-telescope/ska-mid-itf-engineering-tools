@@ -20,11 +20,13 @@ class TestTangoDevice:
         Get going.
         :param logger: logging handle
         :param device_name: Tango device name
+        :param dev_nodb: flag for no-db mode
         """
         self.logger = logger
         self.adminMode: int | None = None
         self.attribs = []
         self.cmds = []
+        self.logger.info("Connect device proxy to %s", device_name)
         try:
             self.dev: tango.DeviceProxy = tango.DeviceProxy(device_name)
         except tango.ConnectionFailed as terr:
@@ -136,6 +138,7 @@ class TestTangoDevice:
         Read all attributes of this device
         :return: None
         """
+        self.logger.debug("Read attribute %s values", self.dev_name)
         print(f"[  OK  ] {self.dev_name} read {len(self.attribs)} attributes")
         for attrib in sorted(self.attribs):
             time.sleep(2)
@@ -199,6 +202,7 @@ class TestTangoDevice:
         Turn this device on.
         :return: error condition
         """
+        self.logger.debug("Turn device %s on", self.dev_name)
         if "On" not in self.cmds:
             print(f"[FAILED] {self.dev_name} does not have On command")
             return 1
@@ -239,6 +243,7 @@ class TestTangoDevice:
         Turn this device off.
         :return: error condition
         """
+        self.logger.debug("Turn device %s off", self.dev_name)
         if "Off" not in self.cmds:
             print(f"[FAILED] {self.dev_name} does not have Off command")
             return 1
@@ -268,6 +273,7 @@ class TestTangoDevice:
         Set this device to standby mode.
         :return: error condition
         """
+        self.logger.debug("Set device %s on standby", self.dev_name)
         if "Standby" not in self.cmds:
             print(f"[FAILED] {self.dev.dev_name} does not have Standby command")
             return 1

@@ -113,12 +113,14 @@ def main(y_arg: list) -> int:  # noqa: C901
     dev_status: bool = False
     dev_admin: int | None = None
     dev_sim: int | None = None
+    dev_nodb: bool = False
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
             "acghnvVA:H:D:N:",
             [
                 "help",
+                "nodb",
                 "off",
                 "on",
                 "standby",
@@ -161,6 +163,8 @@ def main(y_arg: list) -> int:  # noqa: C901
             show_command = True
         elif opt == "-n":
             show_ns = True
+        elif opt == "--nodb":
+            dev_nodb = True
         elif opt == "--off":
             dev_off = True
         elif opt == "--on":
@@ -183,7 +187,12 @@ def main(y_arg: list) -> int:  # noqa: C901
         show_namespaces()
         return 0
 
-    if tango_host is None:
+    if dev_nodb:
+        if tango_host is not None:
+            dev_name = f"tango://{tango_host}/{dev_name}#dbase=no"
+        else:
+            dev_name = f"tango://127.0.0.1:45450/{dev_name}#dbase=no"
+    elif tango_host is None:
         tango_fqdn = f"{DATABASEDS_NAME}.{KUBE_NAMESPACE}.svc.{CLUSTER_DOMAIN}"
         tango_host = f"{tango_fqdn}:10000"
     else:
