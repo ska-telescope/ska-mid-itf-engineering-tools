@@ -2,7 +2,8 @@
 
 import logging
 import sys
-import os
+
+# import os
 import json
 import time
 
@@ -12,7 +13,7 @@ from tango import DeviceProxy, DevState
 TIMEOUT = 60
 
 
-def main():
+def main():  # noqa C901
     """Call the CBF On command."""
     configure_logging(logging.DEBUG)
     logger = logging.getLogger(__name__)
@@ -88,14 +89,18 @@ def main():
     CBF.on([])
     k = 1
     while CBF.State() != DevState.ON:
-        logger.info(
-            f"Waiting for CBF to change state from {CBF.State()} to ON for {fib(k)} seconds"
-        )
 
         def fib(n):
             return n if n <= 1 else fib(n - 1) + fib(n - 2)
 
+        logger.info(
+            f"Waiting for CBF to change state from {CBF.State()} to ON for {fib(k)} seconds"
+        )
         time.sleep(fib(k))
         k += 1
     logger.info("CBF is ON")
     return
+
+
+if __name__ == "__main__":
+    main()
