@@ -18,11 +18,14 @@ def main():  # noqa C901
     configure_logging(logging.DEBUG)
     logger = logging.getLogger(__name__)
 
-    CSP = DeviceProxy("mid-csp/control/0")
-    CSPSubarray = DeviceProxy("mid-csp/subarray/01")
-
     CBF = DeviceProxy("mid_csp_cbf/sub_elt/controller")
-    CBFSubarray = DeviceProxy("mid_csp_cbf/sub_elt/subarray_01")
+    CSP = DeviceProxy("mid-csp/control/0")
+    CSPSubarray1 = DeviceProxy("mid-csp/subarray/01")
+    CSPSubarray2 = DeviceProxy("mid-csp/subarray/02")
+    CSPSubarray3 = DeviceProxy("mid-csp/subarray/03")
+    CBFSubarray1 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_01")
+    CBFSubarray2 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_02")
+    CBFSubarray3 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_03")
 
     # Exit if CSP is already ON
     if CSP.State() == DevState.ON and CSP.adminmode == 0:
@@ -38,25 +41,51 @@ def main():  # noqa C901
         CSP.adminmode = 0
         while (
             CSP.adminmode != 0
-            or CSPSubarray.State() != DevState.OFF
-            or CBFSubarray.State() != DevState.OFF
+            and CSPSubarray1.State() != DevState.OFF
+            and CSPSubarray2.State() != DevState.OFF
+            and CSPSubarray3.State() != DevState.OFF
+            and CBFSubarray1.State() != DevState.OFF
+            and CBFSubarray2.State() != DevState.OFF
+            and CBFSubarray3.State() != DevState.OFF
         ):
             if CSP.adminmode != 0:
                 logger.info(f"Waiting for CSP to change adminmode from {CSP.adminmode} to ONLINE")
                 logger.info(f"Hoping CSP will change state from {CSP.State()} to OFF")
-            if CSPSubarray.State() != DevState.OFF:
+            if CSPSubarray1.State() != DevState.OFF:
                 logger.info(
-                    f"Waiting for CSP Subarray to change state from {CSPSubarray.State()} to OFF"
+                    f"Waiting for CSP Subarray1 to change state from {CSPSubarray1.State()} to OFF"
                 )
-            if CBFSubarray.State() != DevState.OFF:
+            if CSPSubarray2.State() != DevState.OFF:
                 logger.info(
-                    f"Waiting for CBF Subarray to change state from {CBFSubarray.State()} to OFF"
+                    f"Waiting for CSP Subarray2 to change state from {CSPSubarray2.State()} to OFF"
+                )
+            if CSPSubarray3.State() != DevState.OFF:
+                logger.info(
+                    f"Waiting for CSP Subarray3 to change state from {CSPSubarray3.State()} to OFF"
+                )
+            if CBFSubarray1.State() != DevState.OFF:
+                logger.info(
+                    f"Waiting for CBF Subarray1 to change state from {CBFSubarray1.State()} to OFF"
+                )
+            if CBFSubarray2.State() != DevState.OFF:
+                logger.info(
+                    f"Waiting for CBF Subarray2 to change state from {CBFSubarray2.State()} to OFF"
+                )
+            if CBFSubarray3.State() != DevState.OFF:
+                logger.info(
+                    f"Waiting for CBF Subarray3 to change state from {CBFSubarray3.State()} to OFF"
                 )
             time.sleep(1)
         logger.info(f"CSP adminmode is now {CSP.adminmode}")
         logger.info(f"CSP State is now {CSP.State()}")
-        logger.info(f"CSP Subarray State is now {CSPSubarray.State()}")
-        logger.info(f"CBF Subarray State is now {CBFSubarray.State()}")
+        logger.info(f"CBF adminmode is now {CBF.adminmode}")
+        logger.info(f"CBF State is now {CBF.State()}")
+        logger.info(f"CSP Subarray1 State is now {CSPSubarray1.State()}")
+        logger.info(f"CSP Subarray1 State is now {CSPSubarray2.State()}")
+        logger.info(f"CSP Subarray1 State is now {CSPSubarray3.State()}")
+        logger.info(f"CBF Subarray1 State is now {CBFSubarray1.State()}")
+        logger.info(f"CBF Subarray2 State is now {CBFSubarray2.State()}")
+        logger.info(f"CBF Subarray3 State is now {CBFSubarray3.State()}")
 
     dish_config = {
         "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
@@ -81,6 +110,9 @@ def main():  # noqa C901
 
     # Next set simulation to false - hardware use!
     CBF.simulationMode = False
+    while CBF.simulationMode != False:
+        logger.info(f"Waiting for CBF to change simulationMode from {CBF.simulationMode} to False")
+        time.sleep(1)
     logger.info(f"CBF simulationMode is now {CBF.simulationMode}")
 
     # Timeout for long-running command
