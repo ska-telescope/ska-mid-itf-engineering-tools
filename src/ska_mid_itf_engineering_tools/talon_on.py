@@ -33,47 +33,61 @@ def main():  # noqa C901
 
     if CSP.adminmode != 0:
         logger.info("Setting CSP adminmode to ONLINE")
-        CBF.adminmode = 0
-        while CBF.State() != DevState.OFF:
-            logger.info(f"Waiting for CBF to change state from {CBF.State()} to OFF")
-            time.sleep(1)
+        # CBF.adminmode = 0
+        # while CBF.State() != DevState.OFF:
+        #     logger.info(f"Waiting for CBF to change state from {CBF.State()} to OFF")
+        #     time.sleep(1)
         CSP.adminmode = 0
-        while (
-            CSP.adminmode != 0
-            and CSPSubarray1.State() != DevState.OFF
-            and CSPSubarray2.State() != DevState.OFF
-            and CSPSubarray3.State() != DevState.OFF
-            and CBFSubarray1.State() != DevState.OFF
-            and CBFSubarray2.State() != DevState.OFF
-            and CBFSubarray3.State() != DevState.OFF
-        ):
+        READY = False
+        while not READY:
             if CSP.adminmode != 0:
                 logger.info(f"Waiting for CSP to change adminmode from {CSP.adminmode} to ONLINE")
                 logger.info(f"Hoping CSP will change state from {CSP.State()} to OFF")
+                READY = False
+            else:
+                READY = True
             if CSPSubarray1.State() != DevState.OFF:
                 logger.info(
                     f"Waiting for CSP Subarray1 to change state from {CSPSubarray1.State()} to OFF"
                 )
+                READY = False
+            else:
+                READY = True
             if CSPSubarray2.State() != DevState.OFF:
                 logger.info(
                     f"Waiting for CSP Subarray2 to change state from {CSPSubarray2.State()} to OFF"
                 )
+                READY = False
+            else:
+                READY = True
             if CSPSubarray3.State() != DevState.OFF:
                 logger.info(
                     f"Waiting for CSP Subarray3 to change state from {CSPSubarray3.State()} to OFF"
                 )
+                READY = False
+            else:
+                READY = True
             if CBFSubarray1.State() != DevState.OFF:
                 logger.info(
                     f"Waiting for CBF Subarray1 to change state from {CBFSubarray1.State()} to OFF"
                 )
+                READY = False
+            else:
+                READY = True
             if CBFSubarray2.State() != DevState.OFF:
                 logger.info(
                     f"Waiting for CBF Subarray2 to change state from {CBFSubarray2.State()} to OFF"
                 )
+                READY = False
+            else:
+                READY = True
             if CBFSubarray3.State() != DevState.OFF:
                 logger.info(
                     f"Waiting for CBF Subarray3 to change state from {CBFSubarray3.State()} to OFF"
                 )
+                READY = False
+            else:
+                READY = True
             time.sleep(1)
         logger.info(f"CSP adminmode is now {CSP.adminmode}")
         logger.info(f"CSP State is now {CSP.State()}")
@@ -109,15 +123,15 @@ def main():  # noqa C901
 
     # Next set simulation to false - hardware use!
     CBF.simulationMode = False
-    while CBF.simulationMode is not False:
+    while CBF.simulationMode != 0:
         logger.info(f"Waiting for CBF to change simulationMode from {CBF.simulationMode} to False")
         time.sleep(1)
     logger.info(f"CBF simulationMode is now {CBF.simulationMode}")
 
     # Timeout for long-running command
-    CBF.commandTimeout = TIMEOUT
+    CSP.commandTimeout = TIMEOUT
     logger.info("Turning CSP ON - this may take a while...")
-    CBF.on([])
+    CSP.on([])
     k = 1
     while CBF.State() != DevState.ON:
 
