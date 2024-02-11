@@ -1,10 +1,9 @@
 """This script turns on the TalonDx using CSP On command."""
 
-import logging
-import sys
-
 # import os
 import json
+import logging
+import sys
 import time
 
 from ska_ser_logging import configure_logging
@@ -110,7 +109,7 @@ def main():  # noqa C901
 
     # Next set simulation to false - hardware use!
     CBF.simulationMode = False
-    while CBF.simulationMode != False:
+    while CBF.simulationMode is not False:
         logger.info(f"Waiting for CBF to change simulationMode from {CBF.simulationMode} to False")
         time.sleep(1)
     logger.info(f"CBF simulationMode is now {CBF.simulationMode}")
