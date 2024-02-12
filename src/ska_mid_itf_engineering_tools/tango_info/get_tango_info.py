@@ -1,4 +1,3 @@
-#!/usr/bin/python
 """
 Read information from Tango database.
 """
@@ -11,7 +10,7 @@ from typing import Any, Tuple
 
 import tango
 from ska_control_model import AdminMode
-from ska_mid_itf.ska_jargon.ska_jargon import find_jargon  # type: ignore
+from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import find_jargon  # type: ignore
 
 
 def check_tango(tango_fqdn: str, tango_port: int = 10000) -> int:
@@ -181,13 +180,13 @@ class TangoDeviceInfo:
             else:
                 inout = self.dev.command_inout(cmd)
         except tango.DevFailed as terr:
-            print(f"{cmd:17} : <command run error> {terr.args[0].desc.strip()}")
+            print(f"{cmd:17} : <ERROR> \033[3m{terr.args[0].desc.strip()}\033[0m")
             return
         print(f"{cmd:17} : {inout}")
 
     def show_device_command(self, prefix: str, cmd: Any) -> None:
         lpre = "\n" + f"{' ':67}"
-        print(f"{prefix:17}   \033[3m{cmd.cmd_name:30}\033[0m", end="")
+        print(f"{prefix:17}   \033[1m{cmd.cmd_name:30}\033[0m", end="")
         if self.dev.is_command_polled(cmd.cmd_name):
             print(" Polled     ", end="")
         else:
@@ -256,9 +255,9 @@ class TangoDeviceInfo:
         try:
             attrib_json = json.loads(attrib_value)
         except Exception:
-            print(f" {attrib_value}")
+            print(f" '{attrib_value}'")
             return
-        print()
+        print(" <JSON>")
         if type(attrib_json) is dict:
             for value in attrib_json:
                 attr_value = attrib_json[value]
@@ -289,7 +288,7 @@ class TangoDeviceInfo:
             for value in attrib_json:
                 print(f"{prefix} {value}")
         else:
-            print(f" {attrib_value} {type(attrib_value)}")
+            print(f" '{attrib_value}' (type {type(attrib_value)})")
 
     def show_attribute_value_spectrum(self, prefix: str, attrib_value: str) -> None:
         """
@@ -311,8 +310,8 @@ class TangoDeviceInfo:
                         print(f"{prefix+'     '} {value} : {int_model_values[value]}")
                 else:
                     print(f"{prefix+'     '} {value} : {int_model_values}")
-        elif not attrib_value:
-            print(" <EMPTY>")
+        elif attrib_value is None:
+            print(" <None>")
         else:
             print(f" {type(attrib_value)}:{attrib_value}")
 
@@ -327,12 +326,16 @@ class TangoDeviceInfo:
         if not dry_run:
             try:
                 attrib_value = self.dev.read_attribute(attrib).value
+                self.logger.debug("Attribute %s value %s", attrib, attrib_value)
+            except tango.DevFailed as terr:
+                print(f" <ERROR> \033[3m{terr.args[0].desc.strip()}\033[0m")
+                attrib_value = None
             except Exception:
                 print(" <could not be read>")
-                return
-            self.logger.debug("Attribute %s value %s", attrib, attrib_value)
+                attrib_value = None
         else:
-            attrib_value = "<N/A>"
+            print(" <N/A>")
+            attrib_value = None
         try:
             attrib_cfg = self.dev.get_attribute_config(attrib)
         except tango.ConnectionFailed:
@@ -340,7 +343,7 @@ class TangoDeviceInfo:
             return
         data_format = attrib_cfg.data_format
         # print(f" ({data_format})", end="")
-        if not dry_run:
+        if not dry_run and attrib_value is not None:
             # pylint: disable-next=c-extension-no-member
             if data_format == tango._tango.AttrDataFormat.SCALAR:
                 self.show_attribute_value_scalar(prefix, attrib_value)
@@ -349,15 +352,15 @@ class TangoDeviceInfo:
                 self.show_attribute_value_spectrum(prefix, attrib_value)
             else:
                 print(f" {attrib_value}")
-        else:
-            print(" <N/A>")
+        # else:
+        #     print(" <N/A>")
         if self.dev.is_attribute_polled(attrib):
             print(f"{prefix} Polled")
         else:
             print(f"{prefix} Not polled")
         events = attrib_cfg.events.arch_event.archive_abs_change
         print(f"{prefix} Event change : {events}")
-        if not dry_run:
+        if not dry_run and attrib_value is not None:
             try:
                 print(f"{prefix} Quality : {self.dev.read_attribute(attrib).quality}")
             except tango.ConnectionFailed:
@@ -381,6 +384,53 @@ class TangoDeviceInfo:
             for attrib in attribs[1:]:
                 print(f"{' ':17}   \033[1m{attrib:30}\033[0m", end="")
                 self.show_attribute_value(attrib, " " * 50, dry_run)
+
+    def show_device_properties(self, dry_run: bool) -> None:
+        """
+        Print attributes
+        :return: None
+        """
+        try:
+            props = sorted(self.dev.get_property_list("*"))
+        except Exception as terr:
+            self.logger.info(f"{terr}")
+            props = []
+        if len(props) == 1:
+            prop = props[0]
+            prop_values = self.dev.get_property(prop)
+            prop_list = prop_values[prop]
+            print(f"{'Properties':17} : \033[1m{prop:30}\033[0m {prop_list[0]}")
+        if props:
+            prop = props[0]
+            prop_values = self.dev.get_property(prop)
+            prop_list = prop_values[prop]
+            if len(prop_list) == 1:
+                print(f"{'Properties':17} : \033[1m{prop:30}\033[0m {prop_list[0]}")
+            else:
+                print(
+                    f"{'Properties':17} : \033[1m{prop:30}\033[0m {prop_list[0]}:"
+                    f" {prop_list[1]}"
+                )
+                n = 2
+                while n < len(prop_list):
+                    print(f"{' ':17}   {' ':30} {prop_list[n]}: {prop_list[n+1]}")
+                    n += 2
+            for prop in props[1:]:
+                prop_values = self.dev.get_property(prop)
+                prop_list = prop_values[prop]
+                if len(prop_list) == 1:
+                    print(f"{' ':17}   \033[1m{prop:30}\033[0m {prop_list[0]}")
+                else:
+                    print(
+                        f"{' ':17}   \033[1m{prop:30}\033[0m {prop_list[0]}:"
+                        f" {prop_list[1]}"
+                    )
+                    n = 2
+                    while n < len(prop_list):
+                        print(f"{' ':17}   {' ':30} {prop_list[n]}: {prop_list[n+1]}")
+                        n += 2
+        else:
+            print(f"{'Properties':17} : <NONE>")
 
     def show_device_query(self) -> int:  # noqa: C901
         """
@@ -480,6 +530,45 @@ class TangoDeviceInfo:
         print("")
         return rv
 
+    def show_device_list(self) -> int:  # noqa: C901
+        """
+        Display Tango device in text format
+        :return: one if device is on, otherwise zero
+        """
+        # pylint: disable-next=c-extension-no-member
+        if not self.evrythng:
+            dev1 = self.dev_name.split("/")[0]
+            if dev1 in self.ignore:
+                return 0
+        if not self.online:
+            print(f"{self.dev_name:40} <offline>")
+            return 0
+        print(f"{self.dev_name:40}", end="")
+        rv = 1
+        cmds: tuple = ()
+        try:
+            cmds = self.dev.get_command_list()
+        except Exception:
+            cmds = ()
+        # try:
+        #     attribs = sorted(self.dev.get_attribute_list())
+        # except Exception:
+        #     attribs = []
+        # dev_info = self.dev.info()
+        if "State" in cmds:
+            try:
+                print(f" {self.dev.State()}", end="")
+            except tango.ConnectionFailed:
+                print(f"{'State':17} : <connection failed>\n")
+                return 0
+        else:
+            print("N/A", end="")
+        if self.adminMode is not None:
+            print(f" (admin {self.adminMode})")
+        else:
+            print()
+        return rv
+
     def show_device_short(self) -> int:  # noqa: C901
         """
         Display Tango device in text format
@@ -492,7 +581,7 @@ class TangoDeviceInfo:
                 # print(f"{'Device':17} :  skip {dev1}\n")
                 return 0
         if not self.online:
-            print(f"{'Device':17} : <not online>\n")
+            print(f"{'Device':17} : {self.dev_name} <offline>\n")
             return 0
         print(f"{'Device':17} : {self.dev_name}")
         if self.adminMode is not None:
@@ -539,6 +628,14 @@ class TangoDeviceInfo:
             print(f"{'Attributes':17} : {attribs[0]}")
             for attrib in attribs[1:]:
                 print(f"{' ':17} : {attrib}")
+        try:
+            props = self.dev.get_property_list("*")
+        except Exception:
+            cmds = ()
+        if props:
+            print(f"{'Properties':17} : {props[0]}")
+            for prop in props[1:]:
+                print(f"{' ':17} : {prop}")
         print()
         return rv
 
@@ -555,7 +652,7 @@ class TangoDeviceInfo:
                 print(f" skip {dev1}\n")
                 return 0
         if not self.online:
-            print(" <not online>\n")
+            print(" <offline>\n")
             return 0
         print()
         rv = 1
@@ -591,7 +688,8 @@ class TangoDeviceInfo:
         try:
             print(f"{'Resources'} : {self.dev.assignedresources}")
         except tango.DevFailed as terr:
-            print(f"{'Resources':17} : {terr.args[0].desc.strip()}")
+            print(f"{'Resources':17} :")
+            print(f" <ERROR> \033[3m{terr.args[0].desc.strip()}\033[0m")
         except AttributeError:
             pass
         try:
@@ -609,6 +707,8 @@ class TangoDeviceInfo:
         self.run_device_commands(cmds)
         # Print attributes in bold
         self.show_device_attributes(dry_run)
+        # Print properties in bold
+        self.show_device_properties(dry_run)
         return rv
 
     def show_device_markdown(self) -> int:  # noqa: C901
@@ -705,7 +805,9 @@ class TangoDeviceInfo:
 
     def show_device(self, dry_run: bool) -> None:
         """Print device information."""
-        if self.disp_action == 5:
+        if self.disp_action == 6:
+            self.on_dev_count += self.show_device_list()
+        elif self.disp_action == 5:
             self.on_dev_count += self.show_device_short()
         elif self.disp_action == 4:
             self.on_dev_count += self.show_device_state()
@@ -765,7 +867,7 @@ def list_devices(
 
     # Get Tango database host
     tango_host = os.getenv("TANGO_HOST")
-    print("Tango host %s" % tango_host)
+    print(f"{'Tango host':17} : {tango_host}\n")
 
     # Connect to database
     try:
@@ -819,7 +921,7 @@ def show_devices(
     """
     # Get Tango database host
     tango_host = os.getenv("TANGO_HOST")
-    print("Tango host %s" % tango_host)
+    # print("Tango host %s" % tango_host)
 
     devices = list_devices(logger, cfg_data, evrythng, itype)
 
@@ -835,7 +937,7 @@ def show_devices(
         try:
             tgo_info = TangoDeviceInfo(logger, cfg_data, device, disp_action, evrythng)
         except tango.DevFailed as terr:
-            print(f"{device} : {terr.args[0].desc.strip()}")
+            print(f"{device} : <ERROR> \033[3m{terr.args[0].desc.strip()}\033[0m")
             continue
         tgo_info.show_device(dry_run)
 
@@ -850,14 +952,19 @@ def show_devices(
         print("# Kubernetes pod\n>", end="")
 
 
-def check_command(dev: Any, c_name: str | None) -> bool:
+def check_command(logger: logging.Logger, dev: Any, c_name: str | None) -> bool:
+
     try:
         cmds = sorted(dev.get_command_list())
     except Exception:
         cmds = []
-    if c_name in cmds:
-        return True
-    return False
+    logger.info("Check commands %s", cmds)
+    cmds_found = []
+    c_name = c_name.lower()
+    for cmd in sorted(cmds):
+        if c_name in cmd.lower():
+            cmds_found.append(cmd)
+    return cmds_found
 
 
 def show_attributes(
@@ -898,9 +1005,17 @@ def show_attributes(
             attribs = sorted(dev.get_attribute_list())
         except Exception:
             attribs = []
-        if a_name in attribs:
+        # Check attribute names
+        a_name = a_name.lower()
+        attribs_found = []
+        for attrib in sorted(attribs):
+            if a_name in attrib.lower():
+                attribs_found.append(attrib)
+        if attribs_found:
             print(f"[ON] {device:48}", end="")
-            print(f" \033[1m{a_name}\033[0m")
+            print(f" \033[1m{attribs_found[0]}\033[0m")
+            for attrib in attribs_found[1:]:
+                print(f"     {' ':48} \033[1m{attrib}\033[0m")
 
 
 def show_commands(
@@ -915,7 +1030,7 @@ def show_commands(
     :param c_name: filter command name
     """
 
-    # Get Tango database hist
+    # Get Tango database host
     tango_host = os.getenv("TANGO_HOST")
     logger.info("Tango host %s" % tango_host)
 
@@ -933,10 +1048,55 @@ def show_commands(
 
     for device in sorted(device_list.value_string):
         dev: tango.DeviceProxy = tango.DeviceProxy(device)
-        chk_cmd = check_command(dev, c_name)
-        if chk_cmd:
+        chk_cmds = check_command(logger, dev, c_name)
+        if chk_cmds:
             print(f"[ON] {dev.name():48}", end="")
-            print(f" \033[1m{c_name}\033[0m")
+            print(f" \033[1m{chk_cmds[0]}\033[0m")
+            for chk_cmd in chk_cmds[1:]:
+                print(f"     {' ':48} \033[1m{chk_cmd}\033[0m")
+
+
+def show_properties(
+    logger: logging.Logger, disp_action: int, evrythng: bool, p_name: str | None
+) -> None:
+    """
+    Display information about Tango devices
+
+    :param logger: logging handle
+    :param disp_action: flag for markdown output
+    :param evrythng: get commands and attributes regadrless of state
+    :param p_name: filter command name
+    """
+
+    # Get Tango database host
+    tango_host = os.getenv("TANGO_HOST")
+    logger.info("Tango host %s" % tango_host)
+
+    # Connect to database
+    try:
+        database = tango.Database()
+    except Exception:
+        logger.error("Could not connect to Tango database %s", tango_host)
+        return
+    # Read devices
+    device_list = database.get_device_exported("*")
+    logger.info(f"{len(device_list)} devices available")
+
+    logger.info("Read %d devices" % (len(device_list)))
+
+    p_name = p_name.lower()
+    for device in sorted(device_list.value_string):
+        dev: tango.DeviceProxy = tango.DeviceProxy(device)
+        prop_list = dev.get_property_list("*")
+        props_found = []
+        for prop in prop_list:
+            if p_name in prop.lower():
+                props_found.append(prop)
+        if props_found:
+            print(f"[ON] {dev.name():48}", end="")
+            print(f" \033[1m{props_found[0]}\033[0m")
+            for prop in props_found[1:]:
+                print(f"     {' ':48} \033[1m{prop}\033[0m")
 
 
 OBSERVATION_STATES = [

@@ -17,6 +17,7 @@ from ska_mid_itf_engineering_tools.tango_info.get_tango_info import (
     show_command_inputs,
     show_commands,
     show_devices,
+    show_properties,
 )
 
 logging.basicConfig(level=logging.WARNING)
@@ -55,34 +56,44 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print(f"\t{p_name} -d [--namespace=<NAMESPACE>|--host=<HOST>]")
     print(f"\t{p_name} -d [-N <NAMESPACE>|-H <HOST>]")
     print("Display all devices")
-    print(f"\t{p_name} -f|-q|-s [--dry-run] [--namespace=<NAMESPACE>|--host=<HOST>]")
-    print(f"\t{p_name} -f|-q|-s [-N <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} -f|-l|-q|-s [--dry-run] [--namespace=<NAMESPACE>|--host=<HOST>]")
+    print(f"\t{p_name} -f|-l|-q|-s [-N <NAMESPACE>|-H <HOST>]")
     print("Filter on device name")
-    print(f"\t{p_name} -f|-q|-s -D <DEVICE> [-N <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} -f|-l|-q|-s -D <DEVICE> [-N <NAMESPACE>|-H <HOST>]")
     print(
-        f"\t{p_name} -f|-q|-s --device=<DEVICE>"
+        f"\t{p_name} -f|-l|-q|-s --device=<DEVICE>"
         " [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
     print("Filter on attribute name")
     print(
-        f"\t{p_name} -f|-q|-s --attribute=<ATTRIBUTE>"
+        f"\t{p_name} -f|-l|-q|-s --attribute=<ATTRIBUTE>"
         " [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
-    print(f"\t{p_name} -f|-q|-s -A <ATTRIBUTE> [-N <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} -f|-l|-q|-s -A <ATTRIBUTE> [-N <NAMESPACE>|-H <HOST>]")
     print("Filter on command name")
     print(
-        f"\t{p_name} -f|-q|-s --command=<COMMAND>"
+        f"\t{p_name} -f|-l|-q|-s --command=<COMMAND>"
         " [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
-    print(f"\t{p_name} -f|-q|-s -C <COMMAND> [-N <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} -f|-l|-q|-s -C <COMMAND> [-N <NAMESPACE>|-H <HOST>]")
+    print("Filter on property name")
+    print(
+        f"\t{p_name} -f|-l|-q|-s --property=<PROPERTY>"
+        " [--namespace=<NAMESPACE>|--host=<HOST>]"
+    )
+    print(
+        f"\t{p_name} -f|-l|-q|-s -P <PROPERTY>"
+        " [-N <NAMESPACE>|--host=<HOST>]"
+    )
     print("Display known acronyms")
     print(f"\t{p_name} -j")
     print("where:")
-    print("\t-f\t\t\t\tdisplay in text format")
+    print("\t-f\t\t\t\tdisplay in full")
+    print("\t-l\t\t\t\tdisplay device name and status on one line")
     print("\t-q\t\t\t\tdisplay device name, status and query devices")
     print("\t-s\t\t\t\tdisplay device name and status only")
     # print("\t-m\t\t\t\tdisplay in markdown format")
-    print("\t-f\t\t\t\tget commands and attributes regadrless of state")
+    print("\t-f\t\t\t\tget commands, attributes and properties regardless of state")
     print(
         "\t--device=<DEVICE>\t\tdevice name, e.g. 'csp'"
         " (not case sensitive, only a part is needed)"
@@ -108,8 +119,8 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print("\t-H <HOST>\t\t\tTango database host and port, e.g. 10.8.13.15:10000")
     print("\t-A <ATTRIBUTE>\t\t\tattribute name, e.g. 'obsState' (case sensitive)")
     print("\t-C <COMMAND>\t\t\tcommand name, e.g. 'Status' (case sensitive)")
-    print(f"Run commands : {','.join(cfg_data['run_commands'])}")
-    print(f"Run commands with name : {','.join(cfg_data['run_commands_name'])}")
+    # print(f"Run commands : {','.join(cfg_data['run_commands'])}")
+    # print(f"Run commands with name : {','.join(cfg_data['run_commands_name'])}")
 
 
 def main(y_arg: list) -> int:  # noqa: C901
@@ -131,11 +142,12 @@ def main(y_arg: list) -> int:  # noqa: C901
     tgo_attrib: str | None = None
     tgo_cmd: str | None = None
     tgo_in_type: str | None = None
+    tgo_prop: str | None = None
     tango_host: str | None = None
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
-            "defhjmnqstvVA:C:H:D:N:T:",
+            "defhjlmnqstvVA:C:H:D:N:P:T:",
             [
                 "dry-run",
                 "help",
@@ -145,6 +157,7 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "attribute=",
                 "command=",
                 "namespace=",
+                "property=",
             ],
         )
     except getopt.GetoptError as opt_err:
@@ -171,6 +184,8 @@ def main(y_arg: list) -> int:  # noqa: C901
             itype = arg.upper()
         elif opt in ("-N", "--namespace"):
             KUBE_NAMESPACE = arg
+        elif opt in ("-P", "--property"):
+            tgo_prop = arg
         elif opt in ("-T", "--input"):
             tgo_in_type = arg.lower()
         elif opt == "--dry-run":
@@ -193,6 +208,8 @@ def main(y_arg: list) -> int:  # noqa: C901
             disp_action = 4
         elif opt == "-s":
             disp_action = 5
+        elif opt == "-l":
+            disp_action = 6
         elif opt == "-v":
             _module_logger.setLevel(logging.INFO)
         elif opt == "-V":
@@ -231,6 +248,10 @@ def main(y_arg: list) -> int:  # noqa: C901
 
     if tgo_in_type is not None:
         show_command_inputs(_module_logger, tango_host, tgo_in_type)
+        return 0
+
+    if tgo_prop is not None:
+        show_properties(_module_logger, disp_action, evrythng, tgo_prop)
         return 0
 
     if not disp_action:
