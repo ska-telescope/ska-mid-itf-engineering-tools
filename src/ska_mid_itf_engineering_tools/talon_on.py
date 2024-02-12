@@ -33,24 +33,21 @@ def main():  # noqa C901
 
     if CSP.adminmode != 0:
         logger.info("Setting CSP adminmode to ONLINE")
-        # CBF.adminmode = 0
-        # while CBF.State() != DevState.OFF:
-        #     logger.info(f"Waiting for CBF to change state from {CBF.State()} to OFF")
-        #     time.sleep(1)
         CSP.adminmode = 0
         READY = False
+        timer = 0
         while not READY:
-            if CSP.adminmode != 0:
-                logger.info(f"Waiting for CSP to change adminmode from {CSP.adminmode} to ONLINE")
-                logger.info(f"Hoping CSP will change state from {CSP.State()} to OFF")
-                READY = False
-            else:
-                READY = True
+            time.sleep(1)
+            timer += 1
+            if timer == 30:
+                break
             if CSPSubarray1.State() != DevState.OFF:
                 logger.info(
                     f"Waiting for CSP Subarray1 to change state from {CSPSubarray1.State()} to OFF"
                 )
                 READY = False
+                logger.debug("Exiting loop - device not ready")
+                continue
             else:
                 READY = True
             if CSPSubarray2.State() != DevState.OFF:
@@ -58,6 +55,8 @@ def main():  # noqa C901
                     f"Waiting for CSP Subarray2 to change state from {CSPSubarray2.State()} to OFF"
                 )
                 READY = False
+                logger.debug("Exiting loop - device not ready")
+                continue
             else:
                 READY = True
             if CSPSubarray3.State() != DevState.OFF:
@@ -65,6 +64,8 @@ def main():  # noqa C901
                     f"Waiting for CSP Subarray3 to change state from {CSPSubarray3.State()} to OFF"
                 )
                 READY = False
+                logger.debug("Exiting loop - device not ready")
+                continue
             else:
                 READY = True
             if CBFSubarray1.State() != DevState.OFF:
@@ -72,6 +73,8 @@ def main():  # noqa C901
                     f"Waiting for CBF Subarray1 to change state from {CBFSubarray1.State()} to OFF"
                 )
                 READY = False
+                logger.debug("Exiting loop - device not ready")
+                continue
             else:
                 READY = True
             if CBFSubarray2.State() != DevState.OFF:
@@ -79,6 +82,8 @@ def main():  # noqa C901
                     f"Waiting for CBF Subarray2 to change state from {CBFSubarray2.State()} to OFF"
                 )
                 READY = False
+                logger.debug("Exiting loop - device not ready")
+                continue
             else:
                 READY = True
             if CBFSubarray3.State() != DevState.OFF:
@@ -86,9 +91,24 @@ def main():  # noqa C901
                     f"Waiting for CBF Subarray3 to change state from {CBFSubarray3.State()} to OFF"
                 )
                 READY = False
+                logger.debug("Exiting loop - device not ready")
+                continue
             else:
                 READY = True
-            time.sleep(1)
+            if CBF.State() != DevState.OFF:
+                logger.info(f"Waiting for CBF to change state from {CBF.State()} to OFF")
+                READY = False
+                logger.debug("Exiting loop - device not ready")
+                continue
+            else:
+                READY = True
+            if CSP.State() != DevState.OFF:
+                logger.info(f"Waiting for CSP to change state from {CSP.State()} to OFF")
+                READY = False
+                logger.debug("Exiting loop - device not ready")
+                continue
+            else:
+                READY = True
         logger.info(f"CSP adminmode is now {CSP.adminmode}")
         logger.info(f"CSP State is now {CSP.State()}")
         logger.info(f"CBF adminmode is now {CBF.adminmode}")
@@ -130,10 +150,14 @@ def main():  # noqa C901
 
     # Timeout for long-running command
     CSP.commandTimeout = TIMEOUT
+    logger.debug(f"commandTimeout simply set to {TIMEOUT}")
+
     logger.info("Turning CSP ON - this may take a while...")
     CSP.on([])
     k = 1
     while CBF.State() != DevState.ON:
+        if k == 10:
+            sys.exit(1)
 
         def fib(n):
             return n if n <= 1 else fib(n - 1) + fib(n - 2)
