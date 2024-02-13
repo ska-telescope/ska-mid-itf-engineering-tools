@@ -6,8 +6,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=Etc/UTC
 
 RUN apt-get update && \
-    apt-get install --no-install-recommends gnupg2 gawk yamllint vim telnet expect sshpass inetutils-ping netcat -y && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install gnupg2 gawk yamllint vim telnet expect sshpass inetutils-ping netcat -y && \
+    apt-get clean && apt clean
 
 ENV PATH=/root/.local/bin:$PATH
 
