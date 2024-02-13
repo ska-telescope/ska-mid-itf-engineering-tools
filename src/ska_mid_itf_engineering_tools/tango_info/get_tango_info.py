@@ -10,7 +10,10 @@ from typing import Any, Tuple
 
 import tango
 from ska_control_model import AdminMode
-from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import find_jargon  # type: ignore
+
+from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import (
+    find_jargon,  # type: ignore
+)
 
 
 def check_tango(tango_fqdn: str, tango_port: int = 10000) -> int:
@@ -387,7 +390,7 @@ class TangoDeviceInfo:
                 print(f"{' ':17}   \033[1m{attrib:30}\033[0m", end="")
                 self.show_attribute_value(attrib, " " * 50, dry_run)
 
-    def show_device_properties(self, dry_run: bool) -> None:
+    def show_device_properties(self, dry_run: bool) -> None:  # noqa: C901
         """
         Print attributes
         :return: None
@@ -968,14 +971,22 @@ def show_devices(
         print("# Kubernetes pod\n>", end="")
 
 
-def check_command(logger: logging.Logger, dev: Any, c_name: str | None) -> bool:
-
+def check_command(logger: logging.Logger, dev: Any, c_name: str | None) -> list:
+    """
+    Read commands from database.
+    :param logger: logging handle
+    :param dev: device handle
+    :param c_name: command name
+    :return: list of commands
+    """
+    cmds_found: list = []
+    if c_name is None:
+        return cmds_found
     try:
         cmds = sorted(dev.get_command_list())
     except Exception:
         cmds = []
     logger.info("Check commands %s", cmds)
-    cmds_found = []
     c_name = c_name.lower()
     for cmd in sorted(cmds):
         if c_name in cmd.lower():
@@ -983,7 +994,7 @@ def check_command(logger: logging.Logger, dev: Any, c_name: str | None) -> bool:
     return cmds_found
 
 
-def show_attributes(
+def show_attributes(  # noqa: C901
     logger: logging.Logger, disp_action: int, evrythng: bool, a_name: str | None
 ) -> None:
     """
@@ -994,6 +1005,8 @@ def show_attributes(
     :param evrythng: get commands and attributes regadrless of state
     :param a_name: filter attribute name
     """
+    if a_name is None:
+        return
 
     # Get Tango database hist
     tango_host = os.getenv("TANGO_HOST")
@@ -1045,6 +1058,8 @@ def show_commands(
     :param evrythng: get commands and attributes regadrless of state
     :param c_name: filter command name
     """
+    if c_name is None:
+        return
 
     # Get Tango database host
     tango_host = os.getenv("TANGO_HOST")
@@ -1083,6 +1098,8 @@ def show_properties(
     :param evrythng: get commands and attributes regadrless of state
     :param p_name: filter command name
     """
+    if p_name is None:
+        return
 
     # Get Tango database host
     tango_host = os.getenv("TANGO_HOST")

@@ -10,16 +10,27 @@ from typing import Any, List, Tuple
 
 import ska_ser_logging  # type: ignore
 import tango
-from ska_mid_itf.k8s_info.get_k8s_info import KubernetesControl  # type: ignore
-from ska_mid_itf.tango_info.check_tango_device import (  # type: ignore
-    device_state,
-    set_tango_admin,
-    show_obs_state,
+
+from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import (
+    KubernetesControl,  # type: ignore
 )
-from ska_mid_itf.tango_info.get_tango_info_1 import (  # type: ignore
-    check_device,
-    setup_device,
-    show_long_running_command,
+from ska_mid_itf_engineering_tools.ska_notebook_helper.get_tango_notebook import (
+    check_device,  # type: ignore
+)
+from ska_mid_itf_engineering_tools.ska_notebook_helper.get_tango_notebook import (
+    setup_device,  # type: ignore
+)
+from ska_mid_itf_engineering_tools.ska_notebook_helper.get_tango_notebook import (
+    show_long_running_command,  # type: ignore
+)
+from ska_mid_itf_engineering_tools.tango_info.check_tango_device import (
+    device_state,  # type: ignore
+)
+from ska_mid_itf_engineering_tools.tango_info.check_tango_device import (
+    set_tango_admin,  # type: ignore
+)
+from ska_mid_itf_engineering_tools.tango_info.check_tango_device import (
+    show_obs_state,  # type: ignore
 )
 
 ska_ser_logging.configure_logging(logging.WARNING)

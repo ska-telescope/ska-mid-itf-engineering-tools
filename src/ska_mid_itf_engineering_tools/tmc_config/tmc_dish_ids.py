@@ -2,14 +2,14 @@
 import logging
 import os
 
-from ska_ser_logging import configure_logging
+from ska_ser_logging import configure_logging  # type: ignore
 from yaml import safe_dump
 
 logger = logging.getLogger(__name__)
 
 
 def instance(x: str) -> str:
-    """Create two- or three-character zero-padded integer string for DishID instance name.
+    """Create 2- or 3-character zero-padded integer string for DishID instance name.
 
     :param x: SKA DishID string
     :type x: str
@@ -58,7 +58,7 @@ def set_cluster_domain(
     dish_id: str = "ska000",
     domain_postfix: str = "miditf.internal.skao.int",
     domain_prefix: str = "",
-):
+) -> str:
     """Make wild assumptions about the future of Kubernetes clusters in SKAO.
 
     :param dish_id: Lowercase DishID, defaults to "ska000"
@@ -66,8 +66,8 @@ def set_cluster_domain(
     :param domain_postfix: Cluster Domain where this dish is deployed, defaults to
         "miditf.internal.skao.int"
     :type domain_postfix: str
-    :param domain_prefix: Prefix of Cluster Domain where this dish is deployed, defaults to
-        ""
+    :param domain_prefix: Prefix of Cluster Domain where this dish is deployed,
+        defaults to ""
     :type domain_prefix: str
     :return: A cluster domain.
     :rtype: str
@@ -84,7 +84,7 @@ def dish_fqdns(
     namespace_prefix: str = "dish-lmc-",
     dish_ids: str = "SKA000",
     namespace_postfix: str = "",
-):
+) -> list:
     """Create an array of Dish FQDNs for use by the TMC.
 
     See docstring for tmc_values() method.
@@ -111,9 +111,11 @@ def dish_fqdns(
         namespace_prefix: str = "dish-lmc-",
         dish_id: str = "SKA000",
         namespace_postfix: str = "",
-    ):
+    ) -> str:
         id = single_dish_id_lowercase(id=dish_id)
-        cluster_domain = set_cluster_domain(dish_id=id, domain_postfix=cluster_domain_postfix)
+        cluster_domain = set_cluster_domain(
+            dish_id=id, domain_postfix=cluster_domain_postfix
+        )
         return f"tango://{hostname}.{namespace_prefix}{id}{namespace_postfix}.svc.{cluster_domain}:10000/{id}/elt/master"  # noqa E501
 
     fqdns = [
@@ -130,26 +132,28 @@ def dish_fqdns(
 
 
 def tmc_values(
-    hostname="tango-databaseds",
-    cluster_domain_postfix="miditf.internal.skao.int",
-    namespace_prefix="dish-lmc-",
-    dish_ids="SKA000",
+    hostname: str = "tango-databaseds",
+    cluster_domain_postfix: str = "miditf.internal.skao.int",
+    namespace_prefix: str = "dish-lmc-",
+    dish_ids: str = "SKA000",
     namespace_postfix: str = "",
-):
+) -> dict:
     """Generate values for the TMC to connect to DishIDs as set in the environment.
 
     The environment variable DISH_IDS must be set in order for the TMC to connect to the
     correct Dishes.
 
     The namespace prefix for the DishLMC deployments will likely not differ between
-    Dishes, but is useful for distinguishing between dev, testing and production namespaces.
-    May be discarded at a later stage, but the default can be used as is in Production.
+    Dishes, but is useful for distinguishing between dev, testing and production
+    namespaces. May be discarded at a later stage, but the default can be used as is in
+    Production.
 
-    The Cluster Domain will differ between dishes, as each Dish contains a Kubernetes cluster.
-    For dishLMC deployments in the Mid ITF cluster the cluster domain remains the same.
+    The Cluster Domain will differ between dishes, as each Dish contains a Kubernetes
+    cluster. For dishLMC deployments in the Mid ITF cluster the cluster domain remains
+    the same.
 
-    Hostname is being standardised on and may not be a parameter later on. Default should be used
-    in Production.
+    Hostname is being standardised on and may not be a parameter later on. Default
+    should be used in production.
 
     :param hostname: TangoDB hostname, defaults to "tango-databaseds"
     :type hostname: str, optional
@@ -198,7 +202,7 @@ def tmc_values(
     return values
 
 
-def main():
+def main() -> None:
     """Create tmc-values.yaml file in $SUT_CHART_DIR folder for TMC to use."""
     assert "SUT_CHART_DIR" in os.environ, "SUT_CHART_DIR environment variable not set"
 
