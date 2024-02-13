@@ -5,7 +5,7 @@ import os
 import pytest
 from yaml import safe_load
 
-from ska_mid_itf_engineering_tools.tmc_dish_ids import (
+from ska_mid_itf_engineering_tools.tmc_config.tmc_dish_ids import (
     dish_fqdns,
     dish_ids_array_from_str,
     tmc_values,
