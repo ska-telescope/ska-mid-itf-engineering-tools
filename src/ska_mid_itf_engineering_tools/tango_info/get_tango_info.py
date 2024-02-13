@@ -11,9 +11,7 @@ from typing import Any, Tuple
 import tango
 from ska_control_model import AdminMode
 
-from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import (
-    find_jargon,  # type: ignore
-)
+from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import find_jargon  # type: ignore
 
 
 def check_tango(tango_fqdn: str, tango_port: int = 10000) -> int:
@@ -116,9 +114,7 @@ class TangoDeviceInfo:
             print(f"\tObservation state              : {repr(self.dev.obsState)}")
             show_obs_state(self.dev.obsState)
         except AttributeError:
-            self.logger.info(
-                "Device %s does not have an observation state", self.dev_name
-            )
+            self.logger.info("Device %s does not have an observation state", self.dev_name)
         print(f"versionId                        : {self.dev.versionId}")
         print(f"build State                      : {self.dev.buildState}")
         print(f"logging level                    : {self.dev.loggingLevel}")
@@ -127,17 +123,10 @@ class TangoDeviceInfo:
         print(f"control Mode                     : {self.dev.controlMode}")
         print(f"simulation Mode                  : {self.dev.simulationMode}")
         print(f"test Mode                        : {self.dev.testMode}")
-        print(
-            f"long Running Commands In Queue   : {self.dev.longRunningCommandsInQueue}"
-        )
-        print(
-            "long Running Command IDs InQueue :"
-            f"{self.dev.longRunningCommandIDsInQueue}"
-        )
+        print(f"long Running Commands In Queue   : {self.dev.longRunningCommandsInQueue}")
+        print(f"long Running Command IDs InQueue : {self.dev.longRunningCommandIDsInQueue}")
         print(f"long Running Command Status      : {self.dev.longRunningCommandStatus}")
-        print(
-            f"long Running Command Progress    : {self.dev.longRunningCommandProgress}"
-        )
+        print(f"long Running Command Progress    : {self.dev.longRunningCommandProgress}")
         print(f"long Running Command Result      : {self.dev.longRunningCommandResult}")
 
     def get_tango_admin(self) -> bool:
@@ -249,9 +238,7 @@ class TangoDeviceInfo:
             else:
                 pass
 
-    def show_attribute_value_scalar(  # noqa: C901
-        self, prefix: str, attrib_value: str
-    ) -> None:
+    def show_attribute_value_scalar(self, prefix: str, attrib_value: str) -> None:  # noqa: C901
         """
         Print attribute value.
         :param prefix: data prefix string
@@ -320,9 +307,7 @@ class TangoDeviceInfo:
         else:
             print(f" {type(attrib_value)}:{attrib_value}")
 
-    def show_attribute_value(  # noqa: C901
-        self, attrib: str, prefix: str, dry_run: bool
-    ) -> None:
+    def show_attribute_value(self, attrib: str, prefix: str, dry_run: bool) -> None:  # noqa: C901
         """
         Print attribute value
         :param attrib: attribute name
@@ -434,10 +419,7 @@ class TangoDeviceInfo:
                     for prop_val in prop_list[1:]:
                         print(f"{' ':17}   {' ':30} {prop_val}")
                 else:
-                    print(
-                        f"{' ':17}   \033[1m{prop:30}\033[0m {prop_list[0]} "
-                        f" {prop_list[1]}"
-                    )
+                    print(f"{' ':17}   \033[1m{prop:30}\033[0m {prop_list[0]}  {prop_list[1]}")
                     n = 2
                     while n < len(prop_list):
                         print(f"{' ':17}   {' ':30} {prop_list[n]}  {prop_list[n+1]}")
@@ -788,10 +770,7 @@ class TangoDeviceInfo:
             for attrib in attribs:
                 print(f"#### Attribute *{attrib}*")
                 try:
-                    print(
-                        "##### Value\n```\n"
-                        f"{self.dev.read_attribute(attrib).value}\n```"
-                    )
+                    print("##### Value\n```\n{self.dev.read_attribute(attrib).value}\n```")
                 except Exception:
                     print(f"```\n{attrib} could not be read\n```")
                 try:
@@ -835,9 +814,7 @@ class TangoDeviceInfo:
             print("Nothing to do!")
 
 
-def setup_device(
-    logger: logging.Logger, dev_name: str
-) -> Tuple[int, tango.DeviceProxy]:
+def setup_device(logger: logging.Logger, dev_name: str) -> Tuple[int, tango.DeviceProxy]:
     """
     Set up device connection and timeouts.
 
@@ -1311,9 +1288,7 @@ def show_long_running_commands(dev_name: str) -> int:
     return 0
 
 
-def show_command_inputs(
-    logger: logging.Logger, tango_host: str, tgo_in_type: str
-) -> None:
+def show_command_inputs(logger: logging.Logger, tango_host: str, tgo_in_type: str) -> None:
     """
     Display commands with given input type.
     :param logger: logging handle
@@ -1345,10 +1320,7 @@ def show_command_inputs(
                 in_type_desc = cmd.in_type_desc.lower()
                 logger.info("Command %s type %s", cmd, in_type_desc)
                 if in_type_desc == tgo_in_type:
-                    print(
-                        f"{'Commands':17} : \033[3m{cmd.cmd_name}\033[0m"
-                        f" ({in_type_desc})"
-                    )
+                    print(f"{'Commands':17} : \033[3m{cmd.cmd_name}\033[0m ({in_type_desc})")
                 else:
                     print(f"{'Commands':17} : {cmd.cmd_name} ({in_type_desc})")
     return

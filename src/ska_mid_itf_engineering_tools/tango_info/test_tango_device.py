@@ -222,10 +222,7 @@ class TestTangoDevice:
                 print(f"[  OK  ] {self.dev_name} turned on, now {dev_on}")
                 return 1
             except tango.DevFailed as terr:
-                print(
-                    f"[FAILED] {self.dev_name} could not be turned on"
-                    " (device failed)"
-                )
+                print(f"[FAILED] {self.dev_name} could not be turned on (device failed)")
                 print(f"[FAILED] {terr.args[0].desc.strip()}")
                 self.logger.debug(terr)
                 return 1
@@ -281,9 +278,7 @@ class TestTangoDevice:
         if cmd_cfg.in_type_desc == "Uninitialised":
             try:
                 dev_standby = self.dev.Standby()
-                print(
-                    f"[  OK  ] {self.dev_name} switched to standby, now {dev_standby}"
-                )
+                print(f"[  OK  ] {self.dev_name} switched to standby, now {dev_standby}")
                 return 0
             except tango.DevFailed as terr:
                 print(f"[FAILED] {self.dev_name} could not be switched to standby")
@@ -292,9 +287,7 @@ class TestTangoDevice:
         else:
             try:
                 dev_standby = self.dev.Standby([])
-                print(
-                    f"[  OK  ] {self.dev_name} switched to standby, now {dev_standby}"
-                )
+                print(f"[  OK  ] {self.dev_name} switched to standby, now {dev_standby}")
                 return 0
             except tango.DevFailed as terr:
                 print(f"[FAILED] {self.dev_name} could not be switched to standby")

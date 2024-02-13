@@ -11,9 +11,7 @@ from typing import Any, List, Tuple
 import ska_ser_logging  # type: ignore
 import tango
 
-from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import (
-    KubernetesControl,  # type: ignore
-)
+from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl  # type: ignore
 from ska_mid_itf_engineering_tools.ska_notebook_helper.get_tango_notebook import (
     check_device,  # type: ignore
 )
@@ -45,9 +43,7 @@ CONFIGUREDATA: Any = {
         "subarray_id": 0,
     },
     "cbf": {
-        "delay_model_subscription_point": (
-            "ska_mid/tm_leaf_node/csp_subarray_01/delayModel",
-        ),
+        "delay_model_subscription_point": ("ska_mid/tm_leaf_node/csp_subarray_01/delayModel",),
         "rfi_flagging_mask": {},
         "fsp": [
             {
@@ -222,9 +218,7 @@ def start_ctl_device(dev: tango.DeviceProxy, subsystems: list) -> int:
     return 0
 
 
-def get_surrogate(
-    ns_name: str, ns_sdp_name: str, databaseds_name: str
-) -> Tuple[Any, Any | None]:
+def get_surrogate(ns_name: str, ns_sdp_name: str, databaseds_name: str) -> Tuple[Any, Any | None]:
     """
     Control the CSP subarray.
 
@@ -285,9 +279,7 @@ def init_subarray(sub_dev: tango.DeviceProxy, resources: Any) -> int:
     return 0
 
 
-def control_subarray(
-    sub_dev: tango.DeviceProxy, sdp_host_ip_address: Any | None
-) -> int:
+def control_subarray(sub_dev: tango.DeviceProxy, sdp_host_ip_address: Any | None) -> int:
     """
     Control the CSP subarray.
 
@@ -483,10 +475,7 @@ def do_startup(
     while lrc > long_cmds:
         l_count += 1
         if l_count > 5:
-            print(
-                "Long running commands still active after"
-                f" {(l_count*timeout)/60} minutes"
-            )
+            print("Long running commands still active after {(l_count*timeout)/60} minutes")
             return 1, None
         print(f"Waiting for {lrc} long running commands")
         time.sleep(timeout)
@@ -546,9 +535,7 @@ def do_control(
     :return: error condition
     """
     # Get address for SDP surrogate pod
-    sdp_pod_nm, sdp_host_ip_address = get_surrogate(
-        ns_name, ns_sdp_name, databaseds_name
-    )
+    sdp_pod_nm, sdp_host_ip_address = get_surrogate(ns_name, ns_sdp_name, databaseds_name)
     log_prog(f"Control subarray device {sub_dev_name}")
     if sub_dev is None:
         _rc, sub_dev = setup_device(sub_dev_name)

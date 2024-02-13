@@ -48,19 +48,25 @@ def test_dish_ids_array_from_str() -> None:
         "SKA036",
         "SKA063",
         "SKA100",
-    ], f"Expected array of str:\n{['SKA001', 'SKA036', 'SKA063', 'SKA100']}\n" \
-       f"Instead received:\n {dish_ids_array_from_str(DISH_IDS)}"
+    ], (
+        f"Expected array of str:\n{['SKA001', 'SKA036', 'SKA063', 'SKA100']}\n"
+        f"Instead received:\n {dish_ids_array_from_str(DISH_IDS)}"
+    )
 
     assert dish_ids_array_from_str(ids="SKA000 SKA001") == [
         "SKA000",
         "SKA001",
-    ], f"Expected array of str:\n{['SKA000', 'SKA001']}\nInstead received:\n \
-        {dish_ids_array_from_str(ids='SKA000 SKA001')}"
+    ], (
+        f"Expected array of str:\n{['SKA000', 'SKA001']}\nInstead received:\n"
+        "{dish_ids_array_from_str(ids='SKA000 SKA001')}"
+    )
 
     assert dish_ids_array_from_str(ids="SKA000") == [
         "SKA000",
-    ], f"Expected array of str:\n{['SKA000']}\nInstead received:\n \
-        {dish_ids_array_from_str(ids='SKA000')}"
+    ], (
+        f"Expected array of str:\n{['SKA000']}\nInstead received:\n"
+        "{dish_ids_array_from_str(ids='SKA000')}"
+    )
 
 
 def test_instances(tmc_dishes: dict, tmc_dishes_1: dict) -> None:
@@ -74,15 +80,19 @@ def test_instances(tmc_dishes: dict, tmc_dishes_1: dict) -> None:
     assert (
         tmc_dishes["tmc"]["deviceServers"]["dishleafnode"]["instances"]
         == tmc_dishes_1["tmc"]["deviceServers"]["dishleafnode"]["instances"]
-    ), f"ERROR:\nExpected: " \
-        f"{tmc_dishes['tmc']['deviceServers']['dishleafnode']['instances']}\n " \
+    ), (
+        f"ERROR:\nExpected: "
+        f"{tmc_dishes['tmc']['deviceServers']['dishleafnode']['instances']}\n "
         f"Actual:\n{tmc_dishes_1['tmc']['deviceServers']['dishleafnode']['instances']}"
+    )
     assert (
         tmc_dishes["tmc"]["deviceServers"]["dishleafnode"]["instances"]
         == tmc_dishes_1["tmc"]["deviceServers"]["dishleafnode"]["instances"]
-    ), f"ERROR:\nExpected: " \
-        f"{tmc_dishes['tmc']['deviceServers']['dishleafnode']['instances']}\n" \
+    ), (
+        f"ERROR:\nExpected: "
+        f"{tmc_dishes['tmc']['deviceServers']['dishleafnode']['instances']}\n"
         f"Actual:\n{tmc_dishes_1['tmc']['deviceServers']['dishleafnode']['instances']}"
+    )
 
 
 def test_dish_fqnds() -> None:
@@ -105,5 +115,4 @@ def test_values_dict(tmc_dishes: dict, tmc_dishes_1: dict) -> None:
     """
     assert (
         tmc_dishes == tmc_dishes_1
-    ), f"Output not as expected: was expecting\n{tmc_dishes}\n" \
-        f"instead got\n{tmc_dishes_1}"
+    ), f"Output not as expected: was expecting\n{tmc_dishes}\ninstead got\n{tmc_dishes_1}"

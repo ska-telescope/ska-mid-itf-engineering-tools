@@ -11,9 +11,7 @@ from typing import Any, Tuple
 import tango
 from ska_control_model import AdminMode
 
-from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import (
-    find_jargon,  # type: ignore
-)
+from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import find_jargon  # type: ignore
 
 logging.basicConfig(level=logging.WARNING)
 _module_logger = logging.getLogger(__name__)
@@ -207,18 +205,13 @@ def show_command_inputs(tango_host: str, tgo_in_type: str) -> None:
                 in_type_desc = cmd.in_type_desc.lower()
                 _module_logger.info("Command %s type %s", cmd, in_type_desc)
                 if in_type_desc == tgo_in_type:
-                    print(
-                        f"{'Commands':17} : \033[3m{cmd.cmd_name}\033[0m"
-                        f" ({in_type_desc})"
-                    )
+                    print(f"{'Commands':17} : \033[3m{cmd.cmd_name}\033[0m ({in_type_desc})")
                 else:
                     print(f"{'Commands':17} : {cmd.cmd_name} ({in_type_desc})")
     return
 
 
-def show_device_commands(  # noqa: C901
-    dev: tango.DeviceProxy, fforce: bool = False
-) -> None:
+def show_device_commands(dev: tango.DeviceProxy, fforce: bool = False) -> None:  # noqa: C901
     """
     Print commands
     :param dev: Tango device

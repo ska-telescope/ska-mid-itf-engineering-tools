@@ -150,9 +150,7 @@ class KubernetesControl:
             self.logger.info("Read pods")
         if ns_name:
             self.logger.info("Use namespace %s", ns_name)
-        ret = self.v1.list_pod_for_all_namespaces(  # type: ignore[union-attr]
-            watch=False
-        )
+        ret = self.v1.list_pod_for_all_namespaces(watch=False)  # type: ignore[union-attr]
         for ipod in ret.items:
             pod_nm, pod_ip, pod_ns = self.get_pod(ipod, ns_name, pod_name)
             if pod_nm is not None:
@@ -198,13 +196,9 @@ class KubernetesControl:
             self.logger.info("Read services")
         if ns_name:
             self.logger.info("Use namespace %s", ns_name)
-        services = self.v1.list_service_for_all_namespaces(  # type: ignore[union-attr]
-            watch=False
-        )
+        services = self.v1.list_service_for_all_namespaces(watch=False)  # type: ignore[union-attr]
         for isvc in services.items:
-            svc_nm, svc_ns, svc_ip, svc_port, svc_prot = self.get_service(
-                isvc, ns_name, svc_name
-            )
+            svc_nm, svc_ns, svc_ip, svc_port, svc_prot = self.get_service(isvc, ns_name, svc_name)
             if svc_nm is not None:
                 svcs[svc_nm] = (svc_ns, svc_ip, svc_port, svc_prot)
         self.logger.info("Found %d services", len(svcs))

@@ -102,18 +102,14 @@ def main() -> None:  # noqa C901
             else:
                 READY = True
             if CBF.State() != DevState.OFF:
-                logger.info(
-                    f"Waiting for CBF to change state from {CBF.State()} to OFF"
-                )
+                logger.info(f"Waiting for CBF to change state from {CBF.State()} to OFF")
                 READY = False
                 logger.debug("Exiting loop - device not ready")
                 continue
             else:
                 READY = True
             if CSP.State() != DevState.OFF:
-                logger.info(
-                    f"Waiting for CSP to change state from {CSP.State()} to OFF"
-                )
+                logger.info(f"Waiting for CSP to change state from {CSP.State()} to OFF")
                 READY = False
                 logger.debug("Exiting loop - device not ready")
                 continue
@@ -148,10 +144,7 @@ def main() -> None:  # noqa C901
     # Next set simulation to false - hardware use!
     CBF.simulationMode = False
     while CBF.simulationMode != 0:
-        logger.info(
-            f"Waiting for CBF to change simulationMode from {CBF.simulationMode} "
-            "to False"
-        )
+        logger.info(f"Waiting for CBF to change simulationMode from {CBF.simulationMode} to False")
         time.sleep(1)
     logger.info(f"CBF simulationMode is now {CBF.simulationMode}")
 
@@ -170,8 +163,7 @@ def main() -> None:  # noqa C901
             return n if n <= 1 else fib(n - 1) + fib(n - 2)
 
         logger.info(
-            f"Waiting for CBF to change state from {CBF.State()} to ON for {fib(k)} "
-            "seconds"
+            f"Waiting for CBF to change state from {CBF.State()} to ON for {fib(k)} seconds"
         )
         time.sleep(fib(k))
         k += 1
