@@ -9,6 +9,7 @@ import os
 import sys
 from typing import Any, TextIO
 
+from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl
 from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import print_jargon
 from ska_mid_itf_engineering_tools.tango_info.get_tango_info import (
@@ -47,38 +48,47 @@ def usage(p_name: str, cfg_data: Any) -> None:
     :param p_name: executable name
     :param cfg_data: configuration in JSON format
     """
+    print("Display version number")
+    print(f"\t{p_name} --version")
+    print("Display help")
+    print(f"\t{p_name} --help")
+    print(f"\t{p_name} -h")
     print("Display Kubernetes namespaces")
+    print(f"\t{p_name} --show-ns")
     print(f"\t{p_name} -n")
     print("Display Tango database address")
-    print(f"\t{p_name} -t [--namespace=<NAMESPACE>|--host=<HOST>]")
+    print(f"\t{p_name} --show-db [--namespace=<NAMESPACE>|--host=<HOST>]")
     print(f"\t{p_name} -t [-N <NAMESPACE>|-H <HOST>]")
     print("Display Tango device names")
-    print(f"\t{p_name} -d [--namespace=<NAMESPACE>|--host=<HOST>]")
+    print(f"\t{p_name} --show-dev [--namespace=<NAMESPACE>|--host=<HOST>]")
     print(f"\t{p_name} -d [-N <NAMESPACE>|-H <HOST>]")
     print("Display all devices")
-    print(f"\t{p_name} -f|-l|-q|-s [--dry-run] [--namespace=<NAMESPACE>|--host=<HOST>]")
+    print(
+        f"\t{p_name} --full|--long|--quick|--short [--dry-run]"
+        f" [--namespace=<NAMESPACE>|--host=<HOST>]"
+    )
     print(f"\t{p_name} -f|-l|-q|-s [-N <NAMESPACE>|-H <HOST>]")
     print("Filter on device name")
-    print(f"\t{p_name} -f|-l|-q|-s -D <DEVICE> [-N <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} --full|--long|--quick|--short -D <DEVICE> [-N <NAMESPACE>|-H <HOST>]")
     print(
         f"\t{p_name} -f|-l|-q|-s --device=<DEVICE>"
         " [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
     print("Filter on attribute name")
     print(
-        f"\t{p_name} -f|-l|-q|-s --attribute=<ATTRIBUTE>"
+        f"\t{p_name} --full|--long|--quick|--short --attribute=<ATTRIBUTE>"
         " [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
     print(f"\t{p_name} -f|-l|-q|-s -A <ATTRIBUTE> [-N <NAMESPACE>|-H <HOST>]")
     print("Filter on command name")
     print(
-        f"\t{p_name} -f|-l|-q|-s --command=<COMMAND>"
+        f"\t{p_name} --full|--long|--quick|--short --command=<COMMAND>"
         " [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
     print(f"\t{p_name} -f|-l|-q|-s -C <COMMAND> [-N <NAMESPACE>|-H <HOST>]")
     print("Filter on property name")
     print(
-        f"\t{p_name} -f|-l|-q|-s --property=<PROPERTY>"
+        f"\t{p_name} --full|--long|--quick|--short --property=<PROPERTY>"
         " [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
     print(
@@ -150,11 +160,18 @@ def main(y_arg: list) -> int:  # noqa: C901
             "defhjlmnqstvVA:C:H:D:N:P:T:",
             [
                 "dry-run",
+                "everything",
+                "full",
                 "help",
+                "long",
                 "input",
+                "quick",
+                "short",
                 "show-acronym",
                 "show-db",
+                "show-dev",
                 "show-ns",
+                "version",
                 "attribute=",
                 "command=",
                 "device=",
@@ -177,41 +194,47 @@ def main(y_arg: list) -> int:  # noqa: C901
         if opt in ("-h", "--help"):
             usage(os.path.basename(y_arg[0]), cfg_data)
             sys.exit(1)
+        elif opt == "--version":
+            print(f"{os.path.basename(y_arg[0])} version {__version__}")
+            sys.exit(1)
         elif opt in ("-A", "--attribute"):
             tgo_attrib = arg
         elif opt in ("-C", "--command"):
             tgo_cmd = arg
-        elif opt in ("-H", "--host"):
-            tango_host = arg
         elif opt in ("-D", "--device"):
             itype = arg.upper()
+        elif opt in ("-H", "--host"):
+            tango_host = arg
+        elif opt in ("-T", "--input"):
+            # Undocumented feature to search by input type
+            tgo_in_type = arg.lower()
         elif opt in ("-N", "--namespace"):
             KUBE_NAMESPACE = arg
         elif opt in ("-P", "--property"):
             tgo_prop = arg
-        elif opt in ("-T", "--input"):
-            tgo_in_type = arg.lower()
         elif opt == "--dry-run":
+            # Undocumented feature for dry runs
             dry_run = True
         elif opt in ("-j", "--show-acronym"):
             show_jargon = True
         elif opt in ("-t", "show-db"):
             show_tango = True
         elif opt == "-m":
+            # Undocumented feature to display in mark-down format
             disp_action = 2
-        elif opt == "-f":
+        elif opt in ("-f", "--full"):
             disp_action = 1
-        elif opt == "-e":
+        elif opt in ("-e", "--everything"):
             evrythng = True
         elif opt in ("-n", "--show-ns"):
             show_ns = True
-        elif opt == "-q":
+        elif opt in ("-q", "--quick"):
             disp_action = 3
-        elif opt == "-d":
+        elif opt in ("-d", "--show-dev"):
             disp_action = 4
-        elif opt == "-s":
+        elif opt in ("-s", "--short"):
             disp_action = 5
-        elif opt == "-l":
+        elif opt in ("-l", "--long"):
             disp_action = 6
         elif opt == "-v":
             _module_logger.setLevel(logging.INFO)

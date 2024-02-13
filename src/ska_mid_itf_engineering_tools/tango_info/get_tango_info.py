@@ -68,8 +68,10 @@ class TangoDeviceInfo:
         # Read state
         try:
             self.dev_state = self.dev.State()
+            self.dev_str = f"{repr(self.dev_state).split('.')[3]}"
         except Exception:
             self.dev_state = None
+            self.dev_str = "None"
         try:
             self.dev_name = self.dev.name()
             self.online = True
@@ -406,28 +408,36 @@ class TangoDeviceInfo:
             prop_list = prop_values[prop]
             if len(prop_list) == 1:
                 print(f"{'Properties':17} : \033[1m{prop:30}\033[0m {prop_list[0]}")
+            elif len(prop_list[0]) > 30 and len(prop_list[1]) > 30:
+                print(f"{'Properties':17} : \033[1m{prop:30}\033[0m {prop_list[0]}")
+                for prop_val in prop_list[1:]:
+                    print(f"{' ':17}   {' ':30} {prop_val}")
             else:
                 print(
-                    f"{'Properties':17} : \033[1m{prop:30}\033[0m {prop_list[0]}:"
+                    f"{'Properties':17} : \033[1m{prop:30}\033[0m {prop_list[0]} "
                     f" {prop_list[1]}"
                 )
                 n = 2
                 while n < len(prop_list):
-                    print(f"{' ':17}   {' ':30} {prop_list[n]}: {prop_list[n+1]}")
+                    print(f"{' ':17}   {' ':30} {prop_list[n]}  {prop_list[n+1]}")
                     n += 2
             for prop in props[1:]:
                 prop_values = self.dev.get_property(prop)
                 prop_list = prop_values[prop]
                 if len(prop_list) == 1:
                     print(f"{' ':17}   \033[1m{prop:30}\033[0m {prop_list[0]}")
+                elif len(prop_list[0]) > 30 and len(prop_list[1]) > 30:
+                    print(f"{' ':17}   \033[1m{prop:30}\033[0m {prop_list[0]}")
+                    for prop_val in prop_list[1:]:
+                        print(f"{' ':17}   {' ':30} {prop_val}")
                 else:
                     print(
-                        f"{' ':17}   \033[1m{prop:30}\033[0m {prop_list[0]}:"
+                        f"{' ':17}   \033[1m{prop:30}\033[0m {prop_list[0]} "
                         f" {prop_list[1]}"
                     )
                     n = 2
                     while n < len(prop_list):
-                        print(f"{' ':17}   {' ':30} {prop_list[n]}: {prop_list[n+1]}")
+                        print(f"{' ':17}   {' ':30} {prop_list[n]}  {prop_list[n+1]}")
                         n += 2
         else:
             print(f"{'Properties':17} : <NONE>")
@@ -797,10 +807,11 @@ class TangoDeviceInfo:
         Display Tango device name only.
         """
         # pylint: disable-next=c-extension-no-member
-        if self.dev_state != tango._tango.DevState.ON:
-            print(f"     {self.dev_name} ({self.adminMode})")
-            return 0
-        print(f"[ON] {self.dev_name} ({self.adminMode})")
+        # if self.dev_state != tango._tango.DevState.ON:
+        #     print(f"     {self.dev_name} ({self.adminMode})")
+        #     return 0
+        # print(f"[ON] {self.dev_name} ({self.adminMode})")
+        print(f"{self.dev_str:10} {self.dev_name:40} {self.adminMode}")
         return 1
 
     def show_device(self, dry_run: bool) -> None:
@@ -924,12 +935,16 @@ def show_devices(
     # print("Tango host %s" % tango_host)
 
     devices = list_devices(logger, cfg_data, evrythng, itype)
-
     logger.info("Read %d devices" % (len(devices)))
+
+    # Mark-down foreword
     if disp_action == 2:
         print("# Tango devices")
         print("## Tango host\n```\n%s\n```" % tango_host)
         print(f"## Number of devices\n{len(devices)}")
+    elif disp_action == 4:
+        print(f"{'STATE':10} {'DEVICE NAME':40} ADMIN MODE")
+
     dev_count = 0
     on_dev_count = 0
     for device in devices:
@@ -941,6 +956,7 @@ def show_devices(
             continue
         tgo_info.show_device(dry_run)
 
+    # Mark-down summary
     if disp_action == 2:
         if itype:
             print("## Summary")
@@ -1012,10 +1028,10 @@ def show_attributes(
             if a_name in attrib.lower():
                 attribs_found.append(attrib)
         if attribs_found:
-            print(f"[ON] {device:48}", end="")
+            print(f"{device:48}", end="")
             print(f" \033[1m{attribs_found[0]}\033[0m")
             for attrib in attribs_found[1:]:
-                print(f"     {' ':48} \033[1m{attrib}\033[0m")
+                print(f"{' ':48} \033[1m{attrib}\033[0m")
 
 
 def show_commands(
@@ -1050,10 +1066,10 @@ def show_commands(
         dev: tango.DeviceProxy = tango.DeviceProxy(device)
         chk_cmds = check_command(logger, dev, c_name)
         if chk_cmds:
-            print(f"[ON] {dev.name():48}", end="")
+            print(f"{dev.name():48}", end="")
             print(f" \033[1m{chk_cmds[0]}\033[0m")
             for chk_cmd in chk_cmds[1:]:
-                print(f"     {' ':48} \033[1m{chk_cmd}\033[0m")
+                print(f"{' ':48} \033[1m{chk_cmd}\033[0m")
 
 
 def show_properties(
@@ -1093,10 +1109,10 @@ def show_properties(
             if p_name in prop.lower():
                 props_found.append(prop)
         if props_found:
-            print(f"[ON] {dev.name():48}", end="")
+            print(f"{dev.name():48}", end="")
             print(f" \033[1m{props_found[0]}\033[0m")
             for prop in props_found[1:]:
-                print(f"     {' ':48} \033[1m{prop}\033[0m")
+                print(f"{' ':48} \033[1m{prop}\033[0m")
 
 
 OBSERVATION_STATES = [
