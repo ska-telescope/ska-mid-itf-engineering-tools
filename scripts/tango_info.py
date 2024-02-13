@@ -152,10 +152,13 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "dry-run",
                 "help",
                 "input",
-                "host=",
-                "device=",
+                "show-acronym",
+                "show-db",
+                "show-ns",
                 "attribute=",
                 "command=",
+                "device=",
+                "host=",
                 "namespace=",
                 "property=",
             ],
@@ -190,9 +193,9 @@ def main(y_arg: list) -> int:  # noqa: C901
             tgo_in_type = arg.lower()
         elif opt == "--dry-run":
             dry_run = True
-        elif opt == "-j":
+        elif opt in ("-j", "--show-acronym"):
             show_jargon = True
-        elif opt == "-t":
+        elif opt in ("-t", "show-db"):
             show_tango = True
         elif opt == "-m":
             disp_action = 2
@@ -200,7 +203,7 @@ def main(y_arg: list) -> int:  # noqa: C901
             disp_action = 1
         elif opt == "-e":
             evrythng = True
-        elif opt == "-n":
+        elif opt in ("-n", "--show-ns"):
             show_ns = True
         elif opt == "-q":
             disp_action = 3
