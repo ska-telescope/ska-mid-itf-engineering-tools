@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ska-mid-itf-engineering-tools"
-version = "0.1.7"
+version = "0.1.8"
 description = "SKA MID ITF Engineering tools"
 authors = ["Matteo Di Carlo", "ATLAS"]
 license = "BSD 3-Clause"
