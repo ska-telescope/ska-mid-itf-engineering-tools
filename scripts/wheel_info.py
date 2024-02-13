@@ -2,9 +2,7 @@
 """
 Read wheel file
 """
-import pprint
 import sys
-
 from zipfile import ZipFile
 
 try:
@@ -14,6 +12,5 @@ except IndexError:
     sys.exit(1)
 names: list = ZipFile(fpath).namelist()
 print(f"Wheel {fpath}")
-# pprint.pprint(names)
 for name in names:
     print(f"\t{name}")

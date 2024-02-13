@@ -21,15 +21,11 @@ import getopt
 import logging
 import os
 import sys
-from typing import Any, List, Tuple
+from typing import Any, List
 
 import ska_ser_logging  # type: ignore[import]
-
-from ska_mid_itf.tango_info.get_tango_info import (
-    check_tango,
-    show_long_running_commands,
-)
-from ska_mid_itf.ska_notebook_helper.mid_itf_control import (
+from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import get_ska_jargon
+from ska_mid_itf_engineering_tools.ska_notebook_helper.mid_itf_control import (
     do_control,
     do_shutdown,
     do_startup,
@@ -37,21 +33,13 @@ from ska_mid_itf.ska_notebook_helper.mid_itf_control import (
     show_config_json,
     show_observation_status,
 )
-
-from ska_mid_itf.ska_jargon.ska_jargon import get_ska_jargon
+from ska_mid_itf_engineering_tools.tango_info.get_tango_info import (
+    check_tango,
+    show_long_running_commands,
+)
 
 ska_ser_logging.configure_logging(logging.DEBUG)
 _module_logger: logging.Logger = logging.getLogger(__name__)
-
-# LONG_RUN_CMDS: int = 4
-#
-# LEAFNODE_DEVICE = "ska_mid/tm_leaf_node/csp_subarray_01"
-# BITE_POD = "ec-bite"
-# BITE_CMD = ["python3", "midcbf_bite.py", "--talon-bite-lstv-replay", "--boards=1"]
-# TIMEOUT = 60
-
-
-
 
 
 def usage(p_name: str, mid_sys: str, cfg_data: Any) -> None:
@@ -98,9 +86,7 @@ def usage(p_name: str, mid_sys: str, cfg_data: Any) -> None:
     print(f"\t{p_name} --long-cmd [--subarray=<DEVICE]")
     print("where:")
     for mid_sys in ("csp", "tmc"):
-        print(
-            f"\t--{mid_sys}\tuse {get_ska_jargon(mid_sys)} subsystem:"
-        )
+        print(f"\t--{mid_sys}\tuse {get_ska_jargon(mid_sys)} subsystem:")
         if mid_sys in ["csp"]:
             print(
                 "\t\t--jobs=<JOBS>\t\tMinimum number of long running commands,"

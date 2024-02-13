@@ -69,7 +69,10 @@ def usage(p_name: str, cfg_data: Any) -> None:
     )
     print(f"\t{p_name} -f|-l|-q|-s [-N <NAMESPACE>|-H <HOST>]")
     print("Filter on device name")
-    print(f"\t{p_name} --full|--long|--quick|--short -D <DEVICE> [-N <NAMESPACE>|-H <HOST>]")
+    print(
+        f"\t{p_name} --full|--long|--quick|--short -D <DEVICE>"
+        " [-N <NAMESPACE>|-H <HOST>]"
+    )
     print(
         f"\t{p_name} -f|-l|-q|-s --device=<DEVICE>"
         " [--namespace=<NAMESPACE>|--host=<HOST>]"
@@ -91,10 +94,7 @@ def usage(p_name: str, cfg_data: Any) -> None:
         f"\t{p_name} --full|--long|--quick|--short --property=<PROPERTY>"
         " [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
-    print(
-        f"\t{p_name} -f|-l|-q|-s -P <PROPERTY>"
-        " [-N <NAMESPACE>|--host=<HOST>]"
-    )
+    print(f"\t{p_name} -f|-l|-q|-s -P <PROPERTY> [-N <NAMESPACE>|--host=<HOST>]")
     print("Display known acronyms")
     print(f"\t{p_name} -j")
     print("where:")
