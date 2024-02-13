@@ -27,4 +27,6 @@ RUN poetry install
 
 USER root
 
+ENV PATH=/app/.venv/bin/:$PATH
+
 CMD ["bash"]
