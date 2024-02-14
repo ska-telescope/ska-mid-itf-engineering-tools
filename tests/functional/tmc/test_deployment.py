@@ -43,27 +43,17 @@ def tmc_dishes() -> dict:
 
 def test_dish_ids_array_from_str() -> None:
     """Test correct Dish Array is generated from space separated string."""
-    assert dish_ids_array_from_str(DISH_IDS) == [
-        "SKA001",
-        "SKA036",
-        "SKA063",
-        "SKA100",
-    ], (
+    assert dish_ids_array_from_str(DISH_IDS) == ["SKA001", "SKA036", "SKA063", "SKA100",], (
         f"Expected array of str:\n{['SKA001', 'SKA036', 'SKA063', 'SKA100']}\n"
         f"Instead received:\n {dish_ids_array_from_str(DISH_IDS)}"
     )
 
-    assert dish_ids_array_from_str(ids="SKA000 SKA001") == [
-        "SKA000",
-        "SKA001",
-    ], (
+    assert dish_ids_array_from_str(ids="SKA000 SKA001") == ["SKA000", "SKA001",], (
         f"Expected array of str:\n{['SKA000', 'SKA001']}\nInstead received:\n"
         "{dish_ids_array_from_str(ids='SKA000 SKA001')}"
     )
 
-    assert dish_ids_array_from_str(ids="SKA000") == [
-        "SKA000",
-    ], (
+    assert dish_ids_array_from_str(ids="SKA000") == ["SKA000",], (
         f"Expected array of str:\n{['SKA000']}\nInstead received:\n"
         "{dish_ids_array_from_str(ids='SKA000')}"
     )
