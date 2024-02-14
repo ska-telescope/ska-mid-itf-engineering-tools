@@ -97,12 +97,15 @@ def test_instances(tmc_dishes: dict, tmc_dishes_1: dict) -> None:
 
 def test_dish_fqnds() -> None:
     """Ensure that FQDNs are correctly generated for TMC."""
-    assert dish_fqdns(dish_ids=DISH_IDS) == [
+    the_dish_ids = [
         "tango://tango-databaseds.dish-lmc-ska001.svc.miditf.internal.skao.int:10000/ska001/elt/master",  # noqa E501
         "tango://tango-databaseds.dish-lmc-ska036.svc.miditf.internal.skao.int:10000/ska036/elt/master",  # noqa E501
         "tango://tango-databaseds.dish-lmc-ska063.svc.miditf.internal.skao.int:10000/ska063/elt/master",  # noqa E501
         "tango://tango-databaseds.dish-lmc-ska100.svc.miditf.internal.skao.int:10000/ska100/elt/master",  # noqa E501
-    ], f"Expected array of strings {['tango://tango-databaseds.dish-lmc-ska001.svc.miditf.internal.skao.int:10000/ska001/elt/master', 'tango://tango-databaseds.dish-lmc-ska036.svc.miditf.internal.skao.int:10000/ska036/elt/master', 'tango://tango-databaseds.dish-lmc-ska063.svc.miditf.internal.skao.int:10000/ska063/elt/master', 'tango://tango-databaseds.dish-lmc-ska100.svc.miditf.internal.skao.int:10000/ska100/elt/master', ]},\nInstead got {dish_fqdns(DISH_IDS)}"  # noqa E501
+    ]
+    assert (
+        dish_fqdns(dish_ids=DISH_IDS) == the_dish_ids
+    ), f"Expected array of strings {the_dish_ids}"
 
 
 def test_values_dict(tmc_dishes: dict, tmc_dishes_1: dict) -> None:
