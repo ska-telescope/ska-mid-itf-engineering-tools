@@ -9,23 +9,23 @@ logger = logging.getLogger(__name__)
 
 
 def instance(x: str) -> str:
-    """Create 2- or 3-character zero-padded integer string for DishID instance name.
+    """
+    Create 2- or 3-character zero-padded integer string for DishID instance name.
 
     :param x: SKA DishID string
     :type x: str
     :return: DishID for deviceserver instance name
-    :rtype: str
     """
     return x[-3:]
 
 
 def instances(ids: str = "SKA000") -> list[str]:
-    """Create array of instances for deviceserver names.
+    """
+    Create array of instances for deviceserver names.
 
     :param ids: space-separated string containing DishIDs, defaults to "SKA000"
     :type ids: str
     :return: Array of instances
-    :rtype: list[str]
     """
     ds_ids = list(ids.split(" "))
     instances = [instance(x) for x in ds_ids]
@@ -33,23 +33,23 @@ def instances(ids: str = "SKA000") -> list[str]:
 
 
 def single_dish_id_lowercase(id: str = "SKA000") -> str:
-    """Set DishID to lowercase for Tango device name.
+    """
+    Set DishID to lowercase for Tango device name.
 
     :param id: string representing DishID, defaults to "SKA000"
     :type id: str
     :return: lowercase dishID
-    :rtype: str
     """
     return id.lower()
 
 
 def dish_ids_array_from_str(ids: str = "SKA000") -> list[str]:
-    """Get Dish IDs in array form.
+    """
+    Get Dish IDs in array form.
 
     :param ids: Space separated Dish IDs, defaults to "SKA000"
     :type ids: str
     :return: List of DishIDs
-    :rtype: list[str]
     """
     return list(ids.split(" "))
 
@@ -59,7 +59,8 @@ def set_cluster_domain(
     domain_postfix: str = "miditf.internal.skao.int",
     domain_prefix: str = "",
 ) -> str:
-    """Make wild assumptions about the future of Kubernetes clusters in SKAO.
+    """
+    Make wild assumptions about the future of Kubernetes clusters in SKAO.
 
     :param dish_id: Lowercase DishID, defaults to "ska000"
     :type dish_id: str
@@ -70,7 +71,6 @@ def set_cluster_domain(
         defaults to ""
     :type domain_prefix: str
     :return: A cluster domain.
-    :rtype: str
     """
     if domain_postfix == "miditf.internal.skao.int":
         return domain_postfix
@@ -85,7 +85,8 @@ def dish_fqdns(
     dish_ids: str = "SKA000",
     namespace_postfix: str = "",
 ) -> list:
-    """Create an array of Dish FQDNs for use by the TMC.
+    """
+    Create an array of Dish FQDNs for use by the TMC.
 
     See docstring for tmc_values() method.
 
@@ -99,8 +100,7 @@ def dish_fqdns(
     :type namespace_postfix: str
     :param dish_ids: Space separated DishIDS, defaults to "SKA000"
     :type dish_ids: str
-    :return: _description_
-    :rtype: _type_
+    :return: list of addresses
     """
     arr_dish_ids = dish_ids_array_from_str(dish_ids)
     logger.debug(f"dish_ids: {arr_dish_ids}")
@@ -136,7 +136,8 @@ def tmc_values(
     dish_ids: str = "SKA000",
     namespace_postfix: str = "",
 ) -> dict:
-    """Generate values for the TMC to connect to DishIDs as set in the environment.
+    """
+    Generate values for the TMC to connect to DishIDs as set in the environment.
 
     The environment variable DISH_IDS must be set in order for the TMC to connect to the
     correct Dishes.
@@ -164,8 +165,7 @@ def tmc_values(
     :type namespace_postfix: str
     :param dish_ids: _description_, defaults to "SKA000"
     :type dish_ids: str, optional
-    :return: _description_
-    :rtype: _type_
+    :return: dict with values
     """
     if "DISH_IDS" in os.environ:
         dish_ids = os.environ["DISH_IDS"]

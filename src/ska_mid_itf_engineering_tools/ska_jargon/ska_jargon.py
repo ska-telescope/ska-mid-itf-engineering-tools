@@ -31,16 +31,14 @@ GLOSSARY: dict = {
 
 
 def print_jargon() -> None:
-    """
-    Print known jargon
-    """
+    """Print known jargon."""
     for tla in GLOSSARY:
         print(f"{tla.upper():6} : {GLOSSARY[tla]}")
 
 
 def get_ska_jargon(abbrev: str) -> str:
     """
-    Look up acronym
+    Look up an acronym.
 
     :param abbrev: multi letter acronym
     :return: meaning of acronym
@@ -54,7 +52,8 @@ def get_ska_jargon(abbrev: str) -> str:
 
 def find_jargon(inp: str) -> str:
     """
-    Look for jargon inside
+    Look for jargon inside a string.
+
     :param input: string that potentially contains jargon
     :return: fully expanded acronyms
     """

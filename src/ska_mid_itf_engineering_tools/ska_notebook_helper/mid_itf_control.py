@@ -88,6 +88,7 @@ CONFIGUREDATA: Any = {
 def log_prog(log_str: str) -> None:
     """
     Display progess heading.
+
     :param log_str: message to display
     :return: None
     """
@@ -122,6 +123,7 @@ def read_config_file(json_name: str) -> Any:
 
 def show_observation_status(sub_dev_name: str) -> int:
     """
+    Read observation status.
 
     :param sub_dev_name: Tango device name
     :return: error condtion
@@ -222,7 +224,7 @@ def get_surrogate(ns_name: str, ns_sdp_name: str, databaseds_name: str) -> Tuple
     """
     Control the CSP subarray.
 
-    Set up a Tango DeviceProxy to the CSP Subarray device
+    Set up a Tango DeviceProxy to the CSP Subarray device.
 
     :param ns_name: Kubernetes namespace
     :param ns_sdp_name: Kubernetes namespace for SDP
@@ -262,7 +264,7 @@ def get_surrogate(ns_name: str, ns_sdp_name: str, databaseds_name: str) -> Tuple
 
 def init_subarray(sub_dev: tango.DeviceProxy, resources: Any) -> int:
     """
-    Initialize subarray
+    Initialize subarray.
 
     :param sub_dev: subarray Tango device
     :param resources: JSON data
@@ -283,7 +285,7 @@ def control_subarray(sub_dev: tango.DeviceProxy, sdp_host_ip_address: Any | None
     """
     Control the CSP subarray.
 
-    Set up a Tango DeviceProxy to the CSP Subarray device
+    Set up a Tango DeviceProxy to the CSP Subarray device.
 
     :param sub_dev: subarray Tango device handle
     :param sdp_host_ip_address: surrogate pod address
@@ -395,7 +397,7 @@ def scan_data(ns_name: str, pod_name: str) -> int:
 
 def csp_shutdown(subarray_dev: tango.DeviceProxy) -> int:
     """
-    End Scan (CSP Subarray).
+    End scan of CSP subarray.
 
     :param subarray_dev: subarray Tango device
     :return: error condition

@@ -19,7 +19,9 @@ class KubernetesControl:
 
     def __init__(self, logger: logging.Logger) -> None:
         """
-        Get Kubernetes client
+        Get Kubernetes client.
+        
+        :param logger: logging handle
         """
         self.logger = logger
         self.logger.info("Get Kubernetes client")
@@ -27,6 +29,7 @@ class KubernetesControl:
         self.v1 = client.CoreV1Api()
 
     def get_namespaces(self) -> list:
+        """Get a list of Kubernetes namespaces."""
         namespaces: list = self.v1.list_namespace()  # type: ignore[union-attr]
         ns_list = []
         for namespace in namespaces.items:  # type: ignore[attr-defined]
@@ -119,6 +122,7 @@ class KubernetesControl:
     ) -> Tuple[str | None, str | None, str | None]:
         """
         Read pod information.
+
         :param ipod: pod handle
         :param ns_name: namespace name
         :param pod_name: pod name
@@ -139,6 +143,13 @@ class KubernetesControl:
         return i_pod_name, i_pod_ip, i_ns_name
 
     def get_pods(self, ns_name: str | None, pod_name: str | None) -> dict:
+        """
+        Read pods information.
+
+        :param ns_name: namespace name
+        :param pod_name: pod name
+        :return: dict with pod name, IP address and namespace
+        """
         # Configs can be set in Configuration class directly or using helper utility
         # config.load_kube_config()
         #
@@ -161,6 +172,14 @@ class KubernetesControl:
     def get_service(
         self, isvc: Any, ns_name: str | None, svc_name: str | None
     ) -> Tuple[Any, Any, Any, str | None, Any]:
+        """
+        Read service information.
+
+        :param isvc: service handle
+        :param ns_name: namespace name
+        :param svc_name: service name
+        :return: tuple with pod name, IP address and namespace
+        """
         isvc_ns = isvc.metadata.namespace
         if ns_name is not None:
             if isvc_ns != ns_name:
@@ -184,10 +203,9 @@ class KubernetesControl:
         """
         Get information on kubernetes services.
 
-        :param v1: k8s handle
         :param ns_name: namespace
         :param svc_name: service name
-        :return:
+        :return: dict with pod name, IP address and namespace
         """
         svcs = {}
         if svc_name:
@@ -208,6 +226,7 @@ class KubernetesControl:
         self, isvc: Any, ns_name: str | None, svc_name: str | None
     ) -> Tuple[str | None, str | None, str | None, str | None, str | None]:
         """
+        Get IP address for K8S service.
 
         :param isvc: K8S service handle
         :param ns_name: namespace

@@ -44,7 +44,7 @@ def check_tango(tango_fqdn: str, tango_port: int = 10000) -> int:
 
 def connect_device(device: str) -> Tuple[Any, int]:
     """
-    Display Tango device in mark-down format
+    Display Tango device in mark-down format.
 
     :param device: device name
     """
@@ -59,6 +59,11 @@ def connect_device(device: str) -> Tuple[Any, int]:
 
 
 def check_device(dev: tango.DeviceProxy) -> bool:
+    """
+    Check if Tango device is online.
+    
+    :param dev: Tango device handle
+    """
     try:
         dev.ping()
         return True
@@ -157,7 +162,7 @@ def set_tango_admin(dev: Any, dev_adm: bool, sleeptime: int = 2) -> bool:
 
 def show_device_state(device: str) -> int:
     """
-    Display Tango device name only
+    Display Tango device name only.
 
     :param device: device name
     """
@@ -173,11 +178,11 @@ def show_device_state(device: str) -> int:
 def show_command_inputs(tango_host: str, tgo_in_type: str) -> None:
     """
     Display commands with given input type.
+
     :param tango_host: Tango database host address and port
     :param tgo_in_type: input type, e.g. Uninitialised
     :return:
     """
-
     # Connect to database
     try:
         database = tango.Database()
@@ -213,7 +218,8 @@ def show_command_inputs(tango_host: str, tgo_in_type: str) -> None:
 
 def show_device_commands(dev: tango.DeviceProxy, fforce: bool = False) -> None:  # noqa: C901
     """
-    Print commands
+    Print commands for a device.
+
     :param dev: Tango device
     :param fforce: run command where possible
     :return: None
@@ -258,7 +264,8 @@ def show_device_commands(dev: tango.DeviceProxy, fforce: bool = False) -> None: 
 
 def show_attribute_value_scalar(prefix: str, attrib_value: str) -> None:  # noqa: C901
     """
-    Print attribute value
+    Print attribute scalar value.
+
     :param prefix: data prefix string
     :param attrib_value: attribute value
     """
@@ -303,7 +310,8 @@ def show_attribute_value_scalar(prefix: str, attrib_value: str) -> None:  # noqa
 
 def show_attribute_value_spectrum(prefix: str, attrib_value: str) -> None:
     """
-    Print attribute value
+    Print attribute spectrum value.
+
     :param prefix: data prefix string
     :param attrib_value: attribute value
     """
@@ -329,7 +337,8 @@ def show_attribute_value_spectrum(prefix: str, attrib_value: str) -> None:
 
 def show_attribute_value(dev: tango.DeviceProxy, attrib: str, prefix: str) -> None:
     """
-    Print attribute value
+    Print attribute value.
+
     :param dev: Tango device handle
     :param attrib: attribute value
     :param prefix: data prefix string
@@ -362,8 +371,9 @@ def show_attribute_value(dev: tango.DeviceProxy, attrib: str, prefix: str) -> No
 
 def show_device_attributes(dev: tango.DeviceProxy) -> None:
     """
-    Print attributes
-    :param dev: Tango device
+    Print attributes of a Tango device.
+
+    :param dev: Tango device handle
     :return: None
     """
     try:
@@ -381,7 +391,7 @@ def show_device_attributes(dev: tango.DeviceProxy) -> None:
 
 def show_device_query(device: str, fforce: bool) -> int:  # noqa: C901
     """
-    Display Tango device in text format
+    Display Tango device in text format.
 
     :param device: device name
     :param fforce: get commands and attributes regadrless of state
@@ -478,7 +488,8 @@ def show_device_query(device: str, fforce: bool) -> int:  # noqa: C901
 
 def run_command(dev: Any, cmd: str) -> None:
     """
-    Run command and get output.
+    Run command and print output.
+
     :param dev: Tango device
     :param cmd: command name
     :return: None
@@ -496,7 +507,7 @@ def run_command(dev: Any, cmd: str) -> None:
 
 def show_device(device: str, fforce: bool) -> int:  # noqa: C901
     """
-    Display Tango device in text format
+    Display Tango device in text format.
 
     :param device: device name
     :param fforce: get commands and attributes regadrless of state
@@ -616,7 +627,7 @@ def show_device(device: str, fforce: bool) -> int:  # noqa: C901
 
 def show_device_markdown(device: str) -> int:  # noqa: C901
     """
-    Display Tango device in mark-down format
+    Display Tango device in mark-down format.
 
     :param device: device name
     """
@@ -697,7 +708,7 @@ def show_device_markdown(device: str) -> int:  # noqa: C901
 
 def show_devices(evrythng: int, fforce: bool, itype: str | None) -> None:  # noqa: C901
     """
-    Display information about Tango devices
+    Display information about Tango devices.
 
     :param evrythng: flag for markdown output
     :param fforce: get commands and attributes regadrless of state
@@ -758,6 +769,14 @@ def show_devices(evrythng: int, fforce: bool, itype: str | None) -> None:  # noq
 
 
 def check_command(dev: Any, c_name: str | None) -> bool:
+    """
+    Check a command for a Tango device.
+
+    :param dev: device handle
+    :param c_name: command name
+
+    :return: true when command is OK
+    """
     try:
         cmds = sorted(dev.get_command_list())
     except Exception:
@@ -769,7 +788,7 @@ def check_command(dev: Any, c_name: str | None) -> bool:
 
 def show_attributes(evrythng: int, fforce: bool, a_name: str | None) -> None:
     """
-    Display information about Tango devices
+    Display information about Tango devices.
 
     :param evrythng: flag for markdown output
     :param fforce: get commands and attributes regadrless of state
@@ -813,7 +832,7 @@ def show_attributes(evrythng: int, fforce: bool, a_name: str | None) -> None:
 
 def show_commands(evrythng: int, fforce: bool, c_name: str | None) -> None:
     """
-    Display information about Tango devices
+    Display information about Tango devices.
 
     :param evrythng: flag for markdown output
     :param fforce: get commands and attributes regadrless of state
