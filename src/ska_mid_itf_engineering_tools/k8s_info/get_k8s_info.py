@@ -20,7 +20,7 @@ class KubernetesControl:
     def __init__(self, logger: logging.Logger) -> None:
         """
         Get Kubernetes client.
-        
+
         :param logger: logging handle
         """
         self.logger = logger

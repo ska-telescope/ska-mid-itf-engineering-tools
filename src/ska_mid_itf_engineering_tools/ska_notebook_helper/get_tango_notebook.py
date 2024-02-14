@@ -61,7 +61,7 @@ def connect_device(device: str) -> Tuple[Any, int]:
 def check_device(dev: tango.DeviceProxy) -> bool:
     """
     Check if Tango device is online.
-    
+
     :param dev: Tango device handle
     """
     try:
