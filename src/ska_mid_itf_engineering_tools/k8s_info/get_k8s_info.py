@@ -29,7 +29,11 @@ class KubernetesControl:
         self.v1 = client.CoreV1Api()
 
     def get_namespaces(self) -> list:
-        """Get a list of Kubernetes namespaces."""
+        """
+        Get a list of Kubernetes namespaces.
+
+        :return: list of namespaces
+        """
         namespaces: list = self.v1.list_namespace()  # type: ignore[union-attr]
         ns_list = []
         for namespace in namespaces.items:  # type: ignore[attr-defined]

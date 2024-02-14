@@ -68,7 +68,6 @@ def show_obs_state(obs_stat: int) -> None:  # noqa: C901
 
     :param obs_stat: observing state numeric value
     """
-
     if obs_stat == 0:
         # EMPTY = 0
         print(
