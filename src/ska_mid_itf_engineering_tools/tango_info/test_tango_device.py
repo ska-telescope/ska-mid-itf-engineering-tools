@@ -9,7 +9,7 @@ import tango
 
 
 class TestTangoDevice:
-    """Test a Tango device"""
+    """Test a Tango device."""
 
     def __init__(self, logger: logging.Logger, device_name: str):
         """

@@ -1,6 +1,4 @@
-"""
-Start and check Tango device.
-"""
+"""Start and check Tango device."""
 import logging
 import socket
 import time
@@ -38,7 +36,6 @@ def device_state(dev: tango.DeviceProxy) -> None:
     Display status information for Tango device.
 
     :param dev: Tango device handle
-    :return: None
     """
     dev_name = dev.name()
     print(f"Device {dev_name}")

@@ -96,7 +96,6 @@ class TangoDeviceInfo:
         """
         Check if device is online.
 
-        :param dev: device handle
         :return: true when device is OK
         """
         try:
@@ -106,11 +105,7 @@ class TangoDeviceInfo:
             return False
 
     def device_state(self) -> None:
-        """
-        Display status information for Tango device.
-
-        :param dev: Tango device handle
-        """
+        """Display status information for Tango device."""
         print(f"Device {self.dev_name}")
         if not self.online:
             return
@@ -325,6 +320,7 @@ class TangoDeviceInfo:
 
         :param attrib: attribute name
         :param prefix: data prefix string
+        :param dry_run: skip reading values
         """
         if not dry_run:
             try:
@@ -929,7 +925,7 @@ def show_devices(
     dry_run: bool,
 ) -> None:  # noqa: C901
     """
-    Display information about Tango devices
+    Display information about Tango devices.
 
     :param logger: logging handle
     :param cfg_data: configuration data in JSON format
@@ -1319,6 +1315,7 @@ def show_long_running_commands(dev_name: str) -> int:
 def show_command_inputs(logger: logging.Logger, tango_host: str, tgo_in_type: str) -> None:
     """
     Display commands with given input type.
+
     :param logger: logging handle
     :param tango_host: Tango database host address and port
     :param tgo_in_type: input type, e.g. Uninitialised

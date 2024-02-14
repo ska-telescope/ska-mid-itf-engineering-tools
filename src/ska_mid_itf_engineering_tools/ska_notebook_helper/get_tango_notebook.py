@@ -713,7 +713,6 @@ def show_devices(evrythng: int, fforce: bool, itype: str | None) -> None:  # noq
     :param fforce: get commands and attributes regadrless of state
     :param itype: filter device name
     """
-
     # Get Tango database hist
     tango_host = os.getenv("TANGO_HOST")
     _module_logger.info("Tango host %s" % tango_host)
@@ -895,7 +894,6 @@ def show_obs_state(obs_stat: int) -> None:  # noqa: C901
 
     :param obs_stat: observing state numeric value
     """
-
     if obs_stat == 0:
         # EMPTY = 0
         print(
