@@ -97,11 +97,12 @@ def test_instances(tmc_dishes: dict, tmc_dishes_1: dict) -> None:
 
 def test_dish_fqnds() -> None:
     """Ensure that FQDNs are correctly generated for TMC."""
+    the_domain = "svc.miditf.internal.skao.int"
     the_dish_ids = [
-        "tango://tango-databaseds.dish-lmc-ska001.svc.miditf.internal.skao.int:10000/ska001/elt/master",  # noqa E501
-        "tango://tango-databaseds.dish-lmc-ska036.svc.miditf.internal.skao.int:10000/ska036/elt/master",  # noqa E501
-        "tango://tango-databaseds.dish-lmc-ska063.svc.miditf.internal.skao.int:10000/ska063/elt/master",  # noqa E501
-        "tango://tango-databaseds.dish-lmc-ska100.svc.miditf.internal.skao.int:10000/ska100/elt/master",  # noqa E501
+        f"tango://tango-databaseds.dish-lmc-ska001.{the_domain}:10000/ska001/elt/master",
+        f"tango://tango-databaseds.dish-lmc-ska036.{the_domain}:10000/ska036/elt/master",
+        f"tango://tango-databaseds.dish-lmc-ska063.{the_domain}:10000/ska063/elt/master",
+        f"tango://tango-databaseds.dish-lmc-ska100.{the_domain}:10000/ska100/elt/master",
     ]
     assert (
         dish_fqdns(dish_ids=DISH_IDS) == the_dish_ids
