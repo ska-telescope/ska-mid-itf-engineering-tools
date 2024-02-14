@@ -1,7 +1,5 @@
 #!/usr/bin/python
-"""
-Test devices from Tango database.
-"""
+"""Test devices from Tango database."""
 import logging
 import os
 import time
@@ -11,9 +9,7 @@ import tango
 
 
 class TestTangoDevice:
-    """
-    Test a Tango device
-    """
+    """Test a Tango device"""
 
     def __init__(self, logger: logging.Logger, device_name: str):
         """
@@ -21,7 +17,6 @@ class TestTangoDevice:
 
         :param logger: logging handle
         :param device_name: Tango device name
-        :param dev_nodb: flag for no-db mode
         """
         self.logger = logger
         self.adminMode: int | None = None
@@ -93,6 +88,7 @@ class TestTangoDevice:
     def set_simulation_mode(self, dev_sim: int | None) -> int | None:
         """
         Set attribute for simulation mode.
+
         :param dev_sim: attribute value
         :return: error condition
         """
@@ -339,7 +335,7 @@ class TestTangoDevice:
         """
         Test admin mode.
 
-        :param admin_mode: new value
+        :param dev_admin: new value
         :return: error condition
         """
         self.check_device()
@@ -421,7 +417,6 @@ class TestTangoDevice:
         """
         Test that device status can be read.
 
-        :param dev_sim: flag for hardware simulation.
         :return: error condition
         """
         self.check_device()

@@ -76,7 +76,6 @@ def device_state(dev: tango.DeviceProxy) -> None:
     Display status information for Tango device.
 
     :param dev: Tango device handle
-    :return: None
     """
     dev_name = dev.name()
     print(f"Device {dev_name}")
@@ -165,6 +164,7 @@ def show_device_state(device: str) -> int:
     Display Tango device name only.
 
     :param device: device name
+    :return: error condition
     """
     _dev, dev_state = connect_device(device)
     # pylint: disable-next=c-extension-no-member
@@ -181,7 +181,7 @@ def show_command_inputs(tango_host: str, tgo_in_type: str) -> None:
 
     :param tango_host: Tango database host address and port
     :param tgo_in_type: input type, e.g. Uninitialised
-    :return:
+    :return: error condition
     """
     # Connect to database
     try:
@@ -222,7 +222,6 @@ def show_device_commands(dev: tango.DeviceProxy, fforce: bool = False) -> None: 
 
     :param dev: Tango device
     :param fforce: run command where possible
-    :return: None
     """
     try:
         cmds = dev.get_command_config()
@@ -1039,7 +1038,6 @@ def show_long_running_commands(dev_name: str) -> int:
     Display long-running commands.
 
     :param dev_name: Tango device name
-    :return: None
     """
     dev = tango.DeviceProxy(dev_name)
     show_long_running_command(dev)
