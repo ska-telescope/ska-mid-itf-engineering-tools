@@ -18,6 +18,7 @@ class TestTangoDevice:
     def __init__(self, logger: logging.Logger, device_name: str):
         """
         Get going.
+
         :param logger: logging handle
         :param device_name: Tango device name
         :param dev_nodb: flag for no-db mode
@@ -56,6 +57,7 @@ class TestTangoDevice:
     def get_admin_mode(self) -> int | None:
         """
         Read attribute for admin mode.
+
         :return: attribute value
         """
         if "adminMode" not in self.attribs:
@@ -74,6 +76,7 @@ class TestTangoDevice:
     def get_simulation_mode(self) -> int | None:
         """
         Read attribute for simulation mode.
+
         :return: attribute value
         """
         if "simulationMode" not in self.attribs:
@@ -111,6 +114,7 @@ class TestTangoDevice:
     def check_device(self) -> bool:
         """
         Check that device is online.
+
         :return: online condition
         """
         try:
@@ -125,8 +129,8 @@ class TestTangoDevice:
     def show_device_attributes(self, show: bool = False) -> None:
         """
         Display number and names of attributes.
+
         :param show: flag to print names
-        :return: None
         """
         print(f"[  OK  ] {self.dev_name} has {len(self.attribs)} attributes")
         if show:
@@ -134,10 +138,7 @@ class TestTangoDevice:
                 print(f"\t{attrib}")
 
     def read_device_attributes(self) -> None:
-        """
-        Read all attributes of this device
-        :return: None
-        """
+        """Read all attributes of this device."""
         self.logger.debug("Read attribute %s values", self.dev_name)
         print(f"[  OK  ] {self.dev_name} read {len(self.attribs)} attributes")
         for attrib in sorted(self.attribs):
@@ -153,8 +154,8 @@ class TestTangoDevice:
     def show_device_commands(self, show: bool = False) -> None:
         """
         Display number and names of commands.
+
         :param show: flag to print names
-        :return: None
         """
         print(f"[  OK  ] {self.dev_name} has {len(self.cmds)} commands")
         if show:
@@ -162,10 +163,7 @@ class TestTangoDevice:
                 print(f"\t{cmd}")
 
     def admin_mode_off(self) -> None:
-        """
-        Turn admin mode off.
-        :return: None
-        """
+        """Turn admin mode off."""
         if self.adminMode is None:
             return
         if self.adminMode == 1:
@@ -184,7 +182,8 @@ class TestTangoDevice:
     def device_status(self) -> int | None:
         """
         Print device status.
-        :return: None
+
+        :return: device state
         """
         if "Status" not in self.cmds:
             print(f"[FAILED] {self.dev.dev_name} does not have Status command")
@@ -200,6 +199,7 @@ class TestTangoDevice:
     def device_on(self) -> int:
         """
         Turn this device on.
+
         :return: error condition
         """
         self.logger.debug("Turn device %s on", self.dev_name)
@@ -238,6 +238,7 @@ class TestTangoDevice:
     def device_off(self) -> int:
         """
         Turn this device off.
+
         :return: error condition
         """
         self.logger.debug("Turn device %s off", self.dev_name)
@@ -268,6 +269,7 @@ class TestTangoDevice:
     def device_standby(self) -> int:
         """
         Set this device to standby mode.
+
         :return: error condition
         """
         self.logger.debug("Set device %s on standby", self.dev_name)
@@ -296,10 +298,7 @@ class TestTangoDevice:
         return 1
 
     def admin_mode_on(self) -> None:
-        """
-        Turn admin mode on.
-        :return: None
-        """
+        """Turn admin mode on."""
         self.logger.info("Turn device admin mode on")
         try:
             self.dev.adminMode = 1
@@ -314,6 +313,7 @@ class TestTangoDevice:
     def set_admin_mode(self, admin_mode: int) -> int:
         """
         Change admin mode.
+
         :param admin_mode: new value
         :return: error condition
         """
@@ -338,6 +338,7 @@ class TestTangoDevice:
     def test_admin_mode(self, dev_admin: int) -> int:
         """
         Test admin mode.
+
         :param admin_mode: new value
         :return: error condition
         """
@@ -352,6 +353,7 @@ class TestTangoDevice:
     def test_off(self, dev_sim: int | None) -> int:
         """
         Test that device can be turned off.
+
         :param dev_sim: flag for hardware simulation.
         :return: error condition
         """
@@ -376,6 +378,7 @@ class TestTangoDevice:
     def test_on(self, dev_sim: int | None) -> int:
         """
         Test that device can be turned on.
+
         :param dev_sim: flag for hardware simulation.
         :return: error condition
         """
@@ -401,6 +404,7 @@ class TestTangoDevice:
     def test_standby(self, dev_sim: int | None) -> int:
         """
         Test that device can be placed into standby mode.
+
         :param dev_sim: flag for hardware simulation.
         :return: error condition
         """
@@ -416,6 +420,7 @@ class TestTangoDevice:
     def test_status(self) -> int:
         """
         Test that device status can be read.
+
         :param dev_sim: flag for hardware simulation.
         :return: error condition
         """
@@ -428,8 +433,9 @@ class TestTangoDevice:
     def test_simulation_mode(self, dev_sim: int | None) -> int:
         """
         Test that device hardware simulation can be set.
+
         :param dev_sim: flag for hardware simulation.
-        :return:
+        :return: error condition
         """
         self.check_device()
         self.get_simulation_mode()
@@ -440,8 +446,9 @@ class TestTangoDevice:
     def test_all(self, show_attrib: bool) -> int:
         """
         Test everything that device can do.
+
         :param show_attrib: flag for attributes display.
-        :return:
+        :return: error condition
         """
         self.check_device()
         self.get_simulation_mode()
@@ -485,6 +492,12 @@ class TestTangoDevice:
         return 0
 
     def test_subscribe(self, attrib: str) -> int:
+        """
+        Test subscribed to event.
+
+        :param attrib: attribute name
+        :return: error condition
+        """
         print(f"[  OK  ] subscribe to events for {self.dev_name} {attrib}")
         evnt_id: Any = self.dev.subscribe_event(
             attrib, tango.EventType.CHANGE_EVENT, tango.utils.EventCallback()
@@ -510,6 +523,7 @@ class TestTangoDevice:
 def get_devices() -> list:
     """
     Read Tango device names.
+
     :return: list of devices
     """
     tango_devices: list = []

@@ -1,6 +1,4 @@
-"""
-Read information from Tango database.
-"""
+"""Read information from Tango database."""
 import json
 import logging
 import os
@@ -47,6 +45,7 @@ def connect_device(device: str) -> Tuple[Any, int]:
     Display Tango device in mark-down format.
 
     :param device: device name
+    :return: device handle and state
     """
     # Connect to device proxy
     dev = tango.DeviceProxy(device)
@@ -63,6 +62,7 @@ def check_device(dev: tango.DeviceProxy) -> bool:
     Check if Tango device is online.
 
     :param dev: Tango device handle
+    :return: true when online else false
     """
     try:
         dev.ping()

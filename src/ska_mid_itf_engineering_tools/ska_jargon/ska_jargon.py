@@ -1,6 +1,4 @@
-"""
-Short list of jargon encountered.
-"""
+"""Short list of jargon encountered."""
 
 GLOSSARY: dict = {
     "cbf": "Correlator Beam Former",
@@ -54,7 +52,7 @@ def find_jargon(inp: str) -> str:
     """
     Look for jargon inside a string.
 
-    :param input: string that potentially contains jargon
+    :param inp: string that potentially contains jargon
     :return: fully expanded acronyms
     """
     rv = ""
