@@ -373,7 +373,6 @@ def show_device_attributes(dev: tango.DeviceProxy) -> None:
     Print attributes of a Tango device.
 
     :param dev: Tango device handle
-    :return: None
     """
     try:
         attribs = sorted(dev.get_attribute_list())
@@ -629,6 +628,7 @@ def show_device_markdown(device: str) -> int:  # noqa: C901
     Display Tango device in mark-down format.
 
     :param device: device name
+    :return: one if device is on, otherwise zero
     """
     rval = 0
     print(f"## Device *{device}*")
@@ -793,7 +793,6 @@ def show_attributes(evrythng: int, fforce: bool, a_name: str | None) -> None:
     :param fforce: get commands and attributes regadrless of state
     :param a_name: filter attribute name
     """
-
     # Get Tango database hist
     tango_host = os.getenv("TANGO_HOST")
     _module_logger.info("Tango host %s" % tango_host)
@@ -837,7 +836,6 @@ def show_commands(evrythng: int, fforce: bool, c_name: str | None) -> None:
     :param fforce: get commands and attributes regadrless of state
     :param c_name: filter command name
     """
-
     # Get Tango database hist
     tango_host = os.getenv("TANGO_HOST")
     _module_logger.info("Tango host %s" % tango_host)
@@ -1038,6 +1036,7 @@ def show_long_running_commands(dev_name: str) -> int:
     Display long-running commands.
 
     :param dev_name: Tango device name
+    :return: error condition
     """
     dev = tango.DeviceProxy(dev_name)
     show_long_running_command(dev)

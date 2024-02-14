@@ -1,6 +1,4 @@
-"""
-Helper stuff for Jupyter NNoteboks.
-"""
+"""Helper stuff for Jupyter NNoteboks."""
 import datetime
 import json
 import logging
@@ -90,7 +88,6 @@ def log_prog(log_str: str) -> None:
     Display progess heading.
 
     :param log_str: message to display
-    :return: None
     """
     print("_" * len(log_str))
     print(log_str)
@@ -100,7 +97,7 @@ def read_config_data(json_data: str) -> Any:
     """
     Read configuration from JSON file.
 
-    :param json_name: configuration file name
+    :param json_data: configuration file name
     :return: configuration data
     """
     # print(f"Read configuration file {json_name}")
@@ -438,6 +435,7 @@ def do_startup(
 
     :param ctl_dev_name: control Tango device name
     :param timeout: in seconds
+    :param dev_sim: simulation device
     :param show_status: flag to show status and return
     :param sub_dev_name: subarray Tango device name
     :param resource_data: resource data used to initialize device
@@ -494,9 +492,8 @@ def show_config_json(sub_sys: str, json_cfg: Any) -> None:
     """
     Display configuration from JSON file.
 
-    :param mid_sys: subsystem name,e.g. CSP
+    :param sub_sys: subsystem name,e.g. CSP
     :param json_cfg: configuration data
-    :return: None
     """
     log_prog("Configuration")
     print(f"\tkube namespace  : {json_cfg['kube_namespace']}")

@@ -1,6 +1,4 @@
-"""
-Read information from Tango database.
-"""
+"""Read information from Tango database."""
 import json
 import logging
 import os
@@ -34,6 +32,12 @@ def check_tango(tango_fqdn: str, tango_port: int = 10000) -> int:
 
 
 def check_device(dev: tango.DeviceProxy) -> bool:
+    """
+    Check if device is online.
+
+    :param dev: device handle
+    :return: true when device is OK
+    """
     try:
         dev.ping()
         return True
@@ -42,9 +46,7 @@ def check_device(dev: tango.DeviceProxy) -> bool:
 
 
 class TangoDeviceInfo:
-    """
-    Read and display information about Tango device.
-    """
+    """Read and display information about Tango device."""
 
     def __init__(
         self,
@@ -55,7 +57,7 @@ class TangoDeviceInfo:
         evrythng: bool,
     ):
         """
-        Display Tango device in mark-down format
+        Display Tango device.
 
         :param logger: logging handle
         :param cfg_data: configuration
@@ -91,6 +93,12 @@ class TangoDeviceInfo:
             self.adminMode = None
 
     def check_device(self) -> bool:
+        """
+        Check if device is online.
+
+        :param dev: device handle
+        :return: true when device is OK
+        """
         try:
             self.dev.ping()
             return True
@@ -102,7 +110,6 @@ class TangoDeviceInfo:
         Display status information for Tango device.
 
         :param dev: Tango device handle
-        :return: None
         """
         print(f"Device {self.dev_name}")
         if not self.online:
@@ -164,9 +171,9 @@ class TangoDeviceInfo:
     def run_command(self, cmd: str, args: Any = None) -> None:
         """
         Run command and get output.
+
         :param cmd: command name
         :param args: arguments for command
-        :return: None
         """
         try:
             if args:
@@ -179,6 +186,12 @@ class TangoDeviceInfo:
         print(f"{cmd:17} : {inout}")
 
     def show_device_command(self, prefix: str, cmd: Any) -> None:
+        """
+        Print info on device command.
+
+        :param prefix: print at front of line
+        :param cmd: command name
+        """
         lpre = "\n" + f"{' ':67}"
         print(f"{prefix:17}   \033[1m{cmd.cmd_name:30}\033[0m", end="")
         if self.dev.is_command_polled(cmd.cmd_name):
@@ -209,10 +222,7 @@ class TangoDeviceInfo:
         #     run_cmd = self.dev.command_inout(cmd)
 
     def show_device_commands(self) -> None:
-        """
-        Print commands.
-        :return: None
-        """
+        """Print commands."""
         try:
             cmds = self.dev.get_command_config()
         except Exception:
@@ -226,8 +236,8 @@ class TangoDeviceInfo:
     def run_device_commands(self, cmds: tuple) -> None:
         """
         Run applicable commands and print result.
-        :param cmds:
-        :return:
+
+        :param cmds: command thing
         """
         # print(f"{'Run commands':17} : {len(cmds)}")
         for cmd in cmds:
@@ -240,7 +250,8 @@ class TangoDeviceInfo:
 
     def show_attribute_value_scalar(self, prefix: str, attrib_value: str) -> None:  # noqa: C901
         """
-        Print attribute value.
+        Print attribute scalar value.
+
         :param prefix: data prefix string
         :param attrib_value: attribute value
         """
@@ -284,7 +295,8 @@ class TangoDeviceInfo:
 
     def show_attribute_value_spectrum(self, prefix: str, attrib_value: str) -> None:
         """
-        Print attribute value
+        Print attribute spectrum value.
+
         :param prefix: data prefix string
         :param attrib_value: attribute value
         """
@@ -309,7 +321,8 @@ class TangoDeviceInfo:
 
     def show_attribute_value(self, attrib: str, prefix: str, dry_run: bool) -> None:  # noqa: C901
         """
-        Print attribute value
+        Print attribute value.
+
         :param attrib: attribute name
         :param prefix: data prefix string
         """
@@ -360,8 +373,9 @@ class TangoDeviceInfo:
 
     def show_device_attributes(self, dry_run: bool) -> None:
         """
-        Print attributes
-        :return: None
+        Print attributes.
+
+        :param dry_run: flag to skip reading of values
         """
         try:
             attribs = sorted(self.dev.get_attribute_list())
@@ -377,8 +391,9 @@ class TangoDeviceInfo:
 
     def show_device_properties(self, dry_run: bool) -> None:  # noqa: C901
         """
-        Print attributes
-        :return: None
+        Print properties.
+
+        :param dry_run: flag to skip reading of values
         """
         try:
             props = sorted(self.dev.get_property_list("*"))
@@ -429,7 +444,7 @@ class TangoDeviceInfo:
 
     def show_device_query(self) -> int:  # noqa: C901
         """
-        Display Tango device in text format
+        Display Tango device in text format.
 
         :return: one if device is on, otherwise zero
         """
@@ -527,7 +542,8 @@ class TangoDeviceInfo:
 
     def show_device_list(self) -> int:  # noqa: C901
         """
-        Display Tango device in text format
+        Display Tango device in text format.
+
         :return: one if device is on, otherwise zero
         """
         # pylint: disable-next=c-extension-no-member
@@ -566,7 +582,8 @@ class TangoDeviceInfo:
 
     def show_device_short(self) -> int:  # noqa: C901
         """
-        Display Tango device in text format
+        Display Tango device in text format.
+
         :return: one if device is on, otherwise zero
         """
         # pylint: disable-next=c-extension-no-member
@@ -636,7 +653,9 @@ class TangoDeviceInfo:
 
     def show_device_all(self, dry_run: bool) -> int:  # noqa: C901
         """
-        Display Tango device in text format
+        Display Tango device in text format.
+
+        :param dry_run: flag to skip reading of values
         :return: one if device is on, otherwise zero
         """
         # pylint: disable-next=c-extension-no-member
@@ -709,6 +728,8 @@ class TangoDeviceInfo:
     def show_device_markdown(self) -> int:  # noqa: C901
         """
         Display Tango device in mark-down format.
+
+        :return: one if device is on, otherwise zero
         """
         rval = 0
         print(f"## Device *{self.dev_name}*")
@@ -787,6 +808,8 @@ class TangoDeviceInfo:
     def show_device_state(self) -> int:
         """
         Display Tango device name only.
+
+        :return: one if device is on, otherwise zero
         """
         # pylint: disable-next=c-extension-no-member
         # if self.dev_state != tango._tango.DevState.ON:
@@ -797,7 +820,11 @@ class TangoDeviceInfo:
         return 1
 
     def show_device(self, dry_run: bool) -> None:
-        """Print device information."""
+        """
+        Print device information.
+
+        :param dry_run: skip reading of attributes
+        """
         if self.disp_action == 6:
             self.on_dev_count += self.show_device_list()
         elif self.disp_action == 5:
@@ -847,12 +874,13 @@ def list_devices(
     itype: str | None,
 ) -> list:
     """
-    Get a list of devices
+    Get a list of devices.
+
     :param logger: logging handle
     :param cfg_data: configuration data in JSON format
     :param evrythng: get commands and attributes regadrless of state
     :param itype: filter device name
-    :return:
+    :return: list of devices
     """
     devices: list = []
 
@@ -951,6 +979,7 @@ def show_devices(
 def check_command(logger: logging.Logger, dev: Any, c_name: str | None) -> list:
     """
     Read commands from database.
+
     :param logger: logging handle
     :param dev: device handle
     :param c_name: command name
@@ -975,7 +1004,7 @@ def show_attributes(  # noqa: C901
     logger: logging.Logger, disp_action: int, evrythng: bool, a_name: str | None
 ) -> None:
     """
-    Display information about Tango devices
+    Display information about Tango devices.
 
     :param logger: logging handle
     :param disp_action: flag for markdown output
@@ -1028,7 +1057,7 @@ def show_commands(
     logger: logging.Logger, disp_action: int, evrythng: bool, c_name: str | None
 ) -> None:
     """
-    Display information about Tango devices
+    Display information about Tango devices.
 
     :param logger: logging handle
     :param disp_action: flag for markdown output
@@ -1068,7 +1097,7 @@ def show_properties(
     logger: logging.Logger, disp_action: int, evrythng: bool, p_name: str | None
 ) -> None:
     """
-    Display information about Tango devices
+    Display information about Tango devices.
 
     :param logger: logging handle
     :param disp_action: flag for markdown output
@@ -1140,7 +1169,6 @@ def show_obs_state(obs_stat: int) -> None:  # noqa: C901
 
     :param obs_stat: observing state numeric value
     """
-
     if obs_stat == 0:
         # EMPTY = 0
         print(
@@ -1281,7 +1309,7 @@ def show_long_running_commands(dev_name: str) -> int:
     Display long-running commands.
 
     :param dev_name: Tango device name
-    :return: None
+    :return: error condition
     """
     dev = tango.DeviceProxy(dev_name)
     show_long_running_command(dev)
@@ -1294,9 +1322,7 @@ def show_command_inputs(logger: logging.Logger, tango_host: str, tgo_in_type: st
     :param logger: logging handle
     :param tango_host: Tango database host address and port
     :param tgo_in_type: input type, e.g. Uninitialised
-    :return:
     """
-
     # Connect to database
     try:
         database = tango.Database()
