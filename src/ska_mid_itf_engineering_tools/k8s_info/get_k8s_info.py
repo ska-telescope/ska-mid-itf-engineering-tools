@@ -255,4 +255,3 @@ class KubernetesControl:
             svc_port = ""
             svc_prot = ""
         return isvc_name, isvc_ns, svc_ip, svc_port, svc_prot
-
