@@ -3,10 +3,10 @@
 # import os
 import json
 import logging
-import sys
-import time
 import os
 import subprocess
+import sys
+import time
 
 from ska_ser_logging import configure_logging
 from tango import DeviceProxy, DevState
@@ -125,7 +125,8 @@ def main():  # noqa C901
     ns = os.environ["KUBE_NAMESPACE"]
     pth = os.environ["MCS_CONFIG_FILE_PATH"]
     subprocess.run(
-        f"kubectl cp {pth}/hw_config.yaml {ns}/ds-cbfcontroller-controller-0:/app/mnt/hw_config/hw_config.yaml"
+        f"kubectl cp {pth}/hw_config.yaml \
+            {ns}/ds-cbfcontroller-controller-0:/app/mnt/hw_config/hw_config.yaml"
     )
 
     CBF.Init()
