@@ -6,13 +6,13 @@ import logging
 import sys
 import time
 
-from ska_ser_logging import configure_logging
+from ska_ser_logging import configure_logging  # type: ignore
 from tango import DeviceProxy, DevState
 
 TIMEOUT = 60
 
 
-def main():  # noqa C901
+def main() -> None:  # noqa C901
     """Call the CBF On command."""
     configure_logging(logging.DEBUG)
     logger = logging.getLogger(__name__)
@@ -43,7 +43,8 @@ def main():  # noqa C901
                 break
             if CSPSubarray1.State() != DevState.OFF:
                 logger.info(
-                    f"Waiting for CSP Subarray1 to change state from {CSPSubarray1.State()} to OFF"
+                    "Waiting for CSP Subarray1 to change state from "
+                    f"{CSPSubarray1.State()} to OFF"
                 )
                 READY = False
                 logger.debug("Exiting loop - device not ready")
@@ -52,7 +53,8 @@ def main():  # noqa C901
                 READY = True
             if CSPSubarray2.State() != DevState.OFF:
                 logger.info(
-                    f"Waiting for CSP Subarray2 to change state from {CSPSubarray2.State()} to OFF"
+                    "Waiting for CSP Subarray2 to change state from "
+                    f"{CSPSubarray2.State()} to OFF"
                 )
                 READY = False
                 logger.debug("Exiting loop - device not ready")
@@ -61,7 +63,8 @@ def main():  # noqa C901
                 READY = True
             if CSPSubarray3.State() != DevState.OFF:
                 logger.info(
-                    f"Waiting for CSP Subarray3 to change state from {CSPSubarray3.State()} to OFF"
+                    "Waiting for CSP Subarray3 to change state from "
+                    f"{CSPSubarray3.State()} to OFF"
                 )
                 READY = False
                 logger.debug("Exiting loop - device not ready")
@@ -70,7 +73,8 @@ def main():  # noqa C901
                 READY = True
             if CBFSubarray1.State() != DevState.OFF:
                 logger.info(
-                    f"Waiting for CBF Subarray1 to change state from {CBFSubarray1.State()} to OFF"
+                    "Waiting for CBF Subarray1 to change state from "
+                    f"{CBFSubarray1.State()} to OFF"
                 )
                 READY = False
                 logger.debug("Exiting loop - device not ready")
@@ -79,7 +83,8 @@ def main():  # noqa C901
                 READY = True
             if CBFSubarray2.State() != DevState.OFF:
                 logger.info(
-                    f"Waiting for CBF Subarray2 to change state from {CBFSubarray2.State()} to OFF"
+                    "Waiting for CBF Subarray2 to change state from "
+                    f"{CBFSubarray2.State()} to OFF"
                 )
                 READY = False
                 logger.debug("Exiting loop - device not ready")
@@ -88,7 +93,8 @@ def main():  # noqa C901
                 READY = True
             if CBFSubarray3.State() != DevState.OFF:
                 logger.info(
-                    f"Waiting for CBF Subarray3 to change state from {CBFSubarray3.State()} to OFF"
+                    "Waiting for CBF Subarray3 to change state from "
+                    f"{CBFSubarray3.State()} to OFF"
                 )
                 READY = False
                 logger.debug("Exiting loop - device not ready")
@@ -128,13 +134,7 @@ def main():  # noqa C901
             "SKA063": {"vcc": 3, "k": 1127},
             "SKA100": {"vcc": 4, "k": 620},
         },
-    }  # with open(
-    #     os.path.join(
-    #         os.path.dirname(__file__), "..", "..", "resources", "data", "init_sys_param.json"
-    #     ),
-    #     "r",
-    # ) as f:
-    #     dish_config = json.load(f)
+    }
     CSP.loaddishcfg(json.dumps(dish_config))
 
     if CSP.State() == DevState.FAULT:
@@ -159,7 +159,7 @@ def main():  # noqa C901
         if k == 10:
             sys.exit(1)
 
-        def fib(n):
+        def fib(n: int) -> int:
             return n if n <= 1 else fib(n - 1) + fib(n - 2)
 
         logger.info(
