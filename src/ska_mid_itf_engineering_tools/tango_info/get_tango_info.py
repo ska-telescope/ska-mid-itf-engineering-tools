@@ -1047,6 +1047,7 @@ def show_attributes(  # noqa: C901
         a_name = a_name.lower()
         attribs_found = []
         for attrib in sorted(attribs):
+            # TODO implement minimum string length
             if a_name in attrib.lower():
                 attribs_found.append(attrib)
         if attribs_found:
@@ -1134,6 +1135,7 @@ def show_properties(
         prop_list = dev.get_property_list("*")
         props_found = []
         for prop in prop_list:
+            # TODO implement minimum string length
             if p_name in prop.lower():
                 props_found.append(prop)
         if props_found:
@@ -1321,13 +1323,16 @@ def show_long_running_commands(dev_name: str) -> int:
     return 0
 
 
-def show_command_inputs(logger: logging.Logger, tango_host: str, tgo_in_type: str) -> None:
+def show_command_inputs(
+    logger: logging.Logger, tango_host: str, tgo_in_type: str, min_str_len: int
+) -> None:
     """
     Display commands with given input type.
 
     :param logger: logging handle
     :param tango_host: Tango database host address and port
     :param tgo_in_type: input type, e.g. Uninitialised
+    :param min_str_len: mininum string length below which only exact matches are allowed
     """
     # Connect to database
     try:
@@ -1351,6 +1356,7 @@ def show_command_inputs(logger: logging.Logger, tango_host: str, tgo_in_type: st
             for cmd in cmds:
                 in_type_desc = cmd.in_type_desc.lower()
                 logger.info("Command %s type %s", cmd, in_type_desc)
+                # TODO implement partial matches
                 if in_type_desc == tgo_in_type:
                     print(f"{'Commands':17} : \033[3m{cmd.cmd_name}\033[0m ({in_type_desc})")
                 else:

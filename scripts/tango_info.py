@@ -65,14 +65,8 @@ def usage(p_name: str, cfg_data: Any) -> None:
     )
     print(f"\t{p_name} -f|-l|-q|-s [-N <NAMESPACE>|-H <HOST>]")
     print("Filter on device name")
-    print(
-        f"\t{p_name} --full|--long|--quick|--short -D <DEVICE>"
-        " [-N <NAMESPACE>|-H <HOST>]"
-    )
-    print(
-        f"\t{p_name} -f|-l|-q|-s --device=<DEVICE>"
-        " [--namespace=<NAMESPACE>|--host=<HOST>]"
-    )
+    print(f"\t{p_name} --full|--long|--quick|--short -D <DEVICE> [-N <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} -f|-l|-q|-s --device=<DEVICE> [--namespace=<NAMESPACE>|--host=<HOST>]")
     print("Filter on attribute name")
     print(
         f"\t{p_name} --full|--long|--quick|--short --attribute=<ATTRIBUTE>"
@@ -109,14 +103,9 @@ def usage(p_name: str, cfg_data: Any) -> None:
         " e.g. 'integration'"
     )
     print("\t--host=<HOST>\t\t\tTango database host and port, e.g. 10.8.13.15:10000")
-    print(
-        "\t--attribute=<ATTRIBUTE>\t\tattribute name, e.g. 'obsState' (not case sensitive)"
-    )
+    print("\t--attribute=<ATTRIBUTE>\t\tattribute name, e.g. 'obsState' (not case sensitive)")
     print("\t--command=<COMMAND>\t\tcommand name, e.g. 'Status' (not case sensitive)")
-    print(
-        "\t-D <DEVICE>\t\t\tdevice name, e.g. 'csp'"
-        " (not case sensitive, only a part is needed)"
-    )
+    print("\t-D <DEVICE>\t\t\tdevice name, e.g. 'csp' (not case sensitive, only a part is needed)")
     print("\t-N <NAMESPACE>\t\t\tKubernetes namespace for Tango database")
     print("\t-H <HOST>\t\t\tTango database host and port, e.g. 10.8.13.15:10000")
     print("\t-A <ATTRIBUTE>\t\t\tattribute name, e.g. 'obsState' (not case sensitive)")
@@ -190,7 +179,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     databaseds_name: str = cfg_data["databaseds_name"]
     cluster_domain: str = cfg_data["cluster_domain"]
     min_str_len: int = cfg_data["min_str_len"]
-    databaseds_port:int = cfg_data["databaseds_port"]
+    databaseds_port: int = cfg_data["databaseds_port"]
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
@@ -274,7 +263,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     _module_logger.info("Set TANGO_HOST to %s", tango_host)
 
     if tgo_attrib is not None:
-        show_attributes(_module_logger, disp_action, evrythng, tgo_attrib)
+        show_attributes(_module_logger, disp_action, evrythng, tgo_attrib, min_str_len)
         return 0
 
     if tgo_cmd is not None:
