@@ -25,10 +25,6 @@ logging.basicConfig(level=logging.WARNING)
 _module_logger = logging.getLogger(__name__)
 _module_logger.setLevel(logging.WARNING)
 
-KUBE_NAMESPACE = "ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
-CLUSTER_DOMAIN = "miditf.internal.skao.int"
-DATABASEDS_NAME = "tango-databaseds"
-
 
 def show_namespaces() -> None:
     """
@@ -114,21 +110,24 @@ def usage(p_name: str, cfg_data: Any) -> None:
     )
     print("\t--host=<HOST>\t\t\tTango database host and port, e.g. 10.8.13.15:10000")
     print(
-        "\t--attribute=<ATTRIBUTE>\t\tattribute name, e.g. 'obsState' (case sensitive)"
+        "\t--attribute=<ATTRIBUTE>\t\tattribute name, e.g. 'obsState' (not case sensitive)"
     )
-    print("\t--command=<COMMAND>\t\tcommand name, e.g. 'Status' (case sensitive)")
-
+    print("\t--command=<COMMAND>\t\tcommand name, e.g. 'Status' (not case sensitive)")
     print(
         "\t-D <DEVICE>\t\t\tdevice name, e.g. 'csp'"
         " (not case sensitive, only a part is needed)"
     )
-    print(
-        "\t-N <NAMESPACE>\t\t\tKubernetes namespace for Tango database,"
-        f" default is {KUBE_NAMESPACE}"
-    )
+    print("\t-N <NAMESPACE>\t\t\tKubernetes namespace for Tango database")
     print("\t-H <HOST>\t\t\tTango database host and port, e.g. 10.8.13.15:10000")
-    print("\t-A <ATTRIBUTE>\t\t\tattribute name, e.g. 'obsState' (case sensitive)")
-    print("\t-C <COMMAND>\t\t\tcommand name, e.g. 'Status' (case sensitive)")
+    print("\t-A <ATTRIBUTE>\t\t\tattribute name, e.g. 'obsState' (not case sensitive)")
+    print("\t-C <COMMAND>\t\t\tcommand name, e.g. 'Status' (not case sensitive)")
+    print("Note that values for device, attribute, command or property are not case sensitive.")
+    print(f"Partial matches for strings longer than {cfg_data['min_str_len']} charaters are OK.")
+    print("When a namespace is specified, the Tango database host will be made up as follows:")
+    print(
+        f"\t{cfg_data['databaseds_name']}.<NAMESPACE>.{cfg_data['cluster_domain']}"
+        f":{cfg_data['databaseds_port']}"
+    )
     # print(f"Run commands : {','.join(cfg_data['run_commands'])}")
     # print(f"Run commands with name : {','.join(cfg_data['run_commands_name'])}")
 
@@ -140,8 +139,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     :param y_arg: input arguments
     :return: error condition
     """
-    global KUBE_NAMESPACE
-
+    kube_namespace: str | None = None
     dry_run: bool = False
     itype: str | None = None
     disp_action: int = 0
@@ -189,6 +187,10 @@ def main(y_arg: list) -> int:  # noqa: C901
     cfg_file: TextIO = open(cfg_read)
     cfg_data: Any = json.load(cfg_file)
     cfg_file.close()
+    databaseds_name: str = cfg_data["databaseds_name"]
+    cluster_domain: str = cfg_data["cluster_domain"]
+    min_str_len: int = cfg_data["min_str_len"]
+    databaseds_port:int = cfg_data["databaseds_port"]
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
@@ -209,7 +211,7 @@ def main(y_arg: list) -> int:  # noqa: C901
             # Undocumented feature to search by input type
             tgo_in_type = arg.lower()
         elif opt in ("-N", "--namespace"):
-            KUBE_NAMESPACE = arg
+            kube_namespace = arg
         elif opt in ("-P", "--property"):
             tgo_prop = arg
         elif opt == "--dry-run":
@@ -217,7 +219,7 @@ def main(y_arg: list) -> int:  # noqa: C901
             dry_run = True
         elif opt in ("-j", "--show-acronym"):
             show_jargon = True
-        elif opt in ("-t", "show-db"):
+        elif opt in ("-t", "--show-db"):
             show_tango = True
         elif opt == "-m":
             # Undocumented feature to display in mark-down format
@@ -251,11 +253,18 @@ def main(y_arg: list) -> int:  # noqa: C901
         show_namespaces()
         return 0
 
+    if kube_namespace is None and tango_host is None:
+        print("Kubernetes namespace or Tango database server must be specified")
+        return 1
+
     if tango_host is None:
-        tango_fqdn = f"{DATABASEDS_NAME}.{KUBE_NAMESPACE}.svc.{CLUSTER_DOMAIN}"
-        tango_host = f"{tango_fqdn}:10000"
-    else:
+        tango_fqdn = f"{databaseds_name}.{kube_namespace}.svc.{cluster_domain}"
+        tango_host = f"{tango_fqdn}:{databaseds_port}"
+    elif ":" in tango_host:
         tango_fqdn = tango_host.split(":")[0]
+    else:
+        tango_fqdn = tango_host
+        tango_host = f"{tango_fqdn}:{databaseds_port}"
 
     if show_tango:
         check_tango(tango_fqdn)
@@ -269,15 +278,15 @@ def main(y_arg: list) -> int:  # noqa: C901
         return 0
 
     if tgo_cmd is not None:
-        show_commands(_module_logger, disp_action, evrythng, tgo_cmd)
+        show_commands(_module_logger, disp_action, evrythng, tgo_cmd, min_str_len)
         return 0
 
     if tgo_in_type is not None:
-        show_command_inputs(_module_logger, tango_host, tgo_in_type)
+        show_command_inputs(_module_logger, tango_host, tgo_in_type, min_str_len)
         return 0
 
     if tgo_prop is not None:
-        show_properties(_module_logger, disp_action, evrythng, tgo_prop)
+        show_properties(_module_logger, disp_action, evrythng, tgo_prop, min_str_len)
         return 0
 
     if not disp_action:
