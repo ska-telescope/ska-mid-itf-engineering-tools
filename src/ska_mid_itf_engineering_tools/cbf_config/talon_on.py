@@ -5,6 +5,8 @@ import json
 import logging
 import sys
 import time
+import os
+import subprocess
 
 from ska_ser_logging import configure_logging
 from tango import DeviceProxy, DevState
@@ -119,6 +121,14 @@ def main():  # noqa C901
         logger.info(f"CBF Subarray1 State is now {CBFSubarray1.State()}")
         logger.info(f"CBF Subarray2 State is now {CBFSubarray2.State()}")
         logger.info(f"CBF Subarray3 State is now {CBFSubarray3.State()}")
+
+    ns = os.environ["KUBE_NAMESPACE"]
+    pth = os.environ["MCS_CONFIG_FILE_PATH"]
+    subprocess.run(
+        f"kubectl cp {pth}/hw_config.yaml {ns}/ds-cbfcontroller-controller-0:/app/mnt/hw_config/hw_config.yaml"
+    )
+
+    CBF.Init()
 
     dish_config = {
         "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
