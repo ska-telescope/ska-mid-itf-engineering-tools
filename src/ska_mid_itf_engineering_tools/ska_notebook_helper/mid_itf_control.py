@@ -115,6 +115,7 @@ def read_config_file(json_name: str) -> Any:
     # print(f"Read configuration file {json_name}")
     cfg_file = open(json_name)
     cfg_data = json.load(cfg_file)
+    cfg_file.close()
     return cfg_data
 
 
