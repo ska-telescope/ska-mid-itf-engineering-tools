@@ -256,32 +256,3 @@ class KubernetesControl:
             svc_prot = ""
         return isvc_name, isvc_ns, svc_ip, svc_port, svc_prot
 
-    # def get_tangodb(self, ns_name: str, svc_name: str):
-    #     """
-    #     Read IP address and port for a service from Kubernetes cluster
-    #     (e.g. Tango database)
-    #
-    #     :param ns_name: namespace name
-    #     :param svc_name: service name
-    #     :return: none
-    #     """
-    #     if svc_name:
-    #         print(f"Service {svc_name}", end="")
-    #     else:
-    #         print("Services", end="")
-    #     if ns_name:
-    #         print(f" in namespace {ns_name}", end="")
-    #     print()
-    #     services = self.v1.list_service_for_all_namespaces(watch=False)
-    #     self.logger.info("Read %d services", len(services.items))
-    #     svcs = []
-    #     for isvc in services.items:
-    #         try:
-    #             svc_nm, svc_ns, svc_ip, svc_port, svc_prot = self.get_service_addr(
-    #                 isvc, ns_name, svc_name
-    #             )
-    #             print(
-    #                 f"{svc_ip:<15}  {svc_port:<5}  {svc_prot:<8} {svc_ns:<64}"
-    #                 f"  {svc_nm}")
-    #         except TypeError:
-    #             pass
