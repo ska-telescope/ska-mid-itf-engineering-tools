@@ -1,0 +1,50 @@
+{
+    "kube_namespace": "ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2",
+    "cluster_domain": "miditf.internal.skao.int",
+    "databaseds_name": "tango-databaseds",
+    "timeout": 60,
+    "csp": {
+        "control_device": "mid-csp/control/0",
+        "subarray_device": "mid-csp/subarray/01",
+        "subarray_resources": {
+            "subarray_id": 1,
+            "dish": {
+                "receptor_ids": [
+                    "SKA001",
+                    "SKA036"
+                ]
+            }
+        },
+        "long_run_cmds": 4,
+        "leafnode_device": "ska_mid/tm_leaf_node/csp_subarray_01",
+        "bite_pod": "ec-bite",
+        "bite_cmd": [
+            "python3",
+            "midcbf_bite.py",
+            "--talon-bite-lstv-replay",
+            "--boards=1"
+        ]
+    },
+    "tmc": {
+        "control_device": "dserver/central_node_mid/01",
+        "subarray_device": "ska_mid/tm_leaf_node/csp_subarray01",
+        "subarray_resources": {
+            "subarray_id": 1,
+            "dish": {
+                "receptor_ids": [
+                    "SKA001",
+                    "SKA036"
+                ]
+            }
+        },
+        "long_run_cmds": 4,
+        "leafnode_device": "ska_mid/tm_leaf_node/csp_subarray_01",
+        "bite_pod": "ec-bite",
+        "bite_cmd": [
+            "python3",
+            "midcbf_bite.py",
+            "--talon-bite-lstv-replay",
+            "--boards=1"
+        ]
+    }
+}
