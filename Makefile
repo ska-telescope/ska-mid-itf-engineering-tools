@@ -1,5 +1,5 @@
 # supporting scripts for changelog generation using git-chglog and GitLab release pages
-include .make/release.mk
+#include .make/release.mk
 
 PYTHON_LINE_LENGTH = 99
 OCI_BUILD_ADDITIONAL_ARGS=--build-arg OCI_IMAGE_VERSION=$(SKA_K8S_TOOLS_BUILD_DEPLOY)
