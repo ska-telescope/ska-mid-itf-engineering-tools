@@ -2,30 +2,28 @@
 import logging
 import os
 
-from ska_ser_logging import configure_logging
+from ska_ser_logging import configure_logging  # type: ignore
 from yaml import safe_dump
 
 logger = logging.getLogger(__name__)
 
 
 def instance(x: str) -> str:
-    """Create two- or three-character zero-padded integer string for DishID instance name.
+    """
+    Create 2- or 3-character zero-padded integer string for DishID instance name.
 
     :param x: SKA DishID string
-    :type x: str
     :return: DishID for deviceserver instance name
-    :rtype: str
     """
     return x[-3:]
 
 
 def instances(ids: str = "SKA000") -> list[str]:
-    """Create array of instances for deviceserver names.
+    """
+    Create array of instances for deviceserver names.
 
     :param ids: space-separated string containing DishIDs, defaults to "SKA000"
-    :type ids: str
     :return: Array of instances
-    :rtype: list[str]
     """
     ds_ids = list(ids.split(" "))
     instances = [instance(x) for x in ds_ids]
@@ -33,23 +31,21 @@ def instances(ids: str = "SKA000") -> list[str]:
 
 
 def single_dish_id_lowercase(id: str = "SKA000") -> str:
-    """Set DishID to lowercase for Tango device name.
+    """
+    Set DishID to lowercase for Tango device name.
 
     :param id: string representing DishID, defaults to "SKA000"
-    :type id: str
     :return: lowercase dishID
-    :rtype: str
     """
     return id.lower()
 
 
 def dish_ids_array_from_str(ids: str = "SKA000") -> list[str]:
-    """Get Dish IDs in array form.
+    """
+    Get Dish IDs in array form.
 
     :param ids: Space separated Dish IDs, defaults to "SKA000"
-    :type ids: str
     :return: List of DishIDs
-    :rtype: list[str]
     """
     return list(ids.split(" "))
 
@@ -58,19 +54,16 @@ def set_cluster_domain(
     dish_id: str = "ska000",
     domain_postfix: str = "miditf.internal.skao.int",
     domain_prefix: str = "",
-):
-    """Make wild assumptions about the future of Kubernetes clusters in SKAO.
+) -> str:
+    """
+    Make wild assumptions about the future of Kubernetes clusters in SKAO.
 
     :param dish_id: Lowercase DishID, defaults to "ska000"
-    :type dish_id: str
     :param domain_postfix: Cluster Domain where this dish is deployed, defaults to
         "miditf.internal.skao.int"
-    :type domain_postfix: str
-    :param domain_prefix: Prefix of Cluster Domain where this dish is deployed, defaults to
-        ""
-    :type domain_prefix: str
+    :param domain_prefix: Prefix of Cluster Domain where this dish is deployed,
+        defaults to ""
     :return: A cluster domain.
-    :rtype: str
     """
     if domain_postfix == "miditf.internal.skao.int":
         return domain_postfix
@@ -84,23 +77,18 @@ def dish_fqdns(
     namespace_prefix: str = "dish-lmc-",
     dish_ids: str = "SKA000",
     namespace_postfix: str = "",
-):
-    """Create an array of Dish FQDNs for use by the TMC.
+) -> list:
+    """
+    Create an array of Dish FQDNs for use by the TMC.
 
     See docstring for tmc_values() method.
 
     :param hostname: _description_, defaults to "tango-databaseds"
-    :type hostname: str
     :param cluster_domain_postfix: _description_, defaults to "miditf.internal.skao.int"
-    :type cluster_domain_postfix: str
     :param namespace_prefix: _description_, defaults to "dish-lmc-"
-    :type namespace_prefix: str
     :param namespace_postfix: _description_, defaults to ""
-    :type namespace_postfix: str
     :param dish_ids: Space separated DishIDS, defaults to "SKA000"
-    :type dish_ids: str
-    :return: _description_
-    :rtype: _type_
+    :return: list of addresses
     """
     arr_dish_ids = dish_ids_array_from_str(dish_ids)
     logger.debug(f"dish_ids: {arr_dish_ids}")
@@ -111,7 +99,7 @@ def dish_fqdns(
         namespace_prefix: str = "dish-lmc-",
         dish_id: str = "SKA000",
         namespace_postfix: str = "",
-    ):
+    ) -> str:
         id = single_dish_id_lowercase(id=dish_id)
         cluster_domain = set_cluster_domain(dish_id=id, domain_postfix=cluster_domain_postfix)
         return f"tango://{hostname}.{namespace_prefix}{id}{namespace_postfix}.svc.{cluster_domain}:10000/{id}/elt/master"  # noqa E501
@@ -130,40 +118,37 @@ def dish_fqdns(
 
 
 def tmc_values(
-    hostname="tango-databaseds",
-    cluster_domain_postfix="miditf.internal.skao.int",
-    namespace_prefix="dish-lmc-",
-    dish_ids="SKA000",
+    hostname: str = "tango-databaseds",
+    cluster_domain_postfix: str = "miditf.internal.skao.int",
+    namespace_prefix: str = "dish-lmc-",
+    dish_ids: str = "SKA000",
     namespace_postfix: str = "",
-):
-    """Generate values for the TMC to connect to DishIDs as set in the environment.
+) -> dict:
+    """
+    Generate values for the TMC to connect to DishIDs as set in the environment.
 
     The environment variable DISH_IDS must be set in order for the TMC to connect to the
     correct Dishes.
 
     The namespace prefix for the DishLMC deployments will likely not differ between
-    Dishes, but is useful for distinguishing between dev, testing and production namespaces.
-    May be discarded at a later stage, but the default can be used as is in Production.
+    Dishes, but is useful for distinguishing between dev, testing and production
+    namespaces. May be discarded at a later stage, but the default can be used as is in
+    Production.
 
-    The Cluster Domain will differ between dishes, as each Dish contains a Kubernetes cluster.
-    For dishLMC deployments in the Mid ITF cluster the cluster domain remains the same.
+    The Cluster Domain will differ between dishes, as each Dish contains a Kubernetes
+    cluster. For dishLMC deployments in the Mid ITF cluster the cluster domain remains
+    the same.
 
-    Hostname is being standardised on and may not be a parameter later on. Default should be used
-    in Production.
+    Hostname is being standardised on and may not be a parameter later on. Default
+    should be used in production.
 
     :param hostname: TangoDB hostname, defaults to "tango-databaseds"
-    :type hostname: str, optional
     :param cluster_domain_postfix: Cluster Domain prefix for each dish, defaults to
         "miditf.internal.skao.int" for MidITF cluster
-    :type cluster_domain_postfix: str, optional
     :param namespace_prefix: _description_, defaults to "dish-lmc-"
-    :type namespace_prefix: str, optional
     :param namespace_postfix: _description_, defaults to ""
-    :type namespace_postfix: str
     :param dish_ids: _description_, defaults to "SKA000"
-    :type dish_ids: str, optional
-    :return: _description_
-    :rtype: _type_
+    :return: dict with values
     """
     if "DISH_IDS" in os.environ:
         dish_ids = os.environ["DISH_IDS"]
@@ -198,7 +183,7 @@ def tmc_values(
     return values
 
 
-def main():
+def main() -> None:
     """Create tmc-values.yaml file in $SUT_CHART_DIR folder for TMC to use."""
     assert "SUT_CHART_DIR" in os.environ, "SUT_CHART_DIR environment variable not set"
 

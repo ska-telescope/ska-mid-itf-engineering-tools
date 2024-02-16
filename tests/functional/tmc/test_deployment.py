@@ -16,7 +16,7 @@ os.environ["DISH_IDS"] = DISH_IDS
 
 
 @pytest.fixture
-def tmc_dishes_1():
+def tmc_dishes_1() -> dict:
     """Fixture for testing.
 
     :return: Data ready to dump in TMC values.yaml
@@ -26,7 +26,7 @@ def tmc_dishes_1():
 
 
 @pytest.fixture
-def tmc_dishes():
+def tmc_dishes() -> dict:
     """Load Yaml file with DishIDs for AA0.5.
 
     :return: tmc_dishes: a dict with all the DishID info
@@ -41,29 +41,25 @@ def tmc_dishes():
     return dishes
 
 
-def test_dish_ids_array_from_str():
+def test_dish_ids_array_from_str() -> None:
     """Test correct Dish Array is generated from space separated string."""
-    assert dish_ids_array_from_str(DISH_IDS) == [
-        "SKA001",
-        "SKA036",
-        "SKA063",
-        "SKA100",
-    ], f"Expected array of str:\n{['SKA001', 'SKA036', 'SKA063', 'SKA100']}\nInstead received:\n \
-    {dish_ids_array_from_str(DISH_IDS)}"
+    assert dish_ids_array_from_str(DISH_IDS) == ["SKA001", "SKA036", "SKA063", "SKA100"], (
+        f"Expected array of str:\n{['SKA001', 'SKA036', 'SKA063', 'SKA100']}\n"
+        f"Instead received:\n {dish_ids_array_from_str(DISH_IDS)}"
+    )
 
-    assert dish_ids_array_from_str(ids="SKA000 SKA001") == [
-        "SKA000",
-        "SKA001",
-    ], f"Expected array of str:\n{['SKA000', 'SKA001']}\nInstead received:\n \
-        {dish_ids_array_from_str(ids='SKA000 SKA001')}"
+    assert dish_ids_array_from_str(ids="SKA000 SKA001") == ["SKA000", "SKA001"], (
+        f"Expected array of str:\n{['SKA000', 'SKA001']}\nInstead received:\n"
+        "{dish_ids_array_from_str(ids='SKA000 SKA001')}"
+    )
 
-    assert dish_ids_array_from_str(ids="SKA000") == [
-        "SKA000",
-    ], f"Expected array of str:\n{['SKA000']}\nInstead received:\n \
-        {dish_ids_array_from_str(ids='SKA000')}"
+    assert dish_ids_array_from_str(ids="SKA000") == ["SKA000"], (
+        f"Expected array of str:\n{['SKA000']}\nInstead received:\n"
+        "{dish_ids_array_from_str(ids='SKA000')}"
+    )
 
 
-def test_instances(tmc_dishes, tmc_dishes_1):
+def test_instances(tmc_dishes: dict, tmc_dishes_1: dict) -> None:
     """Ensure that the instances are correctly set for DishLeafnode.
 
     :param tmc_dishes: Pytest Fixture
@@ -74,26 +70,36 @@ def test_instances(tmc_dishes, tmc_dishes_1):
     assert (
         tmc_dishes["tmc"]["deviceServers"]["dishleafnode"]["instances"]
         == tmc_dishes_1["tmc"]["deviceServers"]["dishleafnode"]["instances"]
-    ), f"ERROR:\nExpected:{tmc_dishes['tmc']['deviceServers']['dishleafnode']['instances']}\n \
-        Actual:\n{tmc_dishes_1['tmc']['deviceServers']['dishleafnode']['instances']}"
+    ), (
+        f"ERROR:\nExpected: "
+        f"{tmc_dishes['tmc']['deviceServers']['dishleafnode']['instances']}\n "
+        f"Actual:\n{tmc_dishes_1['tmc']['deviceServers']['dishleafnode']['instances']}"
+    )
     assert (
         tmc_dishes["tmc"]["deviceServers"]["dishleafnode"]["instances"]
         == tmc_dishes_1["tmc"]["deviceServers"]["dishleafnode"]["instances"]
-    ), f"ERROR:\nExpected:{tmc_dishes['tmc']['deviceServers']['dishleafnode']['instances']}\n \
-        Actual:\n{tmc_dishes_1['tmc']['deviceServers']['dishleafnode']['instances']}"
+    ), (
+        f"ERROR:\nExpected: "
+        f"{tmc_dishes['tmc']['deviceServers']['dishleafnode']['instances']}\n"
+        f"Actual:\n{tmc_dishes_1['tmc']['deviceServers']['dishleafnode']['instances']}"
+    )
 
 
-def test_dish_fqnds():
+def test_dish_fqnds() -> None:
     """Ensure that FQDNs are correctly generated for TMC."""
-    assert dish_fqdns(dish_ids=DISH_IDS) == [
-        "tango://tango-databaseds.dish-lmc-ska001.svc.miditf.internal.skao.int:10000/ska001/elt/master",  # noqa E501
-        "tango://tango-databaseds.dish-lmc-ska036.svc.miditf.internal.skao.int:10000/ska036/elt/master",  # noqa E501
-        "tango://tango-databaseds.dish-lmc-ska063.svc.miditf.internal.skao.int:10000/ska063/elt/master",  # noqa E501
-        "tango://tango-databaseds.dish-lmc-ska100.svc.miditf.internal.skao.int:10000/ska100/elt/master",  # noqa E501
-    ], f"Expected array of strings {['tango://tango-databaseds.dish-lmc-ska001.svc.miditf.internal.skao.int:10000/ska001/elt/master', 'tango://tango-databaseds.dish-lmc-ska036.svc.miditf.internal.skao.int:10000/ska036/elt/master', 'tango://tango-databaseds.dish-lmc-ska063.svc.miditf.internal.skao.int:10000/ska063/elt/master', 'tango://tango-databaseds.dish-lmc-ska100.svc.miditf.internal.skao.int:10000/ska100/elt/master', ]},\nInstead got {dish_fqdns(DISH_IDS)}"  # noqa E501
+    the_domain = "svc.miditf.internal.skao.int"
+    the_dish_ids = [
+        f"tango://tango-databaseds.dish-lmc-ska001.{the_domain}:10000/ska001/elt/master",
+        f"tango://tango-databaseds.dish-lmc-ska036.{the_domain}:10000/ska036/elt/master",
+        f"tango://tango-databaseds.dish-lmc-ska063.{the_domain}:10000/ska063/elt/master",
+        f"tango://tango-databaseds.dish-lmc-ska100.{the_domain}:10000/ska100/elt/master",
+    ]
+    assert (
+        dish_fqdns(dish_ids=DISH_IDS) == the_dish_ids
+    ), f"Expected array of strings {the_dish_ids}"
 
 
-def test_values_dict(tmc_dishes, tmc_dishes_1):
+def test_values_dict(tmc_dishes: dict, tmc_dishes_1: dict) -> None:
     """Ensure correct data is generated for storage in tmc-values.yaml file.
 
     :param tmc_dishes: Pytest Fixture

@@ -8,7 +8,7 @@ import subprocess
 import sys
 import time
 
-from ska_ser_logging import configure_logging
+from ska_ser_logging import configure_logging  # type: ignore
 from tango import DeviceProxy, DevState
 
 TIMEOUT = 100
@@ -74,7 +74,7 @@ def wait_for_devices(
     return
 
 
-def main():  # noqa C901
+def main() -> None:  # noqa C901
     """Call the CBF On command."""
     logger.debug(f"Path of hw_config.yaml is {src_pth}")
     logger.debug(f"Destination Path of hw_config.yaml is {dest_pth}")
@@ -107,30 +107,30 @@ def main():  # noqa C901
             CBFSubarray3,
         )
 
-    if CSP.State() == DevState.FAULT:
-        logger.error("CSP is in FAULT state. Exiting.")
-        sys.exit(1)
+    # if CSP.State() == DevState.FAULT:
+    #     logger.error("CSP is in FAULT state. Exiting.")
+    #     sys.exit(1)
 
-    logging.debug("Attempting to copy hw_config.yaml into CBF Controller pod")
-    subprocess.run(["kubectl", "cp", src_pth, dest_pth])
-    logger.info("Copied HW Config Yaml file into Controller pod")
+    # logging.debug("Attempting to copy hw_config.yaml into CBF Controller pod")
+    # subprocess.run(["kubectl", "cp", src_pth, dest_pth])
+    # logger.info("Copied HW Config Yaml file into Controller pod")
 
-    CBF.Init()
-    logger.warning(
-        "TEMPORARY WORKAROUND: CBF reinitialised with incomplete hardware setup configuration."
-    )
+    # CBF.Init()
+    # logger.warning(
+    #     "TEMPORARY WORKAROUND: CBF reinitialised with incomplete hardware setup configuration."
+    # )
 
-    # Yet another wait thanks to the state machine doing a dance very unlike the Tango
-    wait_for_devices(
-        CBF,
-        CSP,
-        CSPSubarray1,
-        CSPSubarray2,
-        CSPSubarray3,
-        CBFSubarray1,
-        CBFSubarray2,
-        CBFSubarray3,
-    )
+    # # Yet another wait thanks to the state machine doing a dance very unlike the Tango
+    # wait_for_devices(
+    #     CBF,
+    #     CSP,
+    #     CSPSubarray1,
+    #     CSPSubarray2,
+    #     CSPSubarray3,
+    #     CBFSubarray1,
+    #     CBFSubarray2,
+    #     CBFSubarray3,
+    # )
 
     dish_config = {
         "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
@@ -166,7 +166,7 @@ def main():  # noqa C901
             logger.error("Could not turn the CBF Controller on. Exiting.")
             sys.exit(1)
 
-        def fib(n):
+        def fib(n: int) -> int:
             return n if n <= 1 else fib(n - 1) + fib(n - 2)
 
         logger.info(
