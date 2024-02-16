@@ -1,10 +1,8 @@
 """This script turns on the TalonDx using CSP On command."""
 
-# import os
 import json
 import logging
 import os
-import subprocess
 import sys
 import time
 
@@ -106,31 +104,6 @@ def main() -> None:  # noqa C901
             CBFSubarray2,
             CBFSubarray3,
         )
-
-    # if CSP.State() == DevState.FAULT:
-    #     logger.error("CSP is in FAULT state. Exiting.")
-    #     sys.exit(1)
-
-    # logging.debug("Attempting to copy hw_config.yaml into CBF Controller pod")
-    # subprocess.run(["kubectl", "cp", src_pth, dest_pth])
-    # logger.info("Copied HW Config Yaml file into Controller pod")
-
-    # CBF.Init()
-    # logger.warning(
-    #     "TEMPORARY WORKAROUND: CBF reinitialised with incomplete hardware setup configuration."
-    # )
-
-    # # Yet another wait thanks to the state machine doing a dance very unlike the Tango
-    # wait_for_devices(
-    #     CBF,
-    #     CSP,
-    #     CSPSubarray1,
-    #     CSPSubarray2,
-    #     CSPSubarray3,
-    #     CBFSubarray1,
-    #     CBFSubarray2,
-    #     CBFSubarray3,
-    # )
 
     dish_config = {
         "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
