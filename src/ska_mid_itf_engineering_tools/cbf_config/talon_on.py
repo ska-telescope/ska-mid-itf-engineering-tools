@@ -1,21 +1,81 @@
 """This script turns on the TalonDx using CSP On command."""
 
-# import os
 import json
 import logging
+import os
 import sys
 import time
 
 from ska_ser_logging import configure_logging  # type: ignore
 from tango import DeviceProxy, DevState
 
-TIMEOUT = 60
+TIMEOUT = 100
+ns = os.environ["KUBE_NAMESPACE"]
+src_pth = os.path.join(os.getcwd(), os.environ["MCS_CONFIG_FILE_PATH"], "hw_config.yaml")
+dest_pth = ns + "/ds-cbfcontroller-controller-0:/app/mnt/hw_config/hw_config.yaml"
+configure_logging(logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+
+def wait_for_devices(
+    CBF, CSP, CSPSubarray1, CSPSubarray2, CSPSubarray3, CBFSubarray1, CBFSubarray2, CBFSubarray3
+):
+    """Wait for Tango Deviceproxies to change states.
+
+    :param CBF : tango.DeviceProxy CBF Controller DeviceProxy
+    :param CSP : tango.DeviceProxy CSP Controller DeviceProxy
+    :param CSPSubarray1 : tango.DeviceProxy Subarray DeviceProxy
+    :param CSPSubarray2 : tango.DeviceProxy Subarray DeviceProxy
+    :param CSPSubarray3 : tango.DeviceProxy Subarray DeviceProxy
+    :param CBFSubarray1 : tango.DeviceProxy Subarray DeviceProxy
+    :param CBFSubarray2 : tango.DeviceProxy Subarray DeviceProxy
+    :param CBFSubarray3 : tango.DeviceProxy Subarray DeviceProxy
+    """
+    READY = False
+    timer = 0
+    while not READY:
+        time.sleep(1)
+        timer += 1
+        if timer == 30:
+            break
+        device_proxies = [
+            CSP,
+            CBF,
+            CBFSubarray1,
+            CBFSubarray2,
+            CBFSubarray3,
+            CSPSubarray1,
+            CSPSubarray2,
+            CSPSubarray3,
+        ]
+
+        for dp in device_proxies:
+            state = dp.State()
+            server = dp.name()
+            if state != DevState.OFF:
+                logger.info(f"Waiting for {server} to change state from {state} to OFF")
+                READY = False
+                logger.debug("Exiting loop - device not ready")
+                continue
+            else:
+                READY = True
+    logger.info(f"CSP adminmode is now {CSP.adminmode}")
+    logger.info(f"CBF adminmode is now {CBF.adminmode}")
+    logger.info(f"CSP State is now {CSP.State()}")
+    logger.info(f"CBF State is now {CBF.State()}")
+    logger.info(f"CSP Subarray1 State is now {CSPSubarray1.State()}")
+    logger.info(f"CSP Subarray2 State is now {CSPSubarray2.State()}")
+    logger.info(f"CSP Subarray3 State is now {CSPSubarray3.State()}")
+    logger.info(f"CBF Subarray1 State is now {CBFSubarray1.State()}")
+    logger.info(f"CBF Subarray2 State is now {CBFSubarray2.State()}")
+    logger.info(f"CBF Subarray3 State is now {CBFSubarray3.State()}")
+    return
 
 
 def main() -> None:  # noqa C901
     """Call the CBF On command."""
-    configure_logging(logging.DEBUG)
-    logger = logging.getLogger(__name__)
+    logger.debug(f"Path of hw_config.yaml is {src_pth}")
+    logger.debug(f"Destination Path of hw_config.yaml is {dest_pth}")
 
     CBF = DeviceProxy("mid_csp_cbf/sub_elt/controller")
     CSP = DeviceProxy("mid-csp/control/0")
@@ -34,97 +94,16 @@ def main() -> None:  # noqa C901
     if CSP.adminmode != 0:
         logger.info("Setting CSP adminmode to ONLINE")
         CSP.adminmode = 0
-        READY = False
-        timer = 0
-        while not READY:
-            time.sleep(1)
-            timer += 1
-            if timer == 30:
-                break
-            if CSPSubarray1.State() != DevState.OFF:
-                logger.info(
-                    "Waiting for CSP Subarray1 to change state from "
-                    f"{CSPSubarray1.State()} to OFF"
-                )
-                READY = False
-                logger.debug("Exiting loop - device not ready")
-                continue
-            else:
-                READY = True
-            if CSPSubarray2.State() != DevState.OFF:
-                logger.info(
-                    "Waiting for CSP Subarray2 to change state from "
-                    f"{CSPSubarray2.State()} to OFF"
-                )
-                READY = False
-                logger.debug("Exiting loop - device not ready")
-                continue
-            else:
-                READY = True
-            if CSPSubarray3.State() != DevState.OFF:
-                logger.info(
-                    "Waiting for CSP Subarray3 to change state from "
-                    f"{CSPSubarray3.State()} to OFF"
-                )
-                READY = False
-                logger.debug("Exiting loop - device not ready")
-                continue
-            else:
-                READY = True
-            if CBFSubarray1.State() != DevState.OFF:
-                logger.info(
-                    "Waiting for CBF Subarray1 to change state from "
-                    f"{CBFSubarray1.State()} to OFF"
-                )
-                READY = False
-                logger.debug("Exiting loop - device not ready")
-                continue
-            else:
-                READY = True
-            if CBFSubarray2.State() != DevState.OFF:
-                logger.info(
-                    "Waiting for CBF Subarray2 to change state from "
-                    f"{CBFSubarray2.State()} to OFF"
-                )
-                READY = False
-                logger.debug("Exiting loop - device not ready")
-                continue
-            else:
-                READY = True
-            if CBFSubarray3.State() != DevState.OFF:
-                logger.info(
-                    "Waiting for CBF Subarray3 to change state from "
-                    f"{CBFSubarray3.State()} to OFF"
-                )
-                READY = False
-                logger.debug("Exiting loop - device not ready")
-                continue
-            else:
-                READY = True
-            if CBF.State() != DevState.OFF:
-                logger.info(f"Waiting for CBF to change state from {CBF.State()} to OFF")
-                READY = False
-                logger.debug("Exiting loop - device not ready")
-                continue
-            else:
-                READY = True
-            if CSP.State() != DevState.OFF:
-                logger.info(f"Waiting for CSP to change state from {CSP.State()} to OFF")
-                READY = False
-                logger.debug("Exiting loop - device not ready")
-                continue
-            else:
-                READY = True
-        logger.info(f"CSP adminmode is now {CSP.adminmode}")
-        logger.info(f"CSP State is now {CSP.State()}")
-        logger.info(f"CBF adminmode is now {CBF.adminmode}")
-        logger.info(f"CBF State is now {CBF.State()}")
-        logger.info(f"CSP Subarray1 State is now {CSPSubarray1.State()}")
-        logger.info(f"CSP Subarray2 State is now {CSPSubarray2.State()}")
-        logger.info(f"CSP Subarray3 State is now {CSPSubarray3.State()}")
-        logger.info(f"CBF Subarray1 State is now {CBFSubarray1.State()}")
-        logger.info(f"CBF Subarray2 State is now {CBFSubarray2.State()}")
-        logger.info(f"CBF Subarray3 State is now {CBFSubarray3.State()}")
+        wait_for_devices(
+            CBF,
+            CSP,
+            CSPSubarray1,
+            CSPSubarray2,
+            CSPSubarray3,
+            CBFSubarray1,
+            CBFSubarray2,
+            CBFSubarray3,
+        )
 
     dish_config = {
         "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
@@ -135,18 +114,17 @@ def main() -> None:  # noqa C901
             "SKA100": {"vcc": 4, "k": 620},
         },
     }
-    CSP.loaddishcfg(json.dumps(dish_config))
 
-    if CSP.State() == DevState.FAULT:
-        logger.info("CSP is in FAULT state. Exiting.")
-        sys.exit(1)
+    CSP.loaddishcfg(json.dumps(dish_config))
 
     # Next set simulation to false - hardware use!
     CBF.simulationMode = False
-    while CBF.simulationMode != 0:
-        logger.info(f"Waiting for CBF to change simulationMode from {CBF.simulationMode} to False")
+    cbf_sim_mode = CBF.simulationMode
+    while cbf_sim_mode != 0:
+        logger.info("Waiting for CBF to change simulationMode to False")
         time.sleep(1)
-    logger.info(f"CBF simulationMode is now {CBF.simulationMode}")
+        cbf_sim_mode = CBF.simulationMode
+    logger.info("CBF simulationMode is now False")
 
     # Timeout for long-running command
     CSP.commandTimeout = TIMEOUT
@@ -155,8 +133,10 @@ def main() -> None:  # noqa C901
     logger.info("Turning CSP ON - this may take a while...")
     CSP.on([])
     k = 1
+    # CBF.ping()
     while CBF.State() != DevState.ON:
-        if k == 10:
+        if k == 11:
+            logger.error("Could not turn the CBF Controller on. Exiting.")
             sys.exit(1)
 
         def fib(n: int) -> int:
