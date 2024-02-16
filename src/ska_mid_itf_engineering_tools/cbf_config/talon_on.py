@@ -56,7 +56,7 @@ def wait_for_devices(
                 logger.info(f"Waiting for {server} to change state from {state} to OFF")
                 READY = False
                 logger.debug("Exiting loop - device not ready")
-                continue
+                break
             else:
                 READY = True
     logger.info(f"CSP adminmode is now {CSP.adminmode}")
@@ -129,6 +129,9 @@ def main() -> None:  # noqa C901
     # Timeout for long-running command
     CSP.commandTimeout = TIMEOUT
     logger.debug(f"commandTimeout simply set to {TIMEOUT}")
+
+    CSP.set_timeout_millis(TIMEOUT * 1000)
+    logger.debug(f"Sent set_timeout_millis({TIMEOUT}) command")
 
     logger.info("Turning CSP ON - this may take a while...")
     CSP.on([])
