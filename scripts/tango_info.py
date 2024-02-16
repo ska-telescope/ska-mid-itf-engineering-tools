@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """
-Read information about Tango devices.
+Read all information about Tango devices.
 """
 import getopt
 import json
