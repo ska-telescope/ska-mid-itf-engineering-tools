@@ -972,13 +972,14 @@ def show_devices(
         print("# Kubernetes pod\n>", end="")
 
 
-def check_command(logger: logging.Logger, dev: Any, c_name: str | None) -> list:
+def check_command(logger: logging.Logger, dev: Any, c_name: str | None, min_str_len: int) -> list:
     """
     Read commands from database.
 
     :param logger: logging handle
     :param dev: device handle
     :param c_name: command name
+    :param min_str_len: mininum string length below which only exact matches are allowed
     :return: list of commands
     """
     cmds_found: list = []
@@ -990,14 +991,19 @@ def check_command(logger: logging.Logger, dev: Any, c_name: str | None) -> list:
         cmds = []
     logger.info("Check commands %s", cmds)
     c_name = c_name.lower()
-    for cmd in sorted(cmds):
-        if c_name in cmd.lower():
-            cmds_found.append(cmd)
+    if len(c_name) <= min_str_len:
+        for cmd in sorted(cmds):
+            if c_name == cmd.lower():
+                cmds_found.append(cmd)
+    else:
+        for cmd in sorted(cmds):
+            if c_name in cmd.lower():
+                cmds_found.append(cmd)
     return cmds_found
 
 
 def show_attributes(  # noqa: C901
-    logger: logging.Logger, disp_action: int, evrythng: bool, a_name: str | None
+    logger: logging.Logger, disp_action: int, evrythng: bool, a_name: str | None, min_str_len: int
 ) -> None:
     """
     Display information about Tango devices.
@@ -1006,6 +1012,7 @@ def show_attributes(  # noqa: C901
     :param disp_action: flag for markdown output
     :param evrythng: get commands and attributes regadrless of state
     :param a_name: filter attribute name
+    :param min_str_len: mininum string length below which only exact matches are allowed
     """
     if a_name is None:
         return
@@ -1040,6 +1047,7 @@ def show_attributes(  # noqa: C901
         a_name = a_name.lower()
         attribs_found = []
         for attrib in sorted(attribs):
+            # TODO implement minimum string length
             if a_name in attrib.lower():
                 attribs_found.append(attrib)
         if attribs_found:
@@ -1050,7 +1058,7 @@ def show_attributes(  # noqa: C901
 
 
 def show_commands(
-    logger: logging.Logger, disp_action: int, evrythng: bool, c_name: str | None
+    logger: logging.Logger, disp_action: int, evrythng: bool, c_name: str | None, min_str_len: int
 ) -> None:
     """
     Display information about Tango devices.
@@ -1059,6 +1067,7 @@ def show_commands(
     :param disp_action: flag for markdown output
     :param evrythng: get commands and attributes regadrless of state
     :param c_name: filter command name
+    :param min_str_len: mininum string length below which only exact matches are allowed
     """
     if c_name is None:
         return
@@ -1081,7 +1090,7 @@ def show_commands(
 
     for device in sorted(device_list.value_string):
         dev: tango.DeviceProxy = tango.DeviceProxy(device)
-        chk_cmds = check_command(logger, dev, c_name)
+        chk_cmds = check_command(logger, dev, c_name, min_str_len)
         if chk_cmds:
             print(f"{dev.name():48}", end="")
             print(f" \033[1m{chk_cmds[0]}\033[0m")
@@ -1090,7 +1099,7 @@ def show_commands(
 
 
 def show_properties(
-    logger: logging.Logger, disp_action: int, evrythng: bool, p_name: str | None
+    logger: logging.Logger, disp_action: int, evrythng: bool, p_name: str | None, min_str_len: int
 ) -> None:
     """
     Display information about Tango devices.
@@ -1099,6 +1108,7 @@ def show_properties(
     :param disp_action: flag for markdown output
     :param evrythng: get commands and attributes regadrless of state
     :param p_name: filter command name
+    :param min_str_len: mininum string length below which only exact matches are allowed
     """
     if p_name is None:
         return
@@ -1125,6 +1135,7 @@ def show_properties(
         prop_list = dev.get_property_list("*")
         props_found = []
         for prop in prop_list:
+            # TODO implement minimum string length
             if p_name in prop.lower():
                 props_found.append(prop)
         if props_found:
@@ -1312,13 +1323,16 @@ def show_long_running_commands(dev_name: str) -> int:
     return 0
 
 
-def show_command_inputs(logger: logging.Logger, tango_host: str, tgo_in_type: str) -> None:
+def show_command_inputs(
+    logger: logging.Logger, tango_host: str, tgo_in_type: str, min_str_len: int
+) -> None:
     """
     Display commands with given input type.
 
     :param logger: logging handle
     :param tango_host: Tango database host address and port
     :param tgo_in_type: input type, e.g. Uninitialised
+    :param min_str_len: mininum string length below which only exact matches are allowed
     """
     # Connect to database
     try:
@@ -1342,6 +1356,7 @@ def show_command_inputs(logger: logging.Logger, tango_host: str, tgo_in_type: st
             for cmd in cmds:
                 in_type_desc = cmd.in_type_desc.lower()
                 logger.info("Command %s type %s", cmd, in_type_desc)
+                # TODO implement partial matches
                 if in_type_desc == tgo_in_type:
                     print(f"{'Commands':17} : \033[3m{cmd.cmd_name}\033[0m ({in_type_desc})")
                 else:
