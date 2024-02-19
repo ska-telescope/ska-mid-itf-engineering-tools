@@ -53,7 +53,9 @@ def wait_for_devices(
             state = dp.State()
             server = dp.name()
             adminmode = dp.adminmode
-            if state != DevState.OFF or ( server in ["mid-csp/contro/0", "mid_csp_cbf/sub_elt/controller"] and adminmode != 0 ):
+            if state != DevState.OFF or (
+                server in ["mid-csp/contro/0", "mid_csp_cbf/sub_elt/controller"] and adminmode != 0
+            ):
                 logger.info(
                     f"Waiting for {server} to change state from "
                     f"{state} to OFF while Adminmode is {adminmode.name}"
@@ -137,7 +139,7 @@ def main() -> None:  # noqa C901
     k = 0
     while k < 10:
         logger.warning(f"Sleeping for {TIMEOUT-k*10} seconds while CBF is turning on.")
-        time.sleep(TIMEOUT-k*10)
+        time.sleep(TIMEOUT - k * 10)
         k += 1
     k = 1
     while CBF.State() != DevState.ON:
@@ -149,7 +151,8 @@ def main() -> None:  # noqa C901
             return n if n <= 1 else fib(n - 1) + fib(n - 2)
 
         logger.info(
-            f"Waiting for CBF to change state from {CBF.State()} to ON for another {fib(k)} seconds"
+            f"Waiting for CBF to change state from {CBF.State()} to ON "
+            "for another {fib(k)} seconds"
         )
         time.sleep(fib(k))
         k += 1
