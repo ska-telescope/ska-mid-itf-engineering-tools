@@ -54,9 +54,10 @@ def wait_for_devices(
             server = dp.name()
             adminmode = dp.adminmode
             if state != DevState.OFF:
+
                 logger.info(
-                    f"Still waiting for {server} to change state from \
-                        {state} to OFF while Adminmode is {adminmode}"
+                    f"Still waiting for {server} to change state from "
+                    f"{state} to OFF while Adminmode is {adminmode}"
                 )
                 READY = False
                 break
