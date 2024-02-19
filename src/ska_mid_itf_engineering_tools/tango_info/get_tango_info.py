@@ -1,20 +1,20 @@
 """Read information from Tango database."""
 import json
 import logging
-import numpy
 import os
 import socket
 import time
 from typing import Any, Tuple
 
-PFIX1 = 17
-PFIX2 = 33
-PFIX3 = 50
-
+import numpy
 import tango
 from ska_control_model import AdminMode
 
 from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import find_jargon  # type: ignore
+
+PFIX1 = 17
+PFIX2 = 33
+PFIX3 = 50
 
 
 def check_tango(tango_fqdn: str, tango_port: int = 10000) -> int:
@@ -53,7 +53,7 @@ def check_device(dev: tango.DeviceProxy) -> bool:
 class TangoDeviceInfo:
     """Read and display information about Tango device."""
 
-    def __init__(
+    def __init__(  # noqa: C901
         self,
         logger: logging.Logger,
         cfg_data: Any,
@@ -216,7 +216,6 @@ class TangoDeviceInfo:
         :param prefix: print at front of line
         :param cmd: command name
         """
-        lpre = "\n" + f"{' ':55}"
         print(f"{prefix} \033[1m{cmd:30}\033[0m", end="")
         if cmd in self.run_commands:
             cmd_io = self.get_command(cmd)
@@ -355,7 +354,7 @@ class TangoDeviceInfo:
         else:
             print(f" '{attrib_value}' (type {type(attrib_value)})")
 
-    def show_attribute_value_spectrum(self, prefix: str, attrib_value: Any) -> None:
+    def show_attribute_value_spectrum(self, prefix: str, attrib_value: Any) -> None:  # noqa: C901
         """
         Print attribute spectrum value.
 
@@ -365,7 +364,7 @@ class TangoDeviceInfo:
         self.logger.debug("Spectrum %s : %s", type(attrib_value), attrib_value)
         if type(attrib_value) is dict:
             if attrib_value:
-                int_models = json.loads(attrib_value)
+                int_models = json.loads(attrib_value)  # type: ignore[arg-type]
                 for key in int_models:
                     print(f"{prefix}   {key}")
                     int_model_values = int_models[key]
@@ -402,7 +401,7 @@ class TangoDeviceInfo:
                 for a_val in a_list[1:]:
                     print(f"{prefix} {a_val}")
             else:
-                print(f" <EMPTY>")
+                print(" <EMPTY>")
         elif type(attrib_value) is str:
             print(f" {attrib_value}")
         elif attrib_value is None:
@@ -419,14 +418,14 @@ class TangoDeviceInfo:
                 for a_val in a_list[1:]:
                     print(f"{prefix} {a_val}")
             else:
-                print(f" <EMPTY>")
+                print(" <EMPTY>")
         elif type(attrib_value) is tuple:
             if attrib_value:
                 print(f" {attrib_value[0]}")
                 for attrib_val in attrib_value[1:]:
                     print(f"{prefix} {attrib_val}")
             else:
-                print(f" <EMPTY>")
+                print(" <EMPTY>")
         else:
             print(f" {attrib_value}")
 
@@ -504,7 +503,7 @@ class TangoDeviceInfo:
         else:
             print(f"{prefix} Quality : <N/A>")
 
-    def show_device_attributes(self, prefix:str, dry_run: bool) -> None:
+    def show_device_attributes(self, prefix: str, dry_run: bool) -> None:
         """
         Print attributes.
 
@@ -525,7 +524,7 @@ class TangoDeviceInfo:
                 attrib_value = self.show_attribute_value(attrib, prefix, dry_run)
                 self.show_attribute_config(attrib, prefix, dry_run, attrib_value)
 
-    def show_device_attributes_short(self, prefix:str, dry_run: bool) -> None:
+    def show_device_attributes_short(self, prefix: str, dry_run: bool) -> None:
         """
         Print attributes.
 
@@ -549,7 +548,7 @@ class TangoDeviceInfo:
                 print(f"{' ':{PFIX1}}   \033[1m{attrib:30}\033[0m", end="")
                 self.show_attribute_value(attrib, prefix, dry_run)
 
-    def show_property(self, props: list) -> None:
+    def show_property(self, props: list) -> None:  # noqa: C901
         """
         Display properties.
 
@@ -588,7 +587,7 @@ class TangoDeviceInfo:
                 while n < len(prop_list):
                     prop1 = prop_list[n]
                     try:
-                        prop2 = prop_list[n+1]
+                        prop2 = prop_list[n + 1]
                     except IndexError:
                         prop2 = ""
                     print(f"{' ':{PFIX1}}   {' ':30} {prop1}  {prop2}")
@@ -729,11 +728,6 @@ class TangoDeviceInfo:
             cmds = self.dev.get_command_list()
         except Exception:
             cmds = ()
-        # Read attributes
-        try:
-            attribs = sorted(self.dev.get_attribute_list())
-        except Exception:
-            attribs = []
         # Print commands
         if cmds:
             if dry_run:

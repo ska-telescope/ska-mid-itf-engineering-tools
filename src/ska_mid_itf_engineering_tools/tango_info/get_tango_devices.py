@@ -1,8 +1,9 @@
 """Compile a list of Tango devices."""
 import logging
 import os
-import tango
 from typing import Any
+
+import tango
 
 
 class TangoDevices:
