@@ -134,10 +134,14 @@ def main() -> None:  # noqa C901
 
     logger.info("Turning CSP ON - this may take a while...")
     CSP.on([])
-    time.sleep(TIMEOUT)
+    k = 0
+    while k < 10:
+        logger.warning(f"Sleeping for {TIMEOUT-k*10} seconds while CBF is turning on.")
+        time.sleep(TIMEOUT-k*10)
+        k += 1
     k = 1
     while CBF.State() != DevState.ON:
-        if k == 11:
+        if k == 5:
             logger.error("Could not turn the CBF Controller on. Exiting.")
             sys.exit(1)
 
@@ -145,7 +149,7 @@ def main() -> None:  # noqa C901
             return n if n <= 1 else fib(n - 1) + fib(n - 2)
 
         logger.info(
-            f"Waiting for CBF to change state from {CBF.State()} to ON for {fib(k)} seconds"
+            f"Waiting for CBF to change state from {CBF.State()} to ON for another {fib(k)} seconds"
         )
         time.sleep(fib(k))
         k += 1
