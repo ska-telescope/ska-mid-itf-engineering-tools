@@ -67,7 +67,7 @@ def wait_for_devices(
                 device_str = f"Device {server}: "
                 state_str = f"State {state}; "
                 mode_str = f"Adminmode {adminmode.name}."
-                logger.info(f"{device_str : <42}{state_str : <15}{mode_str : 20}")
+                logger.info(f"{device_str : <42}{state_str : <15}{mode_str : <20}")
     return
 
 
