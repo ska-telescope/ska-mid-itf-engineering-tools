@@ -624,3 +624,18 @@ Attributes        : BitstreamChecksum              <N/A>
                                                    Quality : <N/A>
 ...
 ```
+
+## Examples
+
+```
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 --show-dev
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -d
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -C Telescope
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -P Power
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -f
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -s
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -q
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_board/001 -f
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_board/001 -f --dry
+```

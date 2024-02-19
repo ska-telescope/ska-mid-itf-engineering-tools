@@ -60,38 +60,38 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print(f"\t{p_name} -d [-N <NAMESPACE>|-H <HOST>]")
     print("Display all devices")
     print(
-        f"\t{p_name} --full|--long|--quick|--short [--dry-run]"
+        f"\t{p_name} --full|--list|--quick|--short [--dry-run]"
         f" [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
     print(f"\t{p_name} -f|-l|-q|-s [-N <NAMESPACE>|-H <HOST>]")
     print("Filter on device name")
-    print(f"\t{p_name} --full|--long|--quick|--short -D <DEVICE> [-N <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} --full|--list|--quick|--short -D <DEVICE> [-N <NAMESPACE>|-H <HOST>]")
     print(f"\t{p_name} -f|-l|-q|-s --device=<DEVICE> [--namespace=<NAMESPACE>|--host=<HOST>]")
     print("Filter on attribute name")
     print(
-        f"\t{p_name} --full|--long|--quick|--short --attribute=<ATTRIBUTE>"
+        f"\t{p_name} --full|--list|--quick|--short --attribute=<ATTRIBUTE>"
         " [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
     print(f"\t{p_name} -f|-l|-q|-s -A <ATTRIBUTE> [-N <NAMESPACE>|-H <HOST>]")
     print("Filter on command name")
     print(
-        f"\t{p_name} --full|--long|--quick|--short --command=<COMMAND>"
+        f"\t{p_name} --full|--list|--quick|--short --command=<COMMAND>"
         " [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
     print(f"\t{p_name} -f|-l|-q|-s -C <COMMAND> [-N <NAMESPACE>|-H <HOST>]")
     print("Filter on property name")
     print(
-        f"\t{p_name} --full|--long|--quick|--short --property=<PROPERTY>"
+        f"\t{p_name} --full|--list|--quick|--short --property=<PROPERTY>"
         " [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
     print(f"\t{p_name} -f|-l|-q|-s -P <PROPERTY> [-N <NAMESPACE>|--host=<HOST>]")
     print("Display known acronyms")
     print(f"\t{p_name} -j")
     print("where:")
-    print("\t-f\t\t\t\tdisplay in full")
-    print("\t-l\t\t\t\tdisplay device name and status on one line")
-    print("\t-q\t\t\t\tdisplay device name, status and query devices")
-    print("\t-s\t\t\t\tdisplay device name and status only")
+    print("\t-f|--full\t\t\t\tdisplay in full")
+    print("\t-l|--list\t\t\t\tdisplay device name and status on one line")
+    print("\t-q|--quick\t\t\t\tdisplay device name, status and query devices")
+    print("\t-s|--short\t\t\t\tdisplay device name and status only")
     # print("\t-m\t\t\t\tdisplay in markdown format")
     print("\t-f\t\t\t\tget commands, attributes and properties regardless of state")
     print(
@@ -133,9 +133,11 @@ def main(y_arg: list) -> int:  # noqa: C901
     itype: str | None = None
     disp_action: int = 0
     evrythng: bool = False
+    headers = True
     show_jargon: bool = False
     show_ns: bool = False
     show_tango: bool = False
+    show_version: bool = False
     tgo_attrib: str | None = None
     tgo_cmd: str | None = None
     tgo_in_type: str | None = None
@@ -144,13 +146,14 @@ def main(y_arg: list) -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
-            "defhjlmnqstvVA:C:H:D:N:P:T:",
+            "efhjlmnqstvVA:C:H:D:N:P:T:",
             [
                 "dry-run",
                 "everything",
                 "full",
                 "help",
-                "long",
+                "list",
+                "no-headers",
                 "input",
                 "quick",
                 "short",
@@ -186,8 +189,7 @@ def main(y_arg: list) -> int:  # noqa: C901
             usage(os.path.basename(y_arg[0]), cfg_data)
             sys.exit(1)
         elif opt == "--version":
-            print(f"{os.path.basename(y_arg[0])} version {__version__}")
-            sys.exit(1)
+            show_version = True
         elif opt in ("-A", "--attribute"):
             tgo_attrib = arg
         elif opt in ("-C", "--command"):
@@ -206,33 +208,39 @@ def main(y_arg: list) -> int:  # noqa: C901
         elif opt == "--dry-run":
             # Undocumented feature for dry runs
             dry_run = True
-        elif opt in ("-j", "--show-acronym"):
-            show_jargon = True
-        elif opt in ("-t", "--show-db"):
-            show_tango = True
+        elif opt == "--no-headers":
+            headers = False
+        # elif opt in ("-d", "--show-dev"):
+        #     disp_action = 4
+        elif opt in ("-e", "--everything"):
+            evrythng = True
+        elif opt in ("-f", "--full"):
+            disp_action = 1
+        elif opt in ("-l", "--list"):
+            disp_action = 4
         elif opt == "-m":
             # Undocumented feature to display in mark-down format
             disp_action = 2
-        elif opt in ("-f", "--full"):
-            disp_action = 1
-        elif opt in ("-e", "--everything"):
-            evrythng = True
         elif opt in ("-n", "--show-ns"):
             show_ns = True
         elif opt in ("-q", "--quick"):
             disp_action = 3
-        elif opt in ("-d", "--show-dev"):
-            disp_action = 4
+        elif opt in ("-j", "--show-acronym"):
+            show_jargon = True
         elif opt in ("-s", "--short"):
             disp_action = 5
-        elif opt in ("-l", "--long"):
-            disp_action = 6
+        elif opt in ("-t", "--show-db"):
+            show_tango = True
         elif opt == "-v":
             _module_logger.setLevel(logging.INFO)
         elif opt == "-V":
             _module_logger.setLevel(logging.DEBUG)
         else:
             _module_logger.error("Invalid option %s", opt)
+
+    if show_version:
+        print(f"{os.path.basename(y_arg[0])} version {__version__}")
+        return 1
 
     if show_jargon:
         print_jargon()
@@ -282,7 +290,7 @@ def main(y_arg: list) -> int:  # noqa: C901
         print("Nothing to do!")
         return 1
 
-    show_devices(_module_logger, cfg_data, disp_action, evrythng, itype, dry_run)
+    show_devices(_module_logger, cfg_data, disp_action, evrythng, itype, headers, dry_run)
 
     return 0
 

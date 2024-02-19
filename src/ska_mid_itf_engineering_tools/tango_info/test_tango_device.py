@@ -515,24 +515,40 @@ class TestTangoDevice:
         return 0
 
 
-def get_devices() -> list:
-    """
-    Read Tango device names.
+class TestTangoDevices:
+    """Compile a list of available Tango devices."""
 
-    :return: list of devices
-    """
-    tango_devices: list = []
-    # Connect to database
-    try:
-        database = tango.Database()
-    except Exception:
-        tango_host = os.getenv("TANGO_HOST")
-        print("[FAILED] Could not connect to Tango database %s", tango_host)
-        return tango_devices
-    # Read devices
-    device_list = database.get_device_exported("*")
-    print(f"[  OK  ] {len(device_list)} devices available")
+    def __init__(self, logger: logging.Logger, evrythng: bool, cfg_data: Any):
+        """
+        Read Tango device names.
 
-    for device in sorted(device_list.value_string):
-        tango_devices.append(device)
-    return tango_devices
+        :return: list of devices
+        """
+        self.logger = logger
+        self.tango_devices: list = []
+        # Connect to database
+        try:
+            database = tango.Database()
+        except Exception:
+            tango_host = os.getenv("TANGO_HOST")
+            print("[FAILED] Could not connect to Tango database %s", tango_host)
+        # Read devices
+        device_list = database.get_device_exported("*")
+        print(f"[  OK  ] {len(device_list)} devices available")
+
+        for device in sorted(device_list.value_string):
+            # Check device name against mask
+            if not evrythng:
+                chk_fail = False
+                for dev_chk in cfg_data["ignore_device"]:
+                    chk_len = len(dev_chk)
+                    if device[0:chk_len] == dev_chk:
+                        chk_fail = True
+                        break
+                if chk_fail:
+                    self.logger.debug("'%s' matches '%s'", device, cfg_data["ignore_device"])
+                    continue
+            self.logger.debug("Add device %s", device)
+            self.tango_devices.append(device)
+
+        self.logger.info("Found %d devices", len(self.tango_devices))
