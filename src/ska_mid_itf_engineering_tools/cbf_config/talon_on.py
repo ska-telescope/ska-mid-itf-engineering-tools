@@ -139,7 +139,7 @@ def main() -> None:  # noqa C901
     k = 0
     while k < 10:
         logger.warning(f"Sleeping for {TIMEOUT-k*10} seconds while CBF is turning on.")
-        time.sleep(TIMEOUT - k * 10)
+        time.sleep(10)
         k += 1
     k = 1
     while CBF.State() != DevState.ON:
