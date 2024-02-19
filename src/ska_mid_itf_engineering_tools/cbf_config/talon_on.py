@@ -52,23 +52,14 @@ def wait_for_devices(
         for dp in device_proxies:
             state = dp.State()
             server = dp.name()
+            adminmode = dp.adminmode
             if state != DevState.OFF:
-                logger.info(f"Waiting for {server} to change state from {state} to OFF")
+                logger.info(f"Still waiting for {server} to change state from {state} to OFF while Adminmode is {adminmode}")
                 READY = False
-                logger.debug("Exiting loop - device not ready")
                 break
             else:
                 READY = True
-    logger.info(f"CSP adminmode is now {CSP.adminmode}")
-    logger.info(f"CBF adminmode is now {CBF.adminmode}")
-    logger.info(f"CSP State is now {CSP.State()}")
-    logger.info(f"CBF State is now {CBF.State()}")
-    logger.info(f"CSP Subarray1 State is now {CSPSubarray1.State()}")
-    logger.info(f"CSP Subarray2 State is now {CSPSubarray2.State()}")
-    logger.info(f"CSP Subarray3 State is now {CSPSubarray3.State()}")
-    logger.info(f"CBF Subarray1 State is now {CBFSubarray1.State()}")
-    logger.info(f"CBF Subarray2 State is now {CBFSubarray2.State()}")
-    logger.info(f"CBF Subarray3 State is now {CBFSubarray3.State()}")
+                logger.info(f"Device {server} is now in {state} state, adminmode {adminmode}")
     return
 
 
@@ -128,10 +119,10 @@ def main() -> None:  # noqa C901
 
     # Timeout for long-running command
     CSP.commandTimeout = TIMEOUT
-    logger.debug(f"commandTimeout simply set to {TIMEOUT}")
+    logger.debug(f"commandTimeout simply set to {TIMEOUT * 1000}")
 
     CSP.set_timeout_millis(TIMEOUT * 1000)
-    logger.debug(f"Sent set_timeout_millis({TIMEOUT}) command")
+    logger.debug(f"Sent set_timeout_millis({TIMEOUT * 1000}) command")
 
     logger.info("Turning CSP ON - this may take a while...")
     CSP.on([])
