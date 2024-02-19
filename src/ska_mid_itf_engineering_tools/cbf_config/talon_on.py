@@ -56,14 +56,17 @@ def wait_for_devices(
             if state != DevState.OFF:
 
                 logger.info(
-                    f"Still waiting for {server} to change state from "
-                    f"{state} to OFF while Adminmode is {adminmode}"
+                    f"Waiting for {server} to change state from "
+                    f"{state} to OFF while Adminmode is {adminmode.name}"
                 )
                 READY = False
                 break
             else:
                 READY = True
-                logger.info(f"Device {server} is now in {state} state, adminmode {adminmode}")
+                device_str = f"Device {server}: "
+                state_str = f"State {state}; "
+                mode_str = f"Adminmode {adminmode.name}."
+                logger.info(f"{device_str : <42}{state_str : <15}{mode_str : 20}")
     return
 
 
