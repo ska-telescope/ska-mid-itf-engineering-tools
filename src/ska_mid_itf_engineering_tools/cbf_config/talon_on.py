@@ -53,8 +53,7 @@ def wait_for_devices(
             state = dp.State()
             server = dp.name()
             adminmode = dp.adminmode
-            if state != DevState.OFF:
-
+            if state != DevState.OFF or ( server in ["mid-csp/contro/0", "mid_csp_cbf/sub_elt/controller"] and adminmode != 0 ):
                 logger.info(
                     f"Waiting for {server} to change state from "
                     f"{state} to OFF while Adminmode is {adminmode.name}"
@@ -114,6 +113,8 @@ def main() -> None:  # noqa C901
     }
 
     CSP.loaddishcfg(json.dumps(dish_config))
+    vcc_config = CSP.dishVccConfig
+    logger.debug(f"CSP Controller dishVccConfig is now {vcc_config}")
 
     # Next set simulation to false - hardware use!
     CBF.simulationMode = False
