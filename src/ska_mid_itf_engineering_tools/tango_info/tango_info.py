@@ -267,6 +267,9 @@ def main(y_arg: list) -> int:  # noqa: C901
         check_tango(tango_fqdn)
         return 0
 
+    _module_logger.debug("Run commands: %s", cfg_data["run_commands_name"])
+    _module_logger.debug("Run commands with name: %s", cfg_data["run_commands"])
+
     os.environ["TANGO_HOST"] = tango_host
     _module_logger.info("Set TANGO_HOST to %s", tango_host)
 
