@@ -188,84 +188,80 @@ Namespaces : 53
 ### Read all Tango devices
 
 This will display the name, current state and admin mode setting for each Tango device 
-in the database. Note that output has been shorteneded. By default, device names starting with **dserver** or sys **are** not listed.
+in the database. Note that output has been shorteneded. By default, device names starting 
+with **dserver** or **sys** are not listed.
 
 ```
-$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 --show-dev
-STATE      DEVICE NAME                              ADMIN MODE
-ON         mid-csp/capability-fsp/0                 0
-ON         mid-csp/capability-vcc/0                 0
-DISABLE    mid-csp/control/0                        1
-DISABLE    mid-csp/subarray/01                      1
-DISABLE    mid-csp/subarray/02                      1
-DISABLE    mid-csp/subarray/03                      1
-ON         mid-eda/cm/01                            None
-ON         mid-eda/es/01                            None
-None       mid-sdp/control/0                        None
-None       mid-sdp/queueconnector/01                None
-None       mid-sdp/queueconnector/02                None
-None       mid-sdp/queueconnector/03                None
-None       mid-sdp/subarray/01                      None
-None       mid-sdp/subarray/02                      None
-None       mid-sdp/subarray/03                      None
-DISABLE    mid_csp_cbf/fs_links/000                 1
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 --list
+DEVICE NAME                              STATE      ADMIN MODE  VERSION  CLASS
+mid-csp/capability-fsp/0                 ON         ONLINE      2        MidCspCapabilityFsp
+mid-csp/capability-vcc/0                 ON         ONLINE      2        MidCspCapabilityVcc
+mid-csp/control/0                        DISABLE    OFFLINE     2        MidCspController
+mid-csp/subarray/01                      DISABLE    OFFLINE     2        MidCspSubarray
+mid-csp/subarray/02                      DISABLE    OFFLINE     2        MidCspSubarray
+mid-csp/subarray/03                      DISABLE    OFFLINE     2        MidCspSubarray
+mid-eda/cm/01                            ON         N/A         N/A      HdbConfigurationManager
+mid-eda/es/01                            ON         N/A         N/A      HdbEventSubscriber
+mid-sdp/control/0                        N/A        N/A         N/A      N/A
+mid-sdp/queueconnector/01                N/A        N/A         N/A      N/A
+mid-sdp/queueconnector/02                N/A        N/A         N/A      N/A
+mid-sdp/queueconnector/03                N/A        N/A         N/A      N/A
+mid-sdp/subarray/01                      N/A        N/A         N/A      N/A
+mid-sdp/subarray/02                      N/A        N/A         N/A      N/A
+mid-sdp/subarray/03                      N/A        N/A         N/A      N/A
+mid_csp_cbf/fs_links/000                 DISABLE    OFFLINE     0.11.4   SlimLink
 ...
-DISABLE    mid_csp_cbf/fs_links/015                 1
-DISABLE    mid_csp_cbf/fsp/01                       1
-DISABLE    mid_csp_cbf/fsp/02                       1
-DISABLE    mid_csp_cbf/fsp/03                       1
-DISABLE    mid_csp_cbf/fsp/04                       1
-DISABLE    mid_csp_cbf/fspCorrSubarray/01_01        1
+mid_csp_cbf/fs_links/015                 DISABLE    OFFLINE     0.11.4   SlimLink
+mid_csp_cbf/fsp/01                       DISABLE    OFFLINE     0.11.4   Fsp
+mid_csp_cbf/fsp/02                       DISABLE    OFFLINE     0.11.4   Fsp
+mid_csp_cbf/fsp/03                       DISABLE    OFFLINE     0.11.4   Fsp
+mid_csp_cbf/fsp/04                       DISABLE    OFFLINE     0.11.4   Fsp
+mid_csp_cbf/fspCorrSubarray/01_01        DISABLE    OFFLINE     0.11.4   FspCorrSubarray
 ...
-DISABLE    mid_csp_cbf/fspCorrSubarray/04_03        1
-DISABLE    mid_csp_cbf/fspPssSubarray/01_01         1
+mid_csp_cbf/fspCorrSubarray/04_03        DISABLE    OFFLINE     0.11.4   FspCorrSubarray
+mid_csp_cbf/fspPssSubarray/01_01         DISABLE    OFFLINE     0.11.4   FspPssSubarray
 ...
-DISABLE    mid_csp_cbf/fspPssSubarray/04_03         1
-DISABLE    mid_csp_cbf/fspPstSubarray/01_01         1
+mid_csp_cbf/fspPssSubarray/04_03         DISABLE    OFFLINE     0.11.4   FspPssSubarray
+mid_csp_cbf/fspPstSubarray/01_01         DISABLE    OFFLINE     0.11.4   FspPstSubarray
 ...
-DISABLE    mid_csp_cbf/fspPstSubarray/04_03         1
-DISABLE    mid_csp_cbf/power_switch/001             1
-DISABLE    mid_csp_cbf/power_switch/002             1
-DISABLE    mid_csp_cbf/power_switch/003             1
-DISABLE    mid_csp_cbf/slim/slim-fs                 1
-DISABLE    mid_csp_cbf/slim/slim-vis                1
-DISABLE    mid_csp_cbf/sub_elt/controller           1
-DISABLE    mid_csp_cbf/sub_elt/subarray_01          1
-DISABLE    mid_csp_cbf/sub_elt/subarray_02          1
-DISABLE    mid_csp_cbf/sub_elt/subarray_03          1
-DISABLE    mid_csp_cbf/talon_board/001              1
+mid_csp_cbf/fspPstSubarray/04_03         DISABLE    OFFLINE     0.11.4   FspPstSubarray
+mid_csp_cbf/power_switch/001             DISABLE    OFFLINE     0.11.4   PowerSwitch
+mid_csp_cbf/power_switch/002             DISABLE    OFFLINE     0.11.4   PowerSwitch
+mid_csp_cbf/power_switch/003             DISABLE    OFFLINE     0.11.4   PowerSwitch
+mid_csp_cbf/slim/slim-fs                 DISABLE    OFFLINE     0.11.4   Slim
+mid_csp_cbf/slim/slim-vis                DISABLE    OFFLINE     0.11.4   Slim
+mid_csp_cbf/sub_elt/controller           DISABLE    OFFLINE     0.11.4   CbfController
+mid_csp_cbf/sub_elt/subarray_01          DISABLE    OFFLINE     0.11.4   CbfSubarray
+mid_csp_cbf/sub_elt/subarray_02          DISABLE    OFFLINE     0.11.4   CbfSubarray
+mid_csp_cbf/sub_elt/subarray_03          DISABLE    OFFLINE     0.11.4   CbfSubarray
+mid_csp_cbf/talon_board/001              DISABLE    OFFLINE     0.11.4   TalonBoard
 ...
-DISABLE    mid_csp_cbf/talon_board/008              1
-DISABLE    mid_csp_cbf/talon_lru/001                1
-DISABLE    mid_csp_cbf/talon_lru/002                1
-DISABLE    mid_csp_cbf/talon_lru/003                1
-DISABLE    mid_csp_cbf/talon_lru/004                1
-DISABLE    mid_csp_cbf/talondx_log_consumer/001     1
-DISABLE    mid_csp_cbf/vcc/001                      1
+mid_csp_cbf/talon_board/008              DISABLE    OFFLINE     0.11.4   TalonBoard
+mid_csp_cbf/talon_lru/001                DISABLE    OFFLINE     0.11.4   TalonLRU
 ...
-DISABLE    mid_csp_cbf/vcc/008                      1
-DISABLE    mid_csp_cbf/vcc_sw1/001                  1
+mid_csp_cbf/talon_lru/004                DISABLE    OFFLINE     0.11.4   TalonLRU
+mid_csp_cbf/talondx_log_consumer/001     DISABLE    OFFLINE     0.11.4   TalonDxLogConsumer
+mid_csp_cbf/vcc/001                      DISABLE    OFFLINE     0.11.4   Vcc
 ...
-DISABLE    mid_csp_cbf/vcc_sw1/008                  1
-DISABLE    mid_csp_cbf/vcc_sw2/001                  1
+mid_csp_cbf/vcc/008                      DISABLE    OFFLINE     0.11.4   Vcc
+mid_csp_cbf/vcc_sw1/001                  DISABLE    OFFLINE     0.11.4   VccSearchWindow
 ...
-DISABLE    mid_csp_cbf/vcc_sw2/008                  1
-DISABLE    mid_csp_cbf/vis_links/000                1
-DISABLE    mid_csp_cbf/vis_links/001                1
-DISABLE    mid_csp_cbf/vis_links/002                1
-DISABLE    mid_csp_cbf/vis_links/003                1
-ON         ska_mid/tm_central/central_node          1
-ON         ska_mid/tm_leaf_node/csp_master          1
-ON         ska_mid/tm_leaf_node/csp_subarray01      1
-INIT       ska_mid/tm_leaf_node/csp_subarray_01     1
-INIT       ska_mid/tm_leaf_node/csp_subarray_02     1
-ON         ska_mid/tm_leaf_node/d0001               1
-ON         ska_mid/tm_leaf_node/d0036               1
-ON         ska_mid/tm_leaf_node/d0063               1
-ON         ska_mid/tm_leaf_node/d0100               1
-ON         ska_mid/tm_leaf_node/sdp_master          1
-ON         ska_mid/tm_leaf_node/sdp_subarray01      1
-ON         ska_mid/tm_subarray_node/1               1
+mid_csp_cbf/vcc_sw2/008                  DISABLE    OFFLINE     0.11.4   VccSearchWindow
+mid_csp_cbf/vis_links/000                DISABLE    OFFLINE     0.11.4   SlimLink
+mid_csp_cbf/vis_links/001                DISABLE    OFFLINE     0.11.4   SlimLink
+mid_csp_cbf/vis_links/002                DISABLE    OFFLINE     0.11.4   SlimLink
+mid_csp_cbf/vis_links/003                DISABLE    OFFLINE     0.11.4   SlimLink
+ska_mid/tm_central/central_node          ON         OFFLINE     0.12.2   CentralNodeMid
+ska_mid/tm_leaf_node/csp_master          ON         OFFLINE     0.10.3   CspMasterLeafNode
+ska_mid/tm_leaf_node/csp_subarray01      ON         OFFLINE     0.10.3   CspSubarrayLeafNodeMid
+ska_mid/tm_leaf_node/csp_subarray_01     INIT       OFFLINE     0.11.4   TmCspSubarrayLeafNodeTest
+ska_mid/tm_leaf_node/csp_subarray_02     INIT       OFFLINE     0.11.4   TmCspSubarrayLeafNodeTest
+ska_mid/tm_leaf_node/d0001               ON         OFFLINE     0.8.1    DishLeafNode
+...
+ska_mid/tm_leaf_node/d0100               ON         OFFLINE     0.8.1    DishLeafNode
+ska_mid/tm_leaf_node/sdp_master          ON         OFFLINE     0.14.2   SdpMasterLeafNode
+ska_mid/tm_leaf_node/sdp_subarray01      ON         OFFLINE     0.14.2   SdpSubarrayLeafNode
+ska_mid/tm_subarray_node/1               ON         OFFLINE     0.13.19  SubarrayNodeMid
 ```
 
 ### Filter by device name
@@ -273,21 +269,21 @@ ON         ska_mid/tm_subarray_node/1               1
 To find all devices with **talon** in the name:
 
 ```
-$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -d
-STATE      DEVICE NAME                              ADMIN MODE
-DISABLE    mid_csp_cbf/talon_board/001              1
-DISABLE    mid_csp_cbf/talon_board/002              1
-DISABLE    mid_csp_cbf/talon_board/003              1
-DISABLE    mid_csp_cbf/talon_board/004              1
-DISABLE    mid_csp_cbf/talon_board/005              1
-DISABLE    mid_csp_cbf/talon_board/006              1
-DISABLE    mid_csp_cbf/talon_board/007              1
-DISABLE    mid_csp_cbf/talon_board/008              1
-DISABLE    mid_csp_cbf/talon_lru/001                1
-DISABLE    mid_csp_cbf/talon_lru/002                1
-DISABLE    mid_csp_cbf/talon_lru/003                1
-DISABLE    mid_csp_cbf/talon_lru/004                1
-DISABLE    mid_csp_cbf/talondx_log_consumer/001     1
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -l
+DEVICE NAME                              STATE      ADMIN MODE  VERSION  CLASS
+mid_csp_cbf/talon_board/001              DISABLE    OFFLINE     0.11.4   TalonBoard
+mid_csp_cbf/talon_board/002              DISABLE    OFFLINE     0.11.4   TalonBoard
+mid_csp_cbf/talon_board/003              DISABLE    OFFLINE     0.11.4   TalonBoard
+mid_csp_cbf/talon_board/004              DISABLE    OFFLINE     0.11.4   TalonBoard
+mid_csp_cbf/talon_board/005              DISABLE    OFFLINE     0.11.4   TalonBoard
+mid_csp_cbf/talon_board/006              DISABLE    OFFLINE     0.11.4   TalonBoard
+mid_csp_cbf/talon_board/007              DISABLE    OFFLINE     0.11.4   TalonBoard
+mid_csp_cbf/talon_board/008              DISABLE    OFFLINE     0.11.4   TalonBoard
+mid_csp_cbf/talon_lru/001                DISABLE    OFFLINE     0.11.4   TalonLRU
+mid_csp_cbf/talon_lru/002                DISABLE    OFFLINE     0.11.4   TalonLRU
+mid_csp_cbf/talon_lru/003                DISABLE    OFFLINE     0.11.4   TalonLRU
+mid_csp_cbf/talon_lru/004                DISABLE    OFFLINE     0.11.4   TalonLRU
+mid_csp_cbf/talondx_log_consumer/001     DISABLE    OFFLINE     0.11.4   TalonDxLogConsumer
 ```
 
 ## Find attributes, commands or properties
@@ -329,9 +325,13 @@ To find all devices with commands that have **Telescope** in the name:
 $ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -C Telescope
 ska_mid/tm_central/central_node                  TelescopeOff
                                                  TelescopeOn
-                                                 TelescopeStandby`
-To find all devices with commands that have **Outlet** in the name: 
-`$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -C Outlet
+                                                 TelescopeStandby
+```
+
+To find all devices with commands that have **Outlet** in the name:
+
+```
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -C Outlet
 mid_csp_cbf/power_switch/001                     GetOutletPowerMode
                                                  TurnOffOutlet
                                                  TurnOnOutlet
@@ -387,18 +387,35 @@ Status            : The device is in DISABLE state.
 Description       : A Tango device
 Acronyms          : Correlator Beam Former (CBF), Central Signal Processor (CSP), Line Replaceable Unit (LRU)
 Database used     : True
-Device class      : TalonLRU
 Server host       : ds-talonlru-talonlru-001-0
 Server ID         : TalonLRU/talonlru-001
-Commands            DebugDevice                    Not polled  OUT The TCP port the debugger is listening on.
-                    GetVersionInfo                 Not polled  OUT Version strings
-                    Init                           Not polled 
-                    Off                            Not polled  OUT (ReturnType, 'informational message')
-                    On                             Not polled  OUT (ReturnType, 'informational message')
-                    Reset                          Not polled  OUT (ReturnType, 'informational message')
-                    Standby                        Not polled  OUT (ReturnType, 'informational message')
-                    State                          Polled      OUT Device state
-                    Status                         Not polled  OUT Device status
+Device class      : TalonLRU
+Commands          : DebugDevice                    N/A
+                                                   Not polled 
+                                                   OUT The TCP port the debugger is listening on.
+                    GetVersionInfo                 TalonLRU, ska_tango_base, 0.11.4, A set of generic base devices for SKA Telescope.
+                                                   Not polled 
+                                                   OUT Version strings
+                    Init                           N/A
+                                                   Not polled 
+                    Off                            N/A
+                                                   Not polled 
+                                                   OUT (ReturnType, 'informational message')
+                    On                             N/A
+                                                   Not polled 
+                                                   OUT (ReturnType, 'informational message')
+                    Reset                          N/A
+                                                   Not polled 
+                                                   OUT (ReturnType, 'informational message')
+                    Standby                        N/A
+                                                   Not polled 
+                                                   OUT (ReturnType, 'informational message')
+                    State                          DISABLE
+                                                   Polled     
+                                                   OUT Device state
+                    Status                         The device is in DISABLE state.
+                                                   Not polled 
+                                                   OUT Device status
 Attributes        : PDU1PowerMode                  '0'
                                                    Not polled
                                                    Event change : Not specified
@@ -435,8 +452,7 @@ Attributes        : PDU1PowerMode                  '0'
                                                    Not polled
                                                    Event change : Not specified
                                                    Quality : ATTR_VALID
-                    loggingTargets                
-                                                     tango::logger
+                    loggingTargets                 tango::logger
                                                    Not polled
                                                    Event change : Not specified
                                                    Quality : ATTR_VALID
@@ -472,38 +488,76 @@ This displays only status, commands, attributes and properties:
 $ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -s
 Device            : mid_csp_cbf/talon_lru/001
 Admin mode        : 1
-State             : DISABLE
-Status            : The device is in DISABLE state.
+Commands          : DebugDevice                    N/A
+                    GetVersionInfo                 TalonLRU, ska_tango_base, 0.11.4, A set of generic base devices for SKA Telescope.
+                    Init                           N/A
+                    Off                            N/A
+                    On                             N/A
+                    Reset                          N/A
+                    Standby                        N/A
+                    State                          DISABLE
+                    Status                         The device is in DISABLE state.
+Attributes        : PDU1PowerMode                  '0'
+                    PDU2PowerMode                  '0'
+                    State                          'DISABLE'
+                    Status                         'The device is in DISABLE state.'
+                    adminMode                      '1'
+                    buildState                     'ska_tango_base, 0.11.4, A set of generic base devices for SKA Telescope.'
+                    controlMode                    '0'
+                    healthState                    '0'
+                    loggingLevel                   '4'
+                    loggingTargets                 tango::logger
+                    simulationMode                 '1'
+                    testMode                       '0'
+                    versionId                      '0.11.4'
+Properties        : PDU1                           002
+                    PDU1PowerOutlet                AA41
+                    PDU2                           002
+                    PDU2PowerOutlet                AA41
+                    PDUCommandTimeout              20
+                    TalonDxBoard1                  001
+                    TalonDxBoard2                  002
+                    polled_attr                    state  1000
+                                                   healthstate  3000
+                                                   adminmode  3000
+```
+
+Display names only, without reading values:
+
+```
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -s --dry-run
+Device            : mid_csp_cbf/talon_lru/001
+Admin mode        : 1
 Commands          : DebugDevice
-                  : GetVersionInfo
-                  : Init
-                  : Off
-                  : On
-                  : Reset
-                  : Standby
-                  : State
-                  : Status
+                    GetVersionInfo
+                    Init
+                    Off
+                    On
+                    Reset
+                    Standby
+                    State
+                    Status
 Attributes        : PDU1PowerMode
-                  : PDU2PowerMode
-                  : State
-                  : Status
-                  : adminMode
-                  : buildState
-                  : controlMode
-                  : healthState
-                  : loggingLevel
-                  : loggingTargets
-                  : simulationMode
-                  : testMode
-                  : versionId
-Properties        : PDU1
-                  : PDU1PowerOutlet
-                  : PDU2
-                  : PDU2PowerOutlet
-                  : PDUCommandTimeout
-                  : polled_attr
-                  : TalonDxBoard1
-                  : TalonDxBoard2
+                    PDU2PowerMode
+                    State
+                    Status
+                    adminMode
+                    buildState
+                    controlMode
+                    healthState
+                    loggingLevel
+                    loggingTargets
+                    simulationMode
+                    testMode
+                    versionId
+Properties        : PDU1                          
+                    PDU1PowerOutlet               
+                    PDU2                          
+                    PDU2PowerOutlet               
+                    PDUCommandTimeout             
+                    TalonDxBoard1                 
+                    TalonDxBoard2                 
+                    polled_attr
 ```
 
 ### Quick/query mode
@@ -580,9 +634,7 @@ Attributes        : BitstreamChecksum              <ERROR> System ID Device is n
 To skip reading attribute values, use this option:
 
 ```
-$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_board/001 -f --dry
-Tango host        : tango-databaseds.ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2.svc.miditf.internal.skao.int:10000
-
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_board/001 -f
 Device            : mid_csp_cbf/talon_board/001
 Admin mode        : 1
 State             : DISABLE
@@ -590,46 +642,203 @@ Status            : The device is in DISABLE state.
 Description       : A Tango device
 Acronyms          : Correlator Beam Former (CBF), Central Signal Processor (CSP)
 Database used     : True
-Device class      : TalonBoard
 Server host       : ds-talonboard-talon-001-0
 Server ID         : TalonBoard/talon-001
-Commands            DebugDevice                    Not polled  OUT The TCP port the debugger is listening on.
-                    GetVersionInfo                 Not polled  OUT Version strings
-                    Init                           Not polled 
-                    Off                            Not polled  OUT (ReturnType, 'informational message')
-                    On                             Not polled  OUT (ReturnType, 'informational message')
-                    Reset                          Not polled  OUT (ReturnType, 'informational message')
-                    Standby                        Not polled  OUT (ReturnType, 'informational message')
-                    State                          Polled      OUT Device state
-                    Status                         Not polled  OUT Device status
-Attributes        : BitstreamChecksum              <N/A>
+Device class      : TalonBoard
+Commands          : DebugDevice                    N/A
+                                                   Not polled 
+                                                   OUT The TCP port the debugger is listening on.
+                    GetVersionInfo                 TalonBoard, ska_tango_base, 0.11.4, A set of generic base devices for SKA Telescope.
+                                                   Not polled 
+                                                   OUT Version strings
+                    Init                           N/A
+                                                   Not polled 
+                    Off                            N/A
+                                                   Not polled 
+                                                   OUT (ReturnType, 'informational message')
+                    On                             N/A
+                                                   Not polled 
+                                                   OUT (ReturnType, 'informational message')
+                    Reset                          N/A
+                                                   Not polled 
+                                                   OUT (ReturnType, 'informational message')
+                    Standby                        N/A
+                                                   Not polled 
+                                                   OUT (ReturnType, 'informational message')
+                    State                          DISABLE
+                                                   Polled     
+                                                   OUT Device state
+                    Status                         The device is in DISABLE state.
+                                                   Not polled 
+                                                   OUT Device status
+Attributes        : BitstreamChecksum              <ERROR> System ID Device is not available
                                                    Not polled
                                                    Event change : Not specified
                                                    Quality : <N/A>
-                    BitstreamVersion               <N/A>
+                    BitstreamVersion               <ERROR> System ID Device is not available
                                                    Not polled
                                                    Event change : Not specified
                                                    Quality : <N/A>
-                    DIMMTemperatures               <N/A>
+                    DIMMTemperatures               <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
                                                    Not polled
                                                    Event change : Not specified
                                                    Quality : <N/A>
-                    FansFault                      <N/A>
+                    FansFault                      <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
                                                    Not polled
                                                    Event change : Not specified
                                                    Quality : <N/A>
-                    FansPwm                        <N/A>
+                    FansPwm                        <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
                                                    Not polled
                                                    Event change : Not specified
                                                    Quality : <N/A>
-...
+                    FansPwmEnable                  <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    FpgaDieTemperature             <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    HumiditySensorTemperature      <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    MboRxLOLStatus                 <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    MboRxLOSStatus                 <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    MboRxVccVoltages               <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    MboTxFaultStatus               <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    MboTxLOLStatus                 <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    MboTxLOSStatus                 <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    MboTxTemperatures              <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    MboTxVccVoltages               <ERROR> AttributeError: 'TalonBoardComponentManager' object has no attribute '_hostname'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    State                          'DISABLE'
+                                                   Polled
+                                                   Event change : Not specified
+                                                   Quality : ATTR_VALID
+                    Status                         'The device is in DISABLE state.'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : ATTR_VALID
+                    adminMode                      '1'
+                                                   Polled
+                                                   Event change : Not specified
+                                                   Quality : ATTR_VALID
+                    buildState                     'ska_tango_base, 0.11.4, A set of generic base devices for SKA Telescope.'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : ATTR_VALID
+                    comms_iopll_locked_fault       <ERROR> Talon Status Device is not available
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    controlMode                    '0'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : ATTR_VALID
+                    e100g_0_pll_fault              <ERROR> Talon Status Device is not available
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    e100g_1_pll_fault              <ERROR> Talon Status Device is not available
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    emif_bl_fault                  <ERROR> Talon Status Device is not available
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    emif_br_fault                  <ERROR> Talon Status Device is not available
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    emif_tr_fault                  <ERROR> Talon Status Device is not available
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    fs_iopll_locked_fault          <ERROR> Talon Status Device is not available
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    healthState                    '0'
+                                                   Polled
+                                                   Event change : Not specified
+                                                   Quality : ATTR_VALID
+                    iopll_locked_fault             <ERROR> Talon Status Device is not available
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    loggingLevel                   '4'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : ATTR_VALID
+                    loggingTargets                 tango::logger
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : ATTR_VALID
+                    simulationMode                 '0'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : ATTR_VALID
+                    slim_pll_fault                 <ERROR> Talon Status Device is not available
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    system_clk_fault               <ERROR> Talon Status Device is not available
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : <N/A>
+                    testMode                       '0'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : ATTR_VALID
+                    versionId                      '0.11.4'
+                                                   Not polled
+                                                   Event change : Not specified
+                                                   Quality : ATTR_VALID
+Properties        : HpsMasterServer                dshpsmaster
+                    InfluxDbAuthToken              ikIDRLicRaMxviUJRqyE8bKF1Y_sZnaHc9MkWZY92jxg1isNPIGCyLtaC8EjbOhsT_kTzjt12qenB4g7-UOrog==
+                    InfluxDbBucket                 talon
+                    InfluxDbOrg                    ska
+                    InfluxDbPort                   8086
+                    Instance                       talon1_test
+                    TalonDx100GEthernetServer      ska-talondx-100-gigabit-ethernet-ds
+                    TalonDxBoardAddress            192.168.8.1
+                    TalonDxSysIdServer             ska-talondx-sysid-ds
+                    TalonStatusServer              ska-talondx-status-ds
+                    polled_attr                    state  1000
+                                                   healthstate  3000
+                                                   adminmode  3000
 ```
 
 ## Examples
 
 ```
 $ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 --show-dev
-$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -d
+$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -l
 $ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout
 $ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -C Telescope
 $ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -P Power

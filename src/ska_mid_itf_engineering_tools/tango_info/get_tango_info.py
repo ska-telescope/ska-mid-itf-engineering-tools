@@ -1046,7 +1046,7 @@ def show_devices(
         print("## Tango host\n```\n%s\n```" % tango_host)
         print(f"## Number of devices\n{len(devices)}")
     elif headers and disp_action == 4:
-        print(f"{'STATE':10} {'DEVICE NAME':40} {'ADMIN MODE':11} {'VERSION':8} CLASS")
+        print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN MODE':11} {'VERSION':8} CLASS")
     else:
         pass
 
