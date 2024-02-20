@@ -94,3 +94,57 @@ class TangoDevices:
             if chk_cmds:
                 dev_cmds[dev_name] = chk_cmds
         return dev_cmds
+
+
+def list_devices(
+    logger: logging.Logger,
+    cfg_data: Any,
+    evrythng: bool,
+    itype: str | None,
+) -> list:
+    """
+    Get a list of devices.
+
+    :param logger: logging handle
+    :param cfg_data: configuration data in JSON format
+    :param evrythng: get commands and attributes regadrless of state
+    :param itype: filter device name
+    :return: list of devices
+    """
+    devices: list = []
+
+    # Get Tango database host
+    tango_host = os.getenv("TANGO_HOST")
+
+    # Connect to database
+    try:
+        database = tango.Database()
+    except Exception:
+        logger.error("Could not connect to Tango database %s", tango_host)
+        return devices
+
+    # Read devices
+    device_list = database.get_device_exported("*")
+    logger.info(f"{len(device_list)} devices available")
+
+    for device in sorted(device_list.value_string):
+        # Check device name against mask
+        if not evrythng:
+            chk_fail = False
+            for dev_chk in cfg_data["ignore_device"]:
+                chk_len = len(dev_chk)
+                if device[0:chk_len] == dev_chk:
+                    chk_fail = True
+                    break
+            if chk_fail:
+                logger.debug("'%s' matches '%s'", device, cfg_data["ignore_device"])
+                continue
+        if itype:
+            iupp = device.upper()
+            if itype not in iupp:
+                logger.info(f"Ignore {device}")
+                continue
+        logger.info("Add device %s", device)
+        devices.append(device)
+
+    return devices

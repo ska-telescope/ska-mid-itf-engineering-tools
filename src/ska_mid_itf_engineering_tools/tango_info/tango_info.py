@@ -12,9 +12,9 @@ from typing import Any, TextIO
 from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl
 from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import print_jargon
+from ska_mid_itf_engineering_tools.tango_info.get_tango_attributes import show_attributes
 from ska_mid_itf_engineering_tools.tango_info.get_tango_info import (
     check_tango,
-    show_attributes,
     show_command_inputs,
     show_commands,
     show_devices,
@@ -274,11 +274,11 @@ def main(y_arg: list) -> int:  # noqa: C901
     _module_logger.info("Set TANGO_HOST to %s", tango_host)
 
     if tgo_attrib is not None:
-        show_attributes(_module_logger, disp_action, evrythng, tgo_attrib, min_str_len)
+        show_attributes(_module_logger, cfg_data, disp_action, evrythng, tgo_attrib, dry_run)
         return 0
 
     if tgo_cmd is not None:
-        show_commands(_module_logger, disp_action, evrythng, tgo_cmd, min_str_len)
+        show_commands(_module_logger, cfg_data, disp_action, evrythng, tgo_cmd, dry_run)
         return 0
 
     if tgo_in_type is not None:
@@ -286,7 +286,7 @@ def main(y_arg: list) -> int:  # noqa: C901
         return 0
 
     if tgo_prop is not None:
-        show_properties(_module_logger, disp_action, evrythng, tgo_prop, min_str_len)
+        show_properties(_module_logger, cfg_data, disp_action, evrythng, tgo_prop, dry_run)
         return 0
 
     if not disp_action:

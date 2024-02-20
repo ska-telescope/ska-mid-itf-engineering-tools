@@ -70,8 +70,7 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
 To obtain help:
 
-```
-$ tango_info.py --help
+```$ tango_info.py --help
 Display version number
         tango_info.py --version
 Display help
@@ -125,8 +124,7 @@ where:
 
 The user must be logged into the Mid ITF VPN, otherwise this will time out.
 
-```
-$ tango_info.py --show-ns
+```$ tango_info.py --show-ns
 Namespaces : 53
         advanced-tango-training
         advanced-tango-training-sdp
@@ -191,8 +189,7 @@ This will display the name, current state and admin mode setting for each Tango 
 in the database. Note that output has been shorteneded. By default, device names starting 
 with **dserver** or **sys** are not listed.
 
-```
-$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 --list
+```$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 --list
 DEVICE NAME                              STATE      ADMIN MODE  VERSION  CLASS
 mid-csp/capability-fsp/0                 ON         ONLINE      2        MidCspCapabilityFsp
 mid-csp/capability-vcc/0                 ON         ONLINE      2        MidCspCapabilityVcc
@@ -268,8 +265,7 @@ ska_mid/tm_subarray_node/1               ON         OFFLINE     0.13.19  Subarra
 
 To find all devices with **talon** in the name:
 
-```
-$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -l
+```$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -l
 DEVICE NAME                              STATE      ADMIN MODE  VERSION  CLASS
 mid_csp_cbf/talon_board/001              DISABLE    OFFLINE     0.11.4   TalonBoard
 mid_csp_cbf/talon_board/002              DISABLE    OFFLINE     0.11.4   TalonBoard
@@ -294,26 +290,51 @@ It is possible to search for attributes, commands or properties by part of the n
 
 To find all devices with attributes that contain **timeout**:
 
+```$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout
+DEVICE                                           ATTRIBUTE                                VALUE
+mid-csp/control/0                                commandTimeout                           5
+                                                 offCmdTimeoutExpired                     False
+                                                 onCmdTimeoutExpired                      False
+                                                 standbyCmdTimeoutExpired                 False
+mid-csp/subarray/01                              commandTimeout                           5
+                                                 timeoutExpiredFlag                       False
+mid-csp/subarray/02                              commandTimeout                           5
+                                                 timeoutExpiredFlag                       False
+mid-csp/subarray/03                              commandTimeout                           5
+                                                 timeoutExpiredFlag                       False
+mid_csp_cbf/sub_elt/subarray_01                  assignResourcesTimeoutExpiredFlag        False
+                                                 configureScanTimeoutExpiredFlag          False
+                                                 releaseResourcesTimeoutExpiredFlag       False
+mid_csp_cbf/sub_elt/subarray_02                  assignResourcesTimeoutExpiredFlag        False
+                                                 configureScanTimeoutExpiredFlag          False
+                                                 releaseResourcesTimeoutExpiredFlag       False
+mid_csp_cbf/sub_elt/subarray_03                  assignResourcesTimeoutExpiredFlag        False
+                                                 configureScanTimeoutExpiredFlag          False
+                                                 releaseResourcesTimeoutExpiredFlag       False
 ```
-$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout
-mid-csp/control/0                                commandTimeout
-                                                 offCmdTimeoutExpired
-                                                 onCmdTimeoutExpired
-                                                 standbyCmdTimeoutExpired
-mid-csp/subarray/01                              commandTimeout
-                                                 timeoutExpiredFlag
-mid-csp/subarray/02                              commandTimeout
-                                                 timeoutExpiredFlag
-mid-csp/subarray/03                              commandTimeout
-                                                 timeoutExpiredFlag
-mid_csp_cbf/sub_elt/subarray_01                  assignResourcesTimeoutExpiredFlag
-                                                 configureScanTimeoutExpiredFlag
-                                                 releaseResourcesTimeoutExpiredFlag
-mid_csp_cbf/sub_elt/subarray_02                  assignResourcesTimeoutExpiredFlag
-                                                 configureScanTimeoutExpiredFlag
-                                                 releaseResourcesTimeoutExpiredFlag
-mid_csp_cbf/sub_elt/subarray_03                  assignResourcesTimeoutExpiredFlag
-                                                 configureScanTimeoutExpiredFlag
+
+To find all devices with attributes that contain **timeout**, without displaying values:
+
+```$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout --dry-run
+DEVICE                                           ATTRIBUTE
+mid-csp/control/0                                commandTimeout                          
+                                                 offCmdTimeoutExpired                    
+                                                 onCmdTimeoutExpired                     
+                                                 standbyCmdTimeoutExpired                
+mid-csp/subarray/01                              commandTimeout                          
+                                                 timeoutExpiredFlag                      
+mid-csp/subarray/02                              commandTimeout                          
+                                                 timeoutExpiredFlag                      
+mid-csp/subarray/03                              commandTimeout                          
+                                                 timeoutExpiredFlag                      
+mid_csp_cbf/sub_elt/subarray_01                  assignResourcesTimeoutExpiredFlag       
+                                                 configureScanTimeoutExpiredFlag         
+                                                 releaseResourcesTimeoutExpiredFlag      
+mid_csp_cbf/sub_elt/subarray_02                  assignResourcesTimeoutExpiredFlag       
+                                                 configureScanTimeoutExpiredFlag         
+                                                 releaseResourcesTimeoutExpiredFlag      
+mid_csp_cbf/sub_elt/subarray_03                  assignResourcesTimeoutExpiredFlag       
+                                                 configureScanTimeoutExpiredFlag         
                                                  releaseResourcesTimeoutExpiredFlag
 ```
 
@@ -330,8 +351,7 @@ ska_mid/tm_central/central_node                  TelescopeOff
 
 To find all devices with commands that have **Outlet** in the name:
 
-```
-$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -C Outlet
+```$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -C Outlet
 mid_csp_cbf/power_switch/001                     GetOutletPowerMode
                                                  TurnOffOutlet
                                                  TurnOnOutlet
@@ -347,8 +367,7 @@ mid_csp_cbf/power_switch/003                     GetOutletPowerMode
 
 To find all devices with properties that have **Power** in the name:
 
-```
-$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -P Power
+```$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -P Power
 mid_csp_cbf/power_switch/001                     PowerSwitchIp
                                                  PowerSwitchLogin
                                                  PowerSwitchModel
@@ -378,8 +397,7 @@ mid_csp_cbf/talon_lru/004                        PDU1PowerOutlet
 
 This display all information about a device. The input and output of commands are displayed where available.
 
-```
-$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -f
+```$ tango_info.py --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -f
 Device            : mid_csp_cbf/talon_lru/001
 Admin mode        : 1
 State             : DISABLE
