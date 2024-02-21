@@ -5,6 +5,8 @@ from typing import Any
 
 import tango
 
+from ska_mid_itf_engineering_tools.tango_info.get_tango_info import TangoDeviceInfo
+
 
 class TangoDevices:
     """Compile a list of available Tango devices."""
@@ -148,3 +150,62 @@ def list_devices(
         devices.append(device)
 
     return devices
+
+
+def show_devices(
+    logger: logging.Logger,
+    cfg_data: Any,
+    disp_action: int,
+    evrythng: bool,
+    itype: str | None,
+    headers: bool,
+    dry_run: bool,
+) -> None:  # noqa: C901
+    """
+    Display information about Tango devices.
+
+    :param logger: logging handle
+    :param cfg_data: configuration data in JSON format
+    :param disp_action: flag for markdown output
+    :param evrythng: get commands and attributes regadrless of state
+    :param itype: filter device name
+    :param headers: display headers
+    :param dry_run: do not read attributes
+    """
+    # Get Tango database host
+    tango_host = os.getenv("TANGO_HOST")
+
+    devices = list_devices(logger, cfg_data, evrythng, itype)
+    logger.info("Read %d devices" % (len(devices)))
+
+    # Mark-down foreword
+    if disp_action == 2:
+        print("# Tango devices")
+        print("## Tango host\n```\n%s\n```" % tango_host)
+        print(f"## Number of devices\n{len(devices)}")
+    elif headers and disp_action == 4:
+        print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN MODE':11} {'VERSION':8} CLASS")
+    else:
+        pass
+
+    dev_count = 0
+    on_dev_count = 0
+    for device in devices:
+        dev_count += 1
+        try:
+            tgo_info = TangoDeviceInfo(logger, cfg_data, device)
+        except tango.DevFailed as terr:
+            print(f"{device} : <ERROR> \033[3m{terr.args[0].desc.strip()}\033[0m")
+            continue
+        tgo_info.show_device(disp_action, dry_run)
+
+    # Mark-down summary
+    if disp_action == 2:
+        if itype:
+            print("## Summary")
+            print(f"Found {dev_count} devices matching {itype}")
+        else:
+            print("## Summary")
+            print(f"Found {dev_count} devices")
+        print(f"There are {on_dev_count} active devices")
+        print("# Kubernetes pod\n>", end="")

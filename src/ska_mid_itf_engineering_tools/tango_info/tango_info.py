@@ -13,13 +13,12 @@ from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl
 from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import print_jargon
 from ska_mid_itf_engineering_tools.tango_info.get_tango_attributes import show_attributes
+from ska_mid_itf_engineering_tools.tango_info.get_tango_commands import show_commands
+from ska_mid_itf_engineering_tools.tango_info.get_tango_devices import show_devices
 from ska_mid_itf_engineering_tools.tango_info.get_tango_info import (
-    check_tango,
-    show_command_inputs,
-    show_commands,
-    show_devices,
-    show_properties,
+    check_tango, show_command_inputs,
 )
+from ska_mid_itf_engineering_tools.tango_info.get_tango_properties import show_properties
 
 logging.basicConfig(level=logging.WARNING)
 _module_logger = logging.getLogger(__name__)
