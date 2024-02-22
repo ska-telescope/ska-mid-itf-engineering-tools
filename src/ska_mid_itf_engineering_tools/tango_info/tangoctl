@@ -16,7 +16,8 @@ from ska_mid_itf_engineering_tools.tango_info.get_tango_attributes import show_a
 from ska_mid_itf_engineering_tools.tango_info.get_tango_commands import show_commands
 from ska_mid_itf_engineering_tools.tango_info.get_tango_devices import show_devices
 from ska_mid_itf_engineering_tools.tango_info.get_tango_info import (
-    check_tango, show_command_inputs,
+    check_tango,
+    show_command_inputs,
 )
 from ska_mid_itf_engineering_tools.tango_info.get_tango_properties import show_properties
 
@@ -173,9 +174,9 @@ def main(y_arg: list) -> int:  # noqa: C901
         print(f"Could not read command line: {opt_err}")
         return 1
 
-    cfg_name: str | bytes = os.path.basename(y_arg[0]).replace(".py", ".json")
-    cfg_read: str = os.path.dirname(y_arg[0]) + "/" + cfg_name
-    cfg_file: TextIO = open(cfg_read)
+    # Read configuration file
+    cfg_name: str | bytes = y_arg[0] + ".json"
+    cfg_file: TextIO = open(cfg_name)
     cfg_data: Any = json.load(cfg_file)
     cfg_file.close()
     databaseds_name: str = cfg_data["databaseds_name"]

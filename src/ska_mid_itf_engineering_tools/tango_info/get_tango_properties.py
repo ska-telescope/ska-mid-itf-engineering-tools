@@ -1,8 +1,11 @@
 """Read and display Tango properties."""
 import logging
+import os
+
 import tango
 
 from ska_mid_itf_engineering_tools.tango_info.get_tango_devices import list_devices
+
 
 def show_properties(
     logger: logging.Logger,
@@ -22,6 +25,7 @@ def show_properties(
     :param p_name: filter command name
     :param dry_run: do not display values
     """
+    logger.info("Read properties matching %s", p_name)
     if p_name is None:
         return
 
@@ -32,6 +36,11 @@ def show_properties(
     # Read devices
     device_list = list_devices(logger, cfg_data, evrythng, None)
     logger.info("Read %d devices" % (len(device_list)))
+
+    if not dry_run:
+        print(f"{'DEVICE':48} {'PROPERTY':40} VALUE")
+    else:
+        print(f"{'DEVICE':48} PROPERTY")
 
     p_name = p_name.lower()
     for device in sorted(device_list):

@@ -220,6 +220,7 @@ def show_attributes(  # noqa: C901
     """
     prefix: str = " " * 89
 
+    logger.info("Read attributes matching %s", a_name)
     if a_name is None:
         return
 

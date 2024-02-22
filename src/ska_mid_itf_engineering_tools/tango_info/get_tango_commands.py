@@ -1,7 +1,9 @@
 """Read and display Tango commands."""
 import logging
-import tango
+import os
 from typing import Any
+
+import tango
 
 from ska_mid_itf_engineering_tools.tango_info.get_tango_devices import list_devices
 
@@ -63,8 +65,6 @@ def show_commands(  # noqa: C901
 
         :param idev: Tango device handle
         :param f_cmd: command name
-        :param r_commands: commands that can be run
-        :param r_commands_name: commands that can be run with name as parameter
         :param min_len: minimum string length
         """
         # Read commands
@@ -81,6 +81,7 @@ def show_commands(  # noqa: C901
         logger.info("Found commands %s", cmds_found)
         return cmds_found
 
+    logger.info("Read commans matching %s", c_name)
     if c_name is None:
         return
     c_name = c_name.lower()

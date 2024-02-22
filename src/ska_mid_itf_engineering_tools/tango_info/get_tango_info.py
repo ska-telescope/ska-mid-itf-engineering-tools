@@ -1,7 +1,6 @@
 """Read information from Tango database."""
 import json
 import logging
-import os
 import socket
 import time
 from typing import Any, Tuple
