@@ -7,7 +7,12 @@ from typing import Any
 import numpy
 import tango
 
-from ska_mid_itf_engineering_tools.tango_info.get_tango_devices import list_devices
+from ska_mid_itf_engineering_tools.tango_info.get_tango_devices import (
+    list_devices,
+    md_format,
+    COLUMN1,
+    COLUMN2,
+)
 
 
 class TangoAttributeInfo:
@@ -207,6 +212,7 @@ def show_attributes(  # noqa: C901
     evrythng: bool,
     a_name: str | None,
     dry_run: bool,
+    fmt: str,
 ) -> None:
     """
     Display information about Tango devices.
@@ -217,8 +223,10 @@ def show_attributes(  # noqa: C901
     :param evrythng: get commands and attributes regadrless of state
     :param a_name: filter attribute name
     :param dry_run: do not display values
+    :param fmt: output format
     """
-    prefix: str = " " * 89
+    prefix: str = " " * (COLUMN1 + COLUMN2 + 1)
+    suffix: str = ""
 
     logger.info("Read attributes matching %s", a_name)
     if a_name is None:
@@ -238,10 +246,24 @@ def show_attributes(  # noqa: C901
         print("## Tango host\n```\n%s\n```" % tango_host)
         print(f"## Number of devices\n{len(device_list)}")
 
-    if not dry_run:
-        print(f"{'DEVICE':48} {'ATTRIBUTE':40} VALUE")
+    prefix: str
+    suffix: str
+    if fmt == "md":
+        if not dry_run:
+            print("|DEVICE NAME|ATTRIBUTE|VALUE|")
+            print("|:----------|:--------|:----|")
+        else:
+            print("|DEVICE NAME|ATTRIBUTE|")
+            print("|:----------|:--------|")
+        prefix: str = " " * (COLUMN1 + COLUMN2 + 1)
+        suffix: str = ""
     else:
-        print(f"{'DEVICE':48} ATTRIBUTE")
+        if not dry_run:
+            print(f"{'DEVICE NAME':{COLUMN1}} {'ATTRIBUTE':{COLUMN2}} VALUE")
+        else:
+            print(f"{'DEVICE NAME':{COLUMN1}} ATTRIBUTE")
+        prefix: str = " " * (COLUMN1 + COLUMN2 + 1)
+        suffix: str = ""
     a_name = a_name.lower()
     for device in sorted(device_list):
         dev: tango.DeviceProxy = tango.DeviceProxy(device)
@@ -256,18 +278,23 @@ def show_attributes(  # noqa: C901
             if a_name in attrib_name.lower():
                 attribs_found.append(attrib_name)
         if attribs_found:
-            print(f"{device:48}", end="")
             attrib_name = attribs_found[0]
-            print(f" \033[1m{attrib_name:40}\033[0m", end="")
+            if fmt == "md":
+                print(f"|{md_format(device)}|{md_format(attrib_name)}|")
+            else:
+                print(f"{device:{COLUMN1}} \033[1m{attrib_name:{COLUMN2}}\033[0m", end="")
             if not dry_run:
                 attrib_val = TangoAttributeInfo(logger, dev, attrib_name)
                 attrib_val.show_value(prefix)
             else:
                 print()
             for attrib_name in attribs_found[1:]:
-                print(f"{' ':48} \033[1m{attrib_name:40}\033[0m", end="")
+                if fmt == "md":
+                    print(f"||{md_format(attrib_name)}|")
+                else:
+                    print(f"{' ':{COLUMN1}} \033[1m{attrib_name:{COLUMN2}}\033[0m", end="")
                 if not dry_run:
                     attrib_val = TangoAttributeInfo(logger, dev, attrib_name)
-                    attrib_val.show_value(prefix)
+                    attrib_val.show_value(fmt, prefix, suffix)
                 else:
                     print()

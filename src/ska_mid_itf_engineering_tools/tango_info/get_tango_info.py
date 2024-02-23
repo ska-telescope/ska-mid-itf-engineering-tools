@@ -49,24 +49,6 @@ def check_device(dev: tango.DeviceProxy) -> bool:
         return False
 
 
-def get_attribute_value(dev: Any, attrib: str, prefix: str) -> str:
-    """Read attribute value."""
-    attr_val: str
-    try:
-        attr_val = dev.read_attribute(attrib).value
-    except tango.DevFailed as terr:
-        attr_val = f"<ERROR> \033[3m{terr.args[0].desc.strip()}\033[0m"
-    if type(attr_val) is str:
-        if "\n" in attr_val:
-            attr_lines = attr_val.split("\n")
-            attr_val = attr_lines[0]
-            for attr_line in attr_lines[1:]:
-                attr_val += prefix + attr_line
-    else:
-        attr_val = str(attr_val)
-    return attr_val
-
-
 class TangoDeviceInfo:
     """Read and display information about Tango device."""
 
@@ -113,11 +95,23 @@ class TangoDeviceInfo:
             self.adminMode = self.dev.adminMode
         except AttributeError:
             self.adminMode = None
+        self.logger.debug(
+            "Admin mode: %d %s (%s)",self.adminMode, str(self.adminMode), type(self.adminMode)
+        )
         self.adminModeStr: str = ""
         if self.adminMode is None:
             self.adminModeStr = "N/A"
+        elif type(self.adminMode) is bool:
+            if self.adminMode:
+                self.adminModeStr = "OFFLINE"
+            else:
+                self.adminModeStr = "ONLINE"
         else:
-            self.adminModeStr = str(self.adminMode).split(".")[1]
+            try:
+                self.adminModeStr = str(self.adminMode).split(".")[1]
+            except IndexError:
+                self.logger.error("Could not read admin mode '%s'", str(self.adminMode))
+                self.adminModeStr = str(self.adminMode)
         try:
             self.version = self.dev.versionId
         except AttributeError:
@@ -225,12 +219,13 @@ class TangoDeviceInfo:
         self.logger.debug("Command return <%s>", rval)
         return rval
 
-    def show_device_command_short(self, prefix: str, cmd: Any) -> None:
+    def show_device_command_short(self, prefix: str, cmd: Any, fmt: str) -> None:
         """
         Print info on device command.
 
         :param prefix: print at front of line
         :param cmd: command name
+        :param fmt: output format
         """
         print(f"{prefix} \033[1m{cmd:30}\033[0m", end="")
         if cmd in self.run_commands:
@@ -247,7 +242,7 @@ class TangoDeviceInfo:
         else:
             print(" N/A")
 
-    def show_device_command_full(self, prefix: str, cmd: Any) -> None:
+    def show_device_command_full(self, prefix: str, cmd: Any, fmt: str) -> None:
         """
         Print info on device command.
 
@@ -304,12 +299,13 @@ class TangoDeviceInfo:
                 print(f"{' ':{PFIX1}}   \033[1m{cmd.cmd_name:30}\033[0m", end="")
                 self.show_device_command_full(" ", cmd)
 
-    def show_attribute_value_scalar(self, prefix: str, attrib_value: Any) -> None:  # noqa: C901
+    def show_attribute_value_scalar(self, prefix: str, attrib_value: Any, fmt: str) -> None:  # noqa: C901
         """
         Print attribute scalar value.
 
         :param prefix: data prefix string
         :param attrib_value: attribute value
+        :param fmt: output format
         """
         json_fmt = True
         try:
@@ -368,12 +364,13 @@ class TangoDeviceInfo:
         else:
             print(f" '{attrib_value}' (type {type(attrib_value)})")
 
-    def show_attribute_value_spectrum(self, prefix: str, attrib_value: Any) -> None:  # noqa: C901
+    def show_attribute_value_spectrum(self, prefix: str, attrib_value: Any, fmt: str) -> None:  # noqa: C901
         """
         Print attribute spectrum value.
 
         :param prefix: data prefix string
         :param attrib_value: attribute value
+        :param fmt: output format
         """
         self.logger.debug("Spectrum %s : %s", type(attrib_value), attrib_value)
         if type(attrib_value) is dict:
@@ -423,7 +420,7 @@ class TangoDeviceInfo:
         else:
             print(f" {type(attrib_value)}:{attrib_value}")
 
-    def show_attribute_value_other(self, prefix: str, attrib_value: Any) -> None:
+    def show_attribute_value_other(self, prefix: str, attrib_value: Any, fmt: str) -> None:
         self.logger.debug("Attribute value %s : %s", type(attrib_value), attrib_value)
         if type(attrib_value) is numpy.ndarray:
             a_list = attrib_value.tolist()
@@ -460,13 +457,14 @@ class TangoDeviceInfo:
             attrib_value = None
         return attrib_value
 
-    def show_attribute_value(self, attrib: str, prefix: str, dry_run: bool) -> Any:  # noqa: C901
+    def show_attribute_value(self, attrib: str, prefix: str, dry_run: bool, fmt: str) -> Any:  # noqa: C901
         """
         Print attribute value.
 
         :param attrib: attribute name
         :param prefix: data prefix string
         :param dry_run: skip reading values
+        :param fmt: output format
         """
         if not dry_run:
             attrib_value = self.read_attribute_value(attrib)
@@ -491,7 +489,7 @@ class TangoDeviceInfo:
         return attrib_value
 
     def show_attribute_config(
-        self, attrib: str, prefix: str, dry_run: bool, attrib_value: Any
+        self, attrib: str, prefix: str, dry_run: bool, attrib_value: Any, fmt: str
     ) -> None:  # noqa: C901
         """
         Print attribute configuration.
@@ -500,6 +498,7 @@ class TangoDeviceInfo:
         :param prefix: data prefix string
         :param dry_run: skip reading values
         :param attrib_value: attribute value
+        :param fmt: output format
         """
         if self.dev.is_attribute_polled(attrib):
             print(f"{prefix} Polled")
@@ -516,11 +515,12 @@ class TangoDeviceInfo:
         else:
             print(f"{prefix} Quality : <N/A>")
 
-    def show_device_attributes(self, prefix: str, dry_run: bool) -> None:
+    def show_device_attributes(self, dry_run: bool, fmt: str) -> None:
         """
         Print attributes.
 
         :param dry_run: flag to skip reading of values
+        :param fmt: output format
         """
         try:
             attribs = sorted(self.dev.get_attribute_list())
@@ -537,11 +537,12 @@ class TangoDeviceInfo:
                 attrib_value = self.show_attribute_value(attrib, prefix, dry_run)
                 self.show_attribute_config(attrib, prefix, dry_run, attrib_value)
 
-    def show_device_attributes_short(self, prefix: str, dry_run: bool) -> None:
+    def show_device_attributes_short(self, dry_run: bool, fmt: str) -> None:
         """
         Print attributes.
 
         :param dry_run: flag to skip reading of values
+        :param fmt: output format
         """
         try:
             attribs = sorted(self.dev.get_attribute_list())
@@ -561,11 +562,12 @@ class TangoDeviceInfo:
                 print(f"{' ':{PFIX1}}   \033[1m{attrib:30}\033[0m", end="")
                 self.show_attribute_value(attrib, prefix, dry_run)
 
-    def show_property(self, props: list) -> None:  # noqa: C901
+    def _show_property(self, props: list, fmt: str) -> None:  # noqa: C901
         """
         Display properties.
 
         :param props: properties
+        :param fmt: output format
         """
         prop = props[0]
         prop_values = self.dev.get_property(prop)
@@ -606,11 +608,13 @@ class TangoDeviceInfo:
                     print(f"{' ':{PFIX1}}   {' ':30} {prop1}  {prop2}")
                     n += 2
 
-    def show_device_properties(self, dry_run: bool) -> None:  # noqa: C901
+    def _show_device_properties(self, prefix: str, dry_run: bool, fmt: str) -> None:  # noqa: C901
         """
         Print properties.
 
+        :param prefix: start of line
         :param dry_run: flag to skip reading of values
+        :param fmt: output format
         """
         try:
             props = sorted(self.dev.get_property_list("*"))
@@ -629,14 +633,15 @@ class TangoDeviceInfo:
             prop_list = prop_values[prop]
             print(f"{'Properties':{PFIX1}} : \033[1m{prop:30}\033[0m {prop_list[0]}")
         elif props:
-            self.show_property(props)
+            self._show_property(props)
         else:
             print(f"{'Properties':{PFIX1}} : <NONE>")
 
-    def show_device_query(self) -> int:  # noqa: C901
+    def _show_device_query(self, fmt: str) -> int:  # noqa: C901
         """
         Display Tango device in text format.
 
+        :param fmt: output format
         :return: one if device is on, otherwise zero
         """
         rv = 1
@@ -721,11 +726,12 @@ class TangoDeviceInfo:
         print("")
         return rv
 
-    def show_device_short(self, dry_run: bool) -> int:  # noqa: C901
+    def _show_device_short(self, dry_run: bool, fmt: str) -> int:  # noqa: C901
         """
         Display Tango device in text format.
 
         :param dry_run: flag to skip reading of values
+        :param fmt: output format
         :return: one if device is on, otherwise zero
         """
         if not self.online:
@@ -754,17 +760,18 @@ class TangoDeviceInfo:
                     self.show_device_command_short(f"{' ':{PFIX1}}  ", cmd)
         # Print attributes
         prefix = f"{' ':{PFIX1}}"
-        self.show_device_attributes_short(prefix, dry_run)
+        self.show_device_attributes_short(prefix, dry_run, fmt)
         # Print properties
-        self.show_device_properties(dry_run)
+        self._show_device_properties(prefix, dry_run, fmt)
         print()
         return rv
 
-    def show_device_full(self, dry_run: bool) -> int:  # noqa: C901
+    def _show_device_full(self, dry_run: bool, fmt: str) -> int:  # noqa: C901
         """
         Display Tango device in text format.
 
         :param dry_run: flag to skip reading of values
+        :param fmt: output format
         :return: one if device is on, otherwise zero
         """
         # pylint: disable-next=c-extension-no-member
@@ -833,9 +840,9 @@ class TangoDeviceInfo:
         self.show_device_commands()
         # Print attributes
         prefix = f"{' ':{PFIX1}}"
-        self.show_device_attributes(prefix, dry_run)
+        self.show_device_attributes(prefix, dry_run, fmt)
         # Print properties
-        self.show_device_properties(dry_run)
+        self._show_device_properties(prefix, dry_run, fmt)
         return rv
 
     def show_device_markdown(self) -> int:  # noqa: C901
@@ -917,7 +924,7 @@ class TangoDeviceInfo:
         print("")
         return rval
 
-    def show_device_list(self) -> int:
+    def _show_device_list(self, fmt: str) -> int:
         """
         Display Tango device name only.
 
@@ -927,29 +934,38 @@ class TangoDeviceInfo:
         # if self.dev_state != tango._tango.DevState.ON:
         #     print(f"     {self.dev_name} ({self.adminMode})")
         #     return 0
-        print(
-            f"{self.dev_name:40} {self.dev_str:10} {self.adminModeStr:11} {self.version:8}"
-            f" {self.dev_class}"
-        )
+        if fmt == "md":
+            print(
+                f"|{self.dev_name}|{self.dev_str}|{self.adminModeStr}|{self.version}|"
+                f"{self.dev_class}|"
+            )
+        else:
+            print(
+                f"{self.dev_name:40} {self.dev_str:10} {self.adminModeStr:11} {self.version:8}"
+                f" {self.dev_class}"
+            )
         return 1
 
-    def show_device(self, disp_action: int, dry_run: bool) -> None:
+    def show_device(self, disp_action: int, dry_run: bool, fmt: str) -> None:
         """
         Print device information.
 
         :param disp_action: display format flag
         :param dry_run: skip reading of attributes
+        :param fmt: output format
         """
+        # if fmt == "md":
+        #     self.on_dev_count += self.show_device_markdown()
         if disp_action == 5:
-            self.on_dev_count += self.show_device_short(dry_run)
+            self.on_dev_count += self._show_device_short(dry_run, fmt)
         elif disp_action == 4:
-            self.on_dev_count += self.show_device_list()
+            self.on_dev_count += self._show_device_list(fmt)
         elif disp_action == 3:
-            self.on_dev_count += self.show_device_query()
-        elif disp_action == 2:
-            self.on_dev_count += self.show_device_markdown()
+            self.on_dev_count += self._show_device_query(fmt)
+        # elif disp_action == 2:
+        #     self.on_dev_count += self.show_device_markdown()
         elif disp_action == 1:
-            self.on_dev_count += self.show_device_full(dry_run)
+            self.on_dev_count += self._show_device_full(dry_run, fmt)
         else:
             print("Nothing to do!")
 

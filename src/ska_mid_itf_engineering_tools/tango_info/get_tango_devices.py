@@ -7,6 +7,14 @@ import tango
 
 from ska_mid_itf_engineering_tools.tango_info.get_tango_info import TangoDeviceInfo
 
+COLUMN1 = 55
+COLUMN2 = 45
+
+
+def md_format(inp: str) -> str:
+    outp = inp.replace("/", "\\/").replace("_", "\\_").replace("-", "\\-")
+    return outp
+
 
 class TangoDevices:
     """Compile a list of available Tango devices."""
@@ -160,6 +168,7 @@ def show_devices(
     itype: str | None,
     headers: bool,
     dry_run: bool,
+    fmt: str,
 ) -> None:  # noqa: C901
     """
     Display information about Tango devices.
@@ -171,6 +180,7 @@ def show_devices(
     :param itype: filter device name
     :param headers: display headers
     :param dry_run: do not read attributes
+    :param fmt: output format
     """
     # Get Tango database host
     tango_host = os.getenv("TANGO_HOST")
@@ -183,8 +193,10 @@ def show_devices(
         print("# Tango devices")
         print("## Tango host\n```\n%s\n```" % tango_host)
         print(f"## Number of devices\n{len(devices)}")
+        print("|DEVICE NAME|STATE|ADMIN MODE|VERSION|CLASS|")
+        print("|:----------|:----|:---------|:------|:----|")
     elif headers and disp_action == 4:
-        print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN MODE':11} {'VERSION':8} CLASS")
+        print(f"{'DEVICE NAME':55} {'STATE':10} {'ADMIN MODE':11} {'VERSION':8} CLASS")
     else:
         pass
 
@@ -197,7 +209,7 @@ def show_devices(
         except tango.DevFailed as terr:
             print(f"{device} : <ERROR> \033[3m{terr.args[0].desc.strip()}\033[0m")
             continue
-        tgo_info.show_device(disp_action, dry_run)
+        tgo_info.show_device(disp_action, dry_run, fmt)
 
     # Mark-down summary
     if disp_action == 2:
