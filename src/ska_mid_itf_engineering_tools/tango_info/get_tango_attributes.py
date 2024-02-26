@@ -295,6 +295,6 @@ def show_attributes(  # noqa: C901
                     print(f"{' ':{COLUMN1}} \033[1m{attrib_name:{COLUMN2}}\033[0m", end="")
                 if not dry_run:
                     attrib_val = TangoAttributeInfo(logger, dev, attrib_name)
-                    attrib_val.show_value(fmt, prefix, suffix)
+                    attrib_val.show_value(fmt)  #, prefix, suffix)
                 else:
                     print()

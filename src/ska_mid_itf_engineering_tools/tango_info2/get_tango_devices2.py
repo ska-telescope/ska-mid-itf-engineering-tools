@@ -16,28 +16,97 @@ class TangoctlDevice:
     attributes: dict = {}
     properties: dict = {}
     command_config: Any
+    attribs_found: list = []
 
-    def __init__(self, logger: logging.Logger, device: str):
+    def __init__(  # noqa: C901
+        self,
+        logger: logging.Logger,
+        device: str,
+        tgo_attrib: str | None,
+        tgo_cmd: str | None,
+        tgo_prop: str | None,
+    ):
         self.logger = logger
-        self.logger.info("Add device %s", device)
+        self.logger.debug("Add device %s with attribute %s", device, tgo_attrib)
         self.dev = tango.DeviceProxy(device)
         self.dev_name = self.dev.name()
         cmds = sorted(self.dev.get_command_list())
         for cmd in cmds:
-            self.logger.debug("Add command %s", cmd)
-            self.commands[cmd] = {}
-            self.commands[cmd]["config"] = self.dev.get_command_config(cmd)
+            if tgo_cmd:
+                if tgo_cmd in cmd.lower():
+                    self.logger.debug("Add command %s", cmd)
+                    self.commands[cmd] = {}
+            elif tgo_attrib or tgo_prop:
+                self.logger.debug("Skip commands")
+            else:
+                self.logger.debug("Add command %s", cmd)
+                self.commands[cmd] = {}
+            # self.commands[cmd]["config"] = self.dev.get_command_config(cmd)
         attribs = sorted(self.dev.get_attribute_list())
         for attrib in attribs:
-            self.logger.debug("Add attribute %s", attrib)
-            self.attributes[attrib] = {}
-            self.attributes[attrib]["config"] = self.dev.get_attribute_config(attrib)
+            if tgo_attrib:
+                if tgo_attrib in attrib.lower():
+                    self.logger.debug("Add attribute %s", attrib)
+                    self.attributes[attrib] = {}
+                else:
+                    self.logger.debug("Skip attribute %s", attrib)
+            elif tgo_cmd or tgo_prop:
+                self.logger.debug("Skip attributes")
+            else:
+                self.logger.debug("Add attribute %s", attrib)
+                self.attributes[attrib] = {}
+            # self.attributes[attrib]["config"] = self.dev.get_attribute_config(attrib)
         props = sorted(self.dev.get_property_list("*"))
         for prop in props:
-            self.logger.debug("Add property %s", prop)
-            self.properties[prop] = {}
+            if tgo_prop:
+                if tgo_prop in prop.lower():
+                    self.logger.debug("Add property %s", prop)
+                    self.properties[prop] = {}
+                else:
+                    self.logger.debug("Skip property %s", prop)
+            elif tgo_attrib or tgo_cmd:
+                self.logger.debug("Skip property")
+            else:
+                self.logger.debug("Add property %s", prop)
+                self.properties[prop] = {}
         self.info = self.dev.info()
-        self.version = self.dev.versionId
+        try:
+            self.version = self.dev.versionId
+        except AttributeError:
+            self.version = "N/A"
+        self.logger.info(
+            "Add device %s with %d attributes, %d commands and %d properties",
+            device,
+            len(self.attributes),
+            len(self.commands),
+            len(self.properties),
+        )
+
+    def read_config(self) -> None:
+        self.logger.info("Read config for device %s", self.dev_name)
+        for attrib in self.attributes:
+            self.logger.debug("Read attribute config for %s", attrib)
+            try:
+                self.attributes[attrib]["config"] = self.dev.get_attribute_config(attrib)
+            except tango.DevFailed:
+                self.logger.info("Could not not read attribute config %s", attrib)
+                self.attributes[attrib]["config"] = None
+        for cmd in self.commands:
+            self.logger.debug("Read command config for %s", cmd)
+            try:
+                self.commands[cmd]["config"] = self.dev.get_command_config(cmd)
+            except tango.DevFailed:
+                self.logger.info("Could not not read command config %s", cmd)
+                self.commands[cmd]["config"] = None
+
+    def check_for_attribute(self, tgo_attrib: str | None) -> list:
+        self.attribs_found: list = []
+        if not tgo_attrib:
+            return self.attribs_found
+        for attrib in self.attributes:
+            if tgo_attrib in attrib.lower():
+                self.attribs_found.append(attrib)
+        return self.attribs_found
 
     def get_commands(self) -> dict:
         return self.commands
@@ -64,41 +133,47 @@ class TangoctlDevice:
             devdict["attributes"][attrib]["data_format"] = str(
                 self.attributes[attrib]["data_format"]
             )
-            devdict["attributes"][attrib]["description"] = self.attributes[attrib][
-                "config"
-            ].description
-            devdict["attributes"][attrib]["root_attr_name"] = self.attributes[attrib][
-                "config"
-            ].root_attr_name
-            devdict["attributes"][attrib]["format"] = self.attributes[attrib]["config"].format
-            devdict["attributes"][attrib]["data_format"] = str(
-                self.attributes[attrib]["config"].data_format
-            )
-            devdict["attributes"][attrib]["disp_level"] = str(
-                self.attributes[attrib]["config"].disp_level
-            )
-            devdict["attributes"][attrib]["data_type"] = str(
-                self.attributes[attrib]["config"].data_type
-            )
-            devdict["attributes"][attrib]["display_unit"] = self.attributes[attrib][
-                "config"
-            ].display_unit
-            devdict["attributes"][attrib]["standard_unit"] = self.attributes[attrib][
-                "config"
-            ].standard_unit
-            devdict["attributes"][attrib]["writable"] = str(
-                self.attributes[attrib]["config"].writable
-            )
-            devdict["attributes"][attrib]["writable_attr_name"] = self.attributes[attrib][
-                "config"
-            ].writable_attr_name
+            if self.attributes[attrib]["config"] is not None:
+                devdict["attributes"][attrib]["description"] = self.attributes[attrib][
+                    "config"
+                ].description
+                devdict["attributes"][attrib]["root_attr_name"] = self.attributes[attrib][
+                    "config"
+                ].root_attr_name
+                devdict["attributes"][attrib]["format"] = self.attributes[attrib]["config"].format
+                devdict["attributes"][attrib]["data_format"] = str(
+                    self.attributes[attrib]["config"].data_format
+                )
+                devdict["attributes"][attrib]["disp_level"] = str(
+                    self.attributes[attrib]["config"].disp_level
+                )
+                devdict["attributes"][attrib]["data_type"] = str(
+                    self.attributes[attrib]["config"].data_type
+                )
+                devdict["attributes"][attrib]["display_unit"] = self.attributes[attrib][
+                    "config"
+                ].display_unit
+                devdict["attributes"][attrib]["standard_unit"] = self.attributes[attrib][
+                    "config"
+                ].standard_unit
+                devdict["attributes"][attrib]["writable"] = str(
+                    self.attributes[attrib]["config"].writable
+                )
+                devdict["attributes"][attrib]["writable_attr_name"] = self.attributes[attrib][
+                    "config"
+                ].writable_attr_name
 
         def set_json_command() -> None:
             devdict["commands"][cmd] = {}
-            devdict["commands"][cmd]["in_type"] = repr(self.commands[cmd]["config"].in_type)
-            devdict["commands"][cmd]["in_type_desc"] = self.commands[cmd]["config"].in_type_desc
-            devdict["commands"][cmd]["out_type"] = repr(self.commands[cmd]["config"].out_type)
-            devdict["commands"][cmd]["out_type_desc"] = self.commands[cmd]["config"].out_type_desc
+            if self.commands[cmd]["config"] is not None:
+                devdict["commands"][cmd]["in_type"] = repr(self.commands[cmd]["config"].in_type)
+                devdict["commands"][cmd]["in_type_desc"] = self.commands[cmd][
+                    "config"
+                ].in_type_desc
+                devdict["commands"][cmd]["out_type"] = repr(self.commands[cmd]["config"].out_type)
+                devdict["commands"][cmd]["out_type_desc"] = self.commands[cmd][
+                    "config"
+                ].out_type_desc
 
         def set_json_property() -> None:
             if "value" in self.properties[prop]:
@@ -110,6 +185,8 @@ class TangoctlDevice:
                 else:
                     devdict["properties"][prop]["value"] = prop_val
 
+        self.read_config()
+
         devdict: dict = {}
         devdict["name"] = self.dev_name
         devdict["version"] = self.version
@@ -120,9 +197,14 @@ class TangoctlDevice:
         devdict["info"]["server_host"] = self.info.server_host
         devdict["info"]["server_id"] = self.info.server_id
         devdict["attributes"] = {}
-        for attrib in self.attributes:
-            self.logger.debug("Set attribute %s", attrib)
-            set_json_attribute()
+        if self.attribs_found:
+            for attrib in self.attribs_found:
+                self.logger.debug("Set attribute %s", attrib)
+                set_json_attribute()
+        else:
+            for attrib in self.attributes:
+                self.logger.debug("Set attribute %s", attrib)
+                set_json_attribute()
         devdict["commands"] = {}
         for cmd in self.commands:
             self.logger.debug("Set command %s", cmd)
@@ -187,13 +269,17 @@ class TangoctlDevices:
     """Compile a dictionary of available Tango devices."""
 
     devices: dict = {}
+    attribs_found: list = []
 
-    def __init__(
+    def __init__(  # noqa: C901s
         self,
         logger: logging.Logger,
         evrythng: bool,
         cfg_data: dict,
-        itype: str | None,
+        tgo_name: str | None,
+        tgo_attrib: str | None,
+        tgo_cmd: str | None,
+        tgo_prop: str | None,
     ):
         """
         Get a dict of devices.
@@ -201,7 +287,10 @@ class TangoctlDevices:
         :param logger: logging handle
         :param cfg_data: configuration data in JSON format
         :param evrythng: get commands and attributes regadrless of state
-        :param itype: filter device name
+        :param tgo_name: filter device name
+        :param tgo_name: filter attribute name
+        :param tgo_cmd: filter command name
+        :param tgo_prop: filter property name
         :return: list of devices
         """
         self.logger = logger
@@ -237,13 +326,26 @@ class TangoctlDevices:
                 if chk_fail:
                     self.logger.debug("'%s' matches '%s'", device, cfg_data["ignore_device"])
                     continue
-            if itype:
+            if tgo_name:
                 iupp = device.upper()
-                if itype not in iupp:
+                if tgo_name not in iupp:
                     self.logger.info(f"Ignore {device}")
                     continue
-            logger.debug("Add device %s", device)
-            self.devices[device] = TangoctlDevice(logger, device)
+            try:
+                new_dev = TangoctlDevice(logger, device, tgo_attrib, tgo_cmd, tgo_prop)
+            except tango.ConnectionFailed:
+                logger.info("Could not read device %s", device)
+                continue
+            if tgo_attrib:
+                attribs_found = new_dev.check_for_attribute(tgo_attrib)
+                if attribs_found:
+                    self.logger.info("Device %s matched attributes %s", device, attribs_found)
+                    self.devices[device] = new_dev
+                else:
+                    logger.debug("Skip device %s", device)
+            else:
+                logger.debug("Add device %s", device)
+                self.devices[device] = new_dev
         logger.debug("Read %d devices", len(self.devices))
 
     def read_attribute_values(self) -> None:
@@ -319,7 +421,53 @@ class TangoctlDevices:
     #             else:
     #                 print(heading1_vals)
 
-    def print_txt(self) -> None:  # noqa: C901
+    def print_txt_quick(self) -> None:
+        """Print text in short form."""
+
+        def print_attributes() -> None:
+            print(f"{'attributes':20}", end="")
+            i = 0
+            for attrib in devdict["attributes"]:
+                if not i:
+                    print(f" {attrib:40}", end="")
+                else:
+                    print(f" {' ':20} {attrib:40}", end="")
+                i += 1
+                print(f"{devdict['attributes'][attrib]['value']}")
+                # j = 0
+                # for devattrib in devattribs:
+                #     if not j:
+                #         print(f" {devattrib:40}", end="")
+                #     else:
+                #         print(f" {' ':61} {devattrib:40}", end="")
+                #     j += 1
+                #     devattribval = devattribs[devattrib]
+                #     if "\n" in devattribval:
+                #         attribvals = devattribval.split("\n")
+                #         # Remove empty lines
+                #         attribvals2 = []
+                #         for attribval in attribvals:
+                #             attribval2 = attribval.strip()
+                #             if attribval2:
+                #                 attribvals2.append(attribval2)
+                #         attribval2 = attribvals2[0]
+                #         print(f" {attribval2}")
+                #         for attribval2 in attribvals2[1:]:
+                #             print(f" {' ':102} {attribval2}")
+                #     else:
+                #         print(f" {devattribval}")
+
+        devsdict = self.get_json()
+        for device in devsdict:
+            devdict = devsdict[device]
+            print(f"{'name':20} {devdict['name']}")
+            print(f"{'version':20} {devdict['version']}")
+            print(f"{'versioninfo':20} {devdict['versioninfo'][0]}")
+            print(f"{'adminMode':20} {devdict['adminMode']}")
+            print_attributes()
+            print()
+
+    def print_txt_all(self) -> None:  # noqa: C901
         # def print_attributes():
         #     print(f"{'attributes':20}", end="")
         #     i = 0
@@ -354,7 +502,13 @@ class TangoctlDevices:
         #                 print(f" {devattribval}")
 
         def print_stuff(stuff: str) -> None:
+            self.logger.debug("Print %d %s", len(devdict[stuff]), stuff)
+            if not devdict[stuff]:
+                return
             print(f"{stuff:20} ", end="")
+            if not devdict[stuff]:
+                print()
+                return
             i = 0
             for key in devdict[stuff]:
                 if not i:
@@ -363,6 +517,9 @@ class TangoctlDevices:
                     print(f"{' ':20} {key:40} ", end="")
                 i += 1
                 devkeys = devdict[stuff][key]
+                if not devkeys:
+                    print()
+                    continue
                 j = 0
                 for devkey in devkeys:
                     if not j:
@@ -371,7 +528,9 @@ class TangoctlDevices:
                         print(f"{' ':61} {devkey:40} ", end="")
                     j += 1
                     devkeyval = devkeys[devkey]
-                    if "\n" in devkeyval:
+                    if not devkeyval:
+                        print()
+                    elif "\n" in devkeyval:
                         keyvals = devkeyval.split("\n")
                         # Remove empty lines
                         keyvals2 = []
@@ -423,6 +582,12 @@ class TangoctlDevices:
             print_stuff("properties")
             print()
 
-    def print_json(self) -> None:
+    def print_txt(self, disp_action: int) -> None:
+        if disp_action == 3:
+            self.print_txt_quick()
+        else:
+            self.print_txt_all()
+
+    def print_json(self, disp_action: int) -> None:
         devsdict = self.get_json()
         print(json.dumps(devsdict, indent=4))

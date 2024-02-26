@@ -121,7 +121,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     """
     kube_namespace: str | None = None
     dry_run: bool = False
-    itype: str | None = None
+    tgo_name: str | None = None
     disp_action: int = 0
     evrythng: bool = False
     headers = True
@@ -183,11 +183,11 @@ def main(y_arg: list) -> int:  # noqa: C901
         elif opt == "--version":
             show_version = True
         elif opt in ("-A", "--attribute"):
-            tgo_attrib = arg
+            tgo_attrib = arg.lower()
         elif opt in ("-C", "--command"):
-            tgo_cmd = arg
+            tgo_cmd = arg.lower()
         elif opt in ("-D", "--device"):
-            itype = arg.upper()
+            tgo_name = arg.upper()
         elif opt in ("-H", "--host"):
             tango_host = arg
         elif opt in ("-T", "--input"):
@@ -196,7 +196,7 @@ def main(y_arg: list) -> int:  # noqa: C901
         elif opt in ("-N", "--namespace"):
             kube_namespace = arg
         elif opt in ("-P", "--property"):
-            tgo_prop = arg
+            tgo_prop = arg.lower()
         elif opt == "--dry-run":
             # Undocumented feature for dry runs
             dry_run = True
@@ -266,16 +266,18 @@ def main(y_arg: list) -> int:  # noqa: C901
     os.environ["TANGO_HOST"] = tango_host
     _module_logger.info("Set TANGO_HOST to %s", tango_host)
 
-    devices = TangoctlDevices(_module_logger, evrythng, cfg_data, itype)
+    devices = TangoctlDevices(
+        _module_logger, evrythng, cfg_data, tgo_name, tgo_attrib, tgo_cmd, tgo_prop
+    )
     devices.read_device_values()
-    devices.print_device_values()
+    # devices.print_device_values()
 
     _module_logger.info("Read devices")
 
     if fmt == "txt":
-        devices.print_txt()
+        devices.print_txt(disp_action)
     elif fmt == "json":
-        devices.print_json()
+        devices.print_json(disp_action)
     else:
         print("---")
 
