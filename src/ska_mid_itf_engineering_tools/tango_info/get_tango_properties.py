@@ -23,7 +23,6 @@ class TangoPropertyInfo:
         :param logger: logging handle
         :param dev: Tango device handle
         :param prop_name: attribute name
-        :return: attribute value
         """
         self.attrib_value: Any
         self.data_format: Any
@@ -41,7 +40,6 @@ class TangoPropertyInfo:
         """
         Print attribute value.
 
-        :param fmt: output format
         :param prefix: prefix for printing
         """
         prop_list = self.prop_value
@@ -63,7 +61,6 @@ class TangoPropertyInfo:
         """
         Print attribute value.
 
-        :param fmt: output format
         :param prefix: prefix for printing
         :param suffix: suffix for printing
         """
@@ -83,6 +80,13 @@ class TangoPropertyInfo:
                 n += 2
 
     def show_value(self, fmt: str, prefix: str, suffix: str) -> None:
+        """
+        SHow the value of the thing.
+
+        :param fmt: output format
+        :param prefix: put in front
+        :param suffix: add at the back
+        """
         if fmt == "md":
             self._show_value_md(prefix, suffix)
         else:

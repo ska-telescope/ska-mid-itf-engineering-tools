@@ -27,6 +27,9 @@ class TangoctlDevicesBasic:
         Read list of Tango devices.
 
         :param logger: logging handle
+        :param evrythng: read and display the whole thing
+        :param cfg_data: configuration data
+        :raise Exception: database connect failed
         """
         self.logger = logger
         # Get Tango database host
@@ -94,9 +97,10 @@ class TangoctlDevices(TangoctlDevicesBasic):
         :param cfg_data: configuration data in JSON format
         :param evrythng: get commands and attributes regadrless of state
         :param tgo_name: filter device name
-        :param tgo_name: filter attribute name
+        :param tgo_attrib: filter attribute name
         :param tgo_cmd: filter command name
         :param tgo_prop: filter property name
+        :raise Exception: when database connect fails
         """
         self.logger = logger
         # Get Tango database host
@@ -220,7 +224,11 @@ class TangoctlDevices(TangoctlDevicesBasic):
         """Print the whole thing."""
 
         def print_stuff(stuff: str) -> None:
-            """Print attribute, command or property."""
+            """
+            Print attribute, command or property.
+
+            :param stuff: name of the thing
+            """
             self.logger.debug("Print %d %s", len(devdict[stuff]), stuff)
             if not devdict[stuff]:
                 return

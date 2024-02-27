@@ -43,7 +43,11 @@ class TangoAttributeInfo:
         self.data_format = attrib_cfg.data_format
 
     def get_value(self) -> Any:
-        """Get value"""
+        """
+        Get the value.
+
+        :return: attribute value
+        """
         return self.attrib_value
 
     def _show_attribute_value_scalar(self, prefix: str) -> None:  # noqa: C901
@@ -189,7 +193,6 @@ class TangoAttributeInfo:
         """
         Print attribute value.
 
-        :param attrib: attribute name
         :param prefix: data prefix string
         """
         if self.attrib_value is None:

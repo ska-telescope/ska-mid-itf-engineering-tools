@@ -61,6 +61,7 @@ class TangoCommandInfo:
         Print output of command.
 
         :param prefix: print at front of line
+        :param suffix: print at back of line
         """
         if type(self.inout) is list:
             if self.inout:
@@ -79,6 +80,13 @@ class TangoCommandInfo:
         print(f"{rval}")
 
     def show_value(self, fmt: str, prefix: str, suffix: str) -> None:
+        """
+        Print output of command.
+
+        :param fmt: output format
+        :param prefix: print at front of line
+        :param suffix: print at back of line
+        """
         if fmt == "md":
             self._show_value_md(prefix, suffix)
         else:
@@ -105,39 +113,6 @@ def show_commands(  # noqa: C901
     :param dry_run: do not display values
     :param fmt: output format
     """
-
-    # def get_command_inout(prefix: str, idev: Any, cmd: str, args: Any = None) -> Any:
-    #     """
-    #     Run command and get output.
-    #
-    #     :param prefix: print at front of line
-    #     :param idev: Tango device handle
-    #     :param cmd: command name
-    #     :param args: arguments for command
-    #     """
-    #     try:
-    #         if args:
-    #             inout = idev.command_inout(cmd, args)
-    #         else:
-    #             inout = idev.command_inout(cmd)
-    #     except tango.DevFailed as terr:
-    #         return f"<ERROR> \033[3m{terr.args[0].desc.strip()}\033[0m"
-    #     if type(inout) is list:
-    #         if inout:
-    #             inout = str(inout[0])
-    #         else:
-    #             inout = "[]"
-    #     else:
-    #         inout = str(inout)
-    #     if "\n" in inout:
-    #         ios = str(inout).split("\n")
-    #         rval = ios[0]
-    #         for io in ios[1:]:
-    #             rval += f"\n{prefix} {io.strip()}"
-    #     else:
-    #         rval = inout
-    #     return rval
-
     def filter_command(idev: Any, f_cmd: Any, min_len: int) -> list:
         """
         Print info on device command.
@@ -145,6 +120,7 @@ def show_commands(  # noqa: C901
         :param idev: Tango device handle
         :param f_cmd: command name
         :param min_len: minimum string length
+        :return: list of command names
         """
         # Read commands
         cmds: tuple = ()

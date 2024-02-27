@@ -12,6 +12,12 @@ COLUMN2 = 45
 
 
 def md_format(inp: str) -> str:
+    """
+    Change string to safe format.
+
+    :param inp: input
+    :return: output
+    """
     outp = inp.replace("/", "\\/").replace("_", "\\_").replace("-", "\\-")
     return outp
 
@@ -23,7 +29,9 @@ class TangoDevices:
         """
         Read Tango device names.
 
-        :return: list of devices
+        :param logger: logging handle
+        :param evrythng: add the kitchen sink
+        :param cfg_data: configuration data
         """
         self.logger = logger
         self.tango_devices: list = []
@@ -95,6 +103,7 @@ class TangoDevices:
         Filter by command name.
 
         :param c_name: command name
+        :return: dictionary of commands
         """
         dev_cmds = {}
         for device in sorted(self.tango_devices):

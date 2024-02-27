@@ -522,7 +522,9 @@ class TestTangoDevices:
         """
         Read Tango device names.
 
-        :return: list of devices
+        :param logger: logging handle
+        :param evrythng: add the kitchen sink
+        :param cfg_data: configuration data
         """
         self.logger = logger
         self.tango_devices: list = []

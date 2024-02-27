@@ -194,6 +194,7 @@ class TangoDeviceInfo:
 
         :param cmd: command name
         :param args: arguments for command
+        :return: output of command
         """
         try:
             if args:
@@ -248,6 +249,7 @@ class TangoDeviceInfo:
 
         :param prefix: print at front of line
         :param cmd: command name
+        :param fmt: output format
         """
         lpre = "\n" + f"{' ':55}"
         if cmd.cmd_name in self.run_commands:
@@ -425,6 +427,13 @@ class TangoDeviceInfo:
             print(f" {type(attrib_value)}:{attrib_value}")
 
     def show_attribute_value_other(self, prefix: str, attrib_value: Any, fmt: str = "txt") -> None:
+        """
+        Print some other format.
+
+        :param prefix: start of string
+        :param attrib_value: attribute value
+        :param fmt: output format
+        """
         self.logger.debug("Attribute value %s : %s", type(attrib_value), attrib_value)
         if type(attrib_value) is numpy.ndarray:
             a_list = attrib_value.tolist()
@@ -934,6 +943,7 @@ class TangoDeviceInfo:
         """
         Display Tango device name only.
 
+        :param fmt: output format
         :return: one if device is on, otherwise zero
         """
         # pylint: disable-next=c-extension-no-member

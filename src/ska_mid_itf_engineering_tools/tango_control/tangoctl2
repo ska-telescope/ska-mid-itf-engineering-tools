@@ -47,7 +47,7 @@ def run_test(
     tgo_name: str | None,
 ) -> int:
     """
-    Run tests on Tango device.
+    Run tests on Tango devices.
 
     :param dev_admin: check admin mode
     :param dev_off: turn device on
@@ -125,6 +125,54 @@ def run_test(
         dut.test_all(show_attrib)
     else:
         pass
+    return 0
+
+
+def run_info(
+    fmt: str,
+    evrythng: bool,
+    disp_action: int,
+    cfg_data: Any,
+    tgo_name: str | None,
+    tgo_attrib: str | None,
+    tgo_cmd: str | None,
+    tgo_prop: str | None,
+) -> int:
+    """
+    Read information on Tango devices.
+
+    :param fmt: output format
+    :param evrythng: get commands and attributes regadrless of state
+    :param disp_action: flag for output format
+    :param cfg_data: configuration data in JSON format
+    :param tgo_name: device name
+    :param tgo_attrib: attribute name
+    :param tgo_cmd: filter command name
+    :param tgo_prop: filter property name
+    :return: error condition
+    """
+
+    if disp_action == 4:
+        devices = TangoctlDevicesBasic(_module_logger, evrythng, cfg_data)
+        devices.read_config()
+        devices.print_txt_list()
+        return 0
+
+    devices = TangoctlDevices(
+        _module_logger, evrythng, cfg_data, tgo_name, tgo_attrib, tgo_cmd, tgo_prop
+    )
+    devices.read_device_values()
+    # devices.print_device_values()
+
+    _module_logger.info("Read devices")
+
+    if fmt == "txt":
+        devices.print_txt(disp_action)
+    elif fmt == "json":
+        devices.print_json(disp_action)
+    else:
+        print("---")
+
     return 0
 
 
@@ -410,7 +458,6 @@ def main(y_arg: list) -> int:  # noqa: C901
         tango_fqdn = tango_host
         tango_host = f"{tango_fqdn}:{databaseds_port}"
 
-
     _module_logger.info("Use Tango host %s", tango_host)
 
     _module_logger.debug("Run commands: %s", cfg_data["run_commands_name"])
@@ -438,28 +485,17 @@ def main(y_arg: list) -> int:  # noqa: C901
         )
         return rc
 
-    if disp_action == 4:
-        devices = TangoctlDevicesBasic(_module_logger, evrythng, cfg_data)
-        devices.read_config()
-        devices.print_txt_list()
-        return 0
-
-    devices = TangoctlDevices(
-        _module_logger, evrythng, cfg_data, tgo_name, tgo_attrib, tgo_cmd, tgo_prop
+    rc = run_info(
+        fmt,
+        evrythng,
+        disp_action,
+        cfg_data,
+        tgo_name,
+        tgo_attrib,
+        tgo_cmd,
+        tgo_prop,
     )
-    devices.read_device_values()
-    # devices.print_device_values()
-
-    _module_logger.info("Read devices")
-
-    if fmt == "txt":
-        devices.print_txt(disp_action)
-    elif fmt == "json":
-        devices.print_json(disp_action)
-    else:
-        print("---")
-
-    return 0
+    return rc
 
 
 if __name__ == "__main__":
