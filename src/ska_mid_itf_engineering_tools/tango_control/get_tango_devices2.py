@@ -7,11 +7,32 @@ from typing import Any
 import tango
 
 
-class TangoctlDevice:
-    """Compile a dictionary for a Tango device."""
+class TangoctlDeviceBasic:
+    """Compile a basic dictionary for a Tango device."""
 
     logger: logging.Logger
     dev: tango.DeviceProxy
+
+    def __init__(  # noqa: C901
+        self,
+        logger: logging.Logger,
+        device: str,
+    ):
+        """
+        Iniltialise the thing.
+
+        :param logger: logging handle
+        :param device: device name
+        """
+        self.logger = logger
+        self.logger.debug("Add device %s with attribute %s", device)
+        self.dev = tango.DeviceProxy(device)
+        self.dev_name = self.dev.name()
+
+
+class TangoctlDevice(TangoctlDeviceBasic):
+    """Compile a dictionary for a Tango device."""
+
     commands: dict = {}
     attributes: dict = {}
     properties: dict = {}
@@ -26,10 +47,16 @@ class TangoctlDevice:
         tgo_cmd: str | None,
         tgo_prop: str | None,
     ):
-        self.logger = logger
-        self.logger.debug("Add device %s with attribute %s", device, tgo_attrib)
-        self.dev = tango.DeviceProxy(device)
-        self.dev_name = self.dev.name()
+        """
+        Iniltialise the thing.
+
+        :param logger: logging handle
+        :param device: device name
+        :param tgo_attrib: attribute filter
+        :param tgo_cmd: command filter
+        :param tgo_prop: property filter
+        """
+        super().__init__(logger, device)
         cmds = sorted(self.dev.get_command_list())
         for cmd in cmds:
             if tgo_cmd:
@@ -41,7 +68,7 @@ class TangoctlDevice:
             else:
                 self.logger.debug("Add command %s", cmd)
                 self.commands[cmd] = {}
-            # self.commands[cmd]["config"] = self.dev.get_command_config(cmd)
+            # self.commands[cmd]["config"] = None
         attribs = sorted(self.dev.get_attribute_list())
         for attrib in attribs:
             if tgo_attrib:
@@ -55,7 +82,7 @@ class TangoctlDevice:
             else:
                 self.logger.debug("Add attribute %s", attrib)
                 self.attributes[attrib] = {}
-            # self.attributes[attrib]["config"] = self.dev.get_attribute_config(attrib)
+            # self.attributes[attrib]["config"] = None
         props = sorted(self.dev.get_property_list("*"))
         for prop in props:
             if tgo_prop:
@@ -83,6 +110,7 @@ class TangoctlDevice:
         )
 
     def read_config(self) -> None:
+        """Read attribute and command configuration."""
         self.logger.info("Read config for device %s", self.dev_name)
         for attrib in self.attributes:
             self.logger.debug("Read attribute config for %s", attrib)
@@ -100,6 +128,12 @@ class TangoctlDevice:
                 self.commands[cmd]["config"] = None
 
     def check_for_attribute(self, tgo_attrib: str | None) -> list:
+        """
+        Filter by attribute name.
+
+        :param tgo_attrib: attribute name
+        :return: list of device names matched
+        """
         self.attribs_found: list = []
         if not tgo_attrib:
             return self.attribs_found
@@ -108,22 +142,16 @@ class TangoctlDevice:
                 self.attribs_found.append(attrib)
         return self.attribs_found
 
-    def get_commands(self) -> dict:
-        return self.commands
-
-    def get_attributes(self) -> dict:
-        return self.attributes
-
-    def get_properties(self) -> dict:
-        return self.properties
-
-    # def get_info(self):
-    #     return self.attributes, self.commands, self.properties
-
     def get_json(self, delimiter: str) -> dict:  # noqa: C901
-        """Convert internal values to JSON."""
+        """
+        Convert internal values to JSON.
+
+        :param delimiter: field are seperated by this
+        :return: dictionary
+        """
 
         def set_json_attribute() -> None:
+            """Add attributes to dictionary."""
             devdict["attributes"][attrib] = {}
             if "value" in self.attributes[attrib]:
                 devdict["attributes"][attrib]["value"] = str(self.attributes[attrib]["value"])
@@ -164,6 +192,7 @@ class TangoctlDevice:
                 ].writable_attr_name
 
         def set_json_command() -> None:
+            """Add commands to dictionary."""
             devdict["commands"][cmd] = {}
             if self.commands[cmd]["config"] is not None:
                 devdict["commands"][cmd]["in_type"] = repr(self.commands[cmd]["config"].in_type)
@@ -176,6 +205,7 @@ class TangoctlDevice:
                 ].out_type_desc
 
         def set_json_property() -> None:
+            """Add properties to dictionary."""
             if "value" in self.properties[prop]:
                 prop_val = self.properties[prop]["value"]
                 devdict["properties"][prop] = {}
@@ -217,6 +247,7 @@ class TangoctlDevice:
         return devdict
 
     def read_attribute_value(self) -> None:
+        """Read device attributes."""
         for attrib in self.attributes:
             err_msg = None
             attrib_data = None
@@ -236,6 +267,12 @@ class TangoctlDevice:
             self.logger.info("Read attribute %s : %s", attrib, self.attributes[attrib]["value"])
 
     def read_command_value(self, run_commands: list, run_commands_name: list) -> None:
+        """
+        Read device commands.
+
+        :param run_commands: commands safe to run without parameters
+        :param run_commands_name: commands safe to run with device name as parameter
+        """
         for cmd in self.commands:
             if cmd in run_commands:
                 self.commands[cmd]["value"] = self.dev.command_inout()
@@ -259,6 +296,7 @@ class TangoctlDevice:
         return
 
     def read_property_value(self) -> None:
+        """Read device properties."""
         for prop in self.properties:
             self.properties[prop]["value"] = self.dev.get_property(prop)[prop]
             self.logger.debug("Read property %s : %s", prop, self.properties[prop]["value"])
@@ -291,7 +329,6 @@ class TangoctlDevices:
         :param tgo_name: filter attribute name
         :param tgo_cmd: filter command name
         :param tgo_prop: filter property name
-        :return: list of devices
         """
         self.logger = logger
         # Get Tango database host
@@ -349,82 +386,42 @@ class TangoctlDevices:
         logger.debug("Read %d devices", len(self.devices))
 
     def read_attribute_values(self) -> None:
+        """Read device data."""
         for device in self.devices:
             self.devices[device].read_attribute_value()
 
     def read_command_values(self) -> None:
+        """Read device data."""
         for device in self.devices:
             self.devices[device].read_command_value(self.run_commands, self.run_commands_name)
 
     def read_property_values(self) -> None:
+        """Read device data."""
         for device in self.devices:
             self.devices[device].read_property_value()
 
     def read_device_values(self) -> None:
+        """Read device data."""
         self.read_attribute_values()
         # self.read_command_values()
         self.read_property_values()
 
-    def print_device_values(self) -> None:
-        for device in self.devices:
-            dev = self.devices[device]
-            self.logger.info("ATTRIBUTES: %s", dev.get_attributes())
-            self.logger.info("COMMANDS: %s", dev.get_commands())
-            self.logger.info("PROPERTIES: %s", dev.get_properties())
-
-    def get_devices(self) -> dict:
-        """
-        Get list of devices.
-
-        :return: list of devices
-        """
-        return self.devices
-
-    def list_devices(self) -> None:
-        for device in self.devices:
-            print(device)
-
     def get_json(self) -> dict:
+        """
+        Read device data.
+
+        :return: dictionary
+        """
         devsdict = {}
         for device in self.devices:
             devsdict[device] = self.devices[device].get_json(self.delimiter)
         return devsdict
 
-    # def print_txt(self):
-    #     devsdict = self.get_json()
-    #     for device in devsdict:
-    #         i = 0
-    #         for heading1 in devsdict[device]:
-    #             print(f"{heading1:20}", end="")
-    #             i += 1
-    #             heading1_vals = devsdict[device][heading1]
-    #             if type(heading1_vals) is dict:
-    #                 j = 0
-    #                 for key1 in heading1_vals:
-    #                     if not j:
-    #                         print(f" {key1:40}", end="")
-    #                     else:
-    #                         print(f" {' ':40}", end="")
-    #                     j += 1
-    #                     heading2_vals = heading1_vals[key1]
-    #                     if type(heading2_vals) is dict:
-    #                         k = 0
-    #                         for key2 in heading2_vals:
-    #                             if not k:
-    #                                 print(f" {key2:20} {heading2_vals[key2]}")
-    #                             else:
-    #                                 print(f"{' ':81} {key2:20} {heading2_vals[key2]}")
-    #                             k += 1
-    #                     else:
-    #                         print(f"{' ':81} {heading2_vals}")
-    #                 print()
-    #             else:
-    #                 print(heading1_vals)
-
     def print_txt_quick(self) -> None:
         """Print text in short form."""
 
         def print_attributes() -> None:
+            """Print attribute in short form."""
             print(f"{'attributes':20}", end="")
             i = 0
             for attrib in devdict["attributes"]:
@@ -434,28 +431,6 @@ class TangoctlDevices:
                     print(f" {' ':20} {attrib:40}", end="")
                 i += 1
                 print(f"{devdict['attributes'][attrib]['value']}")
-                # j = 0
-                # for devattrib in devattribs:
-                #     if not j:
-                #         print(f" {devattrib:40}", end="")
-                #     else:
-                #         print(f" {' ':61} {devattrib:40}", end="")
-                #     j += 1
-                #     devattribval = devattribs[devattrib]
-                #     if "\n" in devattribval:
-                #         attribvals = devattribval.split("\n")
-                #         # Remove empty lines
-                #         attribvals2 = []
-                #         for attribval in attribvals:
-                #             attribval2 = attribval.strip()
-                #             if attribval2:
-                #                 attribvals2.append(attribval2)
-                #         attribval2 = attribvals2[0]
-                #         print(f" {attribval2}")
-                #         for attribval2 in attribvals2[1:]:
-                #             print(f" {' ':102} {attribval2}")
-                #     else:
-                #         print(f" {devattribval}")
 
         devsdict = self.get_json()
         for device in devsdict:
@@ -468,40 +443,10 @@ class TangoctlDevices:
             print()
 
     def print_txt_all(self) -> None:  # noqa: C901
-        # def print_attributes():
-        #     print(f"{'attributes':20}", end="")
-        #     i = 0
-        #     for attrib in devdict["attributes"]:
-        #         if not i:
-        #             print(f" {attrib:40}", end="")
-        #         else:
-        #             print(f" {' ':20} {attrib:40}", end="")
-        #         i += 1
-        #         devattribs = devdict["attributes"][attrib]
-        #         j = 0
-        #         for devattrib in devattribs:
-        #             if not j:
-        #                 print(f" {devattrib:40}", end="")
-        #             else:
-        #                 print(f" {' ':61} {devattrib:40}", end="")
-        #             j += 1
-        #             devattribval = devattribs[devattrib]
-        #             if "\n" in devattribval:
-        #                 attribvals = devattribval.split("\n")
-        #                 # Remove empty lines
-        #                 attribvals2 = []
-        #                 for attribval in attribvals:
-        #                     attribval2 = attribval.strip()
-        #                     if attribval2:
-        #                         attribvals2.append(attribval2)
-        #                 attribval2 = attribvals2[0]
-        #                 print(f" {attribval2}")
-        #                 for attribval2 in attribvals2[1:]:
-        #                     print(f" {' ':102} {attribval2}")
-        #             else:
-        #                 print(f" {devattribval}")
+        """Print the whole thing."""
 
         def print_stuff(stuff: str) -> None:
+            """Print attribute, command or property."""
             self.logger.debug("Print %d %s", len(devdict[stuff]), stuff)
             if not devdict[stuff]:
                 return
@@ -583,11 +528,21 @@ class TangoctlDevices:
             print()
 
     def print_txt(self, disp_action: int) -> None:
+        """
+        Print in text format.
+
+        :param disp_action: display control flag
+        """
         if disp_action == 3:
             self.print_txt_quick()
         else:
             self.print_txt_all()
 
     def print_json(self, disp_action: int) -> None:
+        """
+        Print in JSON format.
+
+        :param disp_action: display control flag
+        """
         devsdict = self.get_json()
         print(json.dumps(devsdict, indent=4))

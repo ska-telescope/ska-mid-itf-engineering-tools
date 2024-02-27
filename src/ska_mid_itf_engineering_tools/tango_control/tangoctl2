@@ -9,12 +9,15 @@ from typing import Any, TextIO
 
 from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl
-from ska_mid_itf_engineering_tools.ska_jargon.ska_jargon import print_jargon
-from ska_mid_itf_engineering_tools.tango_info2.get_tango_devices2 import TangoctlDevices
+from ska_mid_itf_engineering_tools.tango_control.ska_jargon import print_jargon
+from ska_mid_itf_engineering_tools.tango_control.get_tango_devices2 import TangoctlDevices
+from ska_mid_itf_engineering_tools.tango_control.test_tango_device2 import TestTangoDevice
 
 logging.basicConfig(level=logging.WARNING)
-_module_logger = logging.getLogger(__name__)
+_module_logger = logging.getLogger("tangoctl2")
 _module_logger.setLevel(logging.WARNING)
+
+KUBE_NAMESPACE = "ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
 
 
 def show_namespaces() -> None:
@@ -78,7 +81,29 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print(f"\t{p_name} -f|-l|-q|-s -P <PROPERTY> [-N <NAMESPACE>|--host=<HOST>]")
     print("Display known acronyms")
     print(f"\t{p_name} -j")
+    print("Test a Tango device")
+    print(f"\t{p_name} [-N <NAMESPACE>] -D <DEVICE> [--simul=<0|1>]")
+    print("Test a Tango device and read attributes")
+    print(f"\t{p_name} -a [-N <NAMESPACE>] -D <DEVICE> [--simul=<0|1>]")
+    print("Display attribute and command names for a Tango device")
+    print(f"\t{p_name} -c [-N <NAMESPACE>] -D <DEVICE>")
+    print("Turn a Tango device on")
+    print(f"\t{p_name} --on [-N <NAMESPACE>] -D <DEVICE> [--simul=<0|1>]")
+    print("Turn a Tango device off")
+    print(f"\t{p_name} --off [-N <NAMESPACE>] -D <DEVICE> [--simul=<0|1>]")
+    print("Set a Tango device to standby mode")
+    print(f"\t{p_name} --standby [-N <NAMESPACE>] -D <DEVICE> [--simul=<0|1>]")
+    print("Change admin mode on a Tango device")
+    print(f"\t{p_name} --admin=<0|1>")
+    print("Display status of a Tango device")
+    print(f"\t{p_name} --status [-N <NAMESPACE>] -D <DEVICE>")
+    print("Check events for attribute of a Tango device")
+    print(f"\t{p_name} [-N <NAMESPACE>] -D <DEVICE> -A <ATTRIBUTE>")
     print("where:")
+    print("\t-a\t\t\tflag for reading attributes")
+    print("\t-c\t\t\tflag for reading command and attribute names")
+    print("\t--simul=<0|1>\t\tset simulation mode off or on")
+    print("\t--admin=<0|1>\t\tset admin mode off or on")
     print("\t-f|--full\t\t\t\tdisplay in full")
     print("\t-l|--list\t\t\t\tdisplay device name and status on one line")
     print("\t-q|--quick\t\t\t\tdisplay device name, status and query devices")
@@ -122,9 +147,17 @@ def main(y_arg: list) -> int:  # noqa: C901
     kube_namespace: str | None = None
     dry_run: bool = False
     tgo_name: str | None = None
+    dev_on: bool = False
+    dev_off: bool = False
+    dev_standby: bool = False
+    dev_status: bool = False
+    dev_admin: int | None = None
+    dev_sim: int | None = None
     disp_action: int = 0
     evrythng: bool = False
     headers = True
+    show_attrib: bool = False
+    show_command: bool = False
     show_jargon: bool = False
     show_ns: bool = False
     show_tango: bool = False
@@ -138,15 +171,19 @@ def main(y_arg: list) -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
-            "efhjlmnqstvVA:C:H:D:N:P:T:",
+            "acefhjlmnqstvVA:C:H:D:N:P:T:",
             [
                 "dry-run",
                 "everything",
                 "full",
                 "help",
+                "input",
                 "list",
                 "no-headers",
-                "input",
+                "off",
+                "on",
+                "standby",
+                "status",
                 "quick",
                 "short",
                 "show-acronym",
@@ -154,12 +191,14 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "show-dev",
                 "show-ns",
                 "version",
+                "admin=",
                 "attribute=",
                 "command=",
                 "device=",
                 "host=",
                 "namespace=",
                 "property=",
+                "simul=",
             ],
         )
     except getopt.GetoptError as opt_err:
@@ -180,53 +219,67 @@ def main(y_arg: list) -> int:  # noqa: C901
         if opt in ("-h", "--help"):
             usage(os.path.basename(y_arg[0]), cfg_data)
             sys.exit(1)
-        elif opt == "--version":
-            show_version = True
-        elif opt in ("-A", "--attribute"):
+        elif opt == "-a":
+            show_attrib = True
+        elif opt in ("--attribute", "-A"):
             tgo_attrib = arg.lower()
-        elif opt in ("-C", "--command"):
+        elif opt == "-c":
+            show_command = True
+        elif opt in ("--command", "-C"):
             tgo_cmd = arg.lower()
-        elif opt in ("-D", "--device"):
+        # elif opt in ("-d", "--show-dev"):
+        #     disp_action = 4
+        elif opt in ("--device", "-D"):
             tgo_name = arg.upper()
-        elif opt in ("-H", "--host"):
-            tango_host = arg
-        elif opt in ("-T", "--input"):
-            # Undocumented feature to search by input type
-            tgo_in_type = arg.lower()
-        elif opt in ("-N", "--namespace"):
-            kube_namespace = arg
-        elif opt in ("-P", "--property"):
-            tgo_prop = arg.lower()
         elif opt == "--dry-run":
             # Undocumented feature for dry runs
             dry_run = True
-        elif opt == "--no-headers":
-            headers = False
-        # elif opt in ("-d", "--show-dev"):
-        #     disp_action = 4
-        elif opt in ("-e", "--everything"):
+        elif opt in ("--everything", "-e"):
             evrythng = True
-        elif opt in ("-f", "--full"):
+        elif opt in ("--full", "-f"):
             disp_action = 1
-        elif opt in ("-l", "--list"):
+        elif opt in ("--host", "-H"):
+            tango_host = arg
+        elif opt in ("--input", "-T"):
+            # Undocumented feature to search by input type
+            tgo_in_type = arg.lower()
+        elif opt == "-j":
+            fmt = "json"
+        elif opt in ("--list", "-l"):
             disp_action = 4
         elif opt == "-m":
             # Undocumented feature to display in mark-down format
             fmt = "md"
-        elif opt in ("-n", "--show-ns"):
-            show_ns = True
-        elif opt in ("-q", "--quick"):
+        elif opt in ("--namespace", "-N"):
+            kube_namespace = arg
+        elif opt == "--no-headers":
+            headers = False
+        elif opt in ("--property", "-P"):
+            tgo_prop = arg.lower()
+        elif opt == "--off":
+            dev_off = True
+        elif opt == "--on":
+            dev_on = True
+        elif opt in ("--quick", "-q"):
             disp_action = 3
-        elif opt == "-j":
-            fmt = "json"
-        elif opt in ("-s", "--short"):
+        elif opt in ("--short", "-s"):
             disp_action = 5
-        elif opt in ("-t", "--show-db"):
+        elif opt in ("--show-db", "-t"):
             show_tango = True
+        elif opt in ("--show-ns", "-n"):
+            show_ns = True
+        elif opt == "--simul":
+            dev_sim = int(arg)
+        elif opt == "--standby":
+            dev_standby = True
+        elif opt == "--status":
+            dev_status = True
         elif opt == "-v":
             _module_logger.setLevel(logging.INFO)
         elif opt == "-V":
             _module_logger.setLevel(logging.DEBUG)
+        elif opt == "--version":
+            show_version = True
         else:
             _module_logger.error("Invalid option %s", opt)
 
@@ -265,6 +318,71 @@ def main(y_arg: list) -> int:  # noqa: C901
 
     os.environ["TANGO_HOST"] = tango_host
     _module_logger.info("Set TANGO_HOST to %s", tango_host)
+
+    if dev_admin is not None and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        dut.test_admin_mode(dev_admin)
+    elif dev_off and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_off(dev_sim)
+    elif dev_on and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_on(dev_sim)
+    elif dev_standby and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_standby(dev_sim)
+    elif dev_status and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_status()
+    elif dev_sim is not None and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_simulation_mode(dev_sim)
+    # elif show_attrib and tgo_name is not None:
+    #     dut = TestTangoDevice(_module_logger, tgo_name)
+    #     if dut.dev is None:
+    #         print(f"[FAILED] could not open device {tgo_name}")
+    #         return 1
+    #     dut.check_device()
+    #     dut.get_simulation_mode()
+    #     dut.show_device_attributes(True)
+    elif show_command and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.check_device()
+        # dut.get_simulation_mode()
+        dut.show_device_attributes(True)
+        dut.show_device_commands(True)
+    elif tgo_attrib is not None and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_subscribe(tgo_attrib)
+    elif tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_all(show_attrib)
+    else:
+        pass
 
     devices = TangoctlDevices(
         _module_logger, evrythng, cfg_data, tgo_name, tgo_attrib, tgo_cmd, tgo_prop

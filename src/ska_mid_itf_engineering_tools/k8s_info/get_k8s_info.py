@@ -1,7 +1,7 @@
 """
 A class for doing all sorts of Kubernetes stuff.
 
-Calling 'kubectl' in a subprocess is not Pythonic.
+Avoids calling 'kubectl' in a subprocess, which is not Pythonic.
 """
 import logging
 from typing import Any, Tuple
