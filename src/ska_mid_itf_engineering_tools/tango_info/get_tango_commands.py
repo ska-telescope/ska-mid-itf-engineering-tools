@@ -113,6 +113,7 @@ def show_commands(  # noqa: C901
     :param dry_run: do not display values
     :param fmt: output format
     """
+
     def filter_command(idev: Any, f_cmd: Any, min_len: int) -> list:
         """
         Print info on device command.
