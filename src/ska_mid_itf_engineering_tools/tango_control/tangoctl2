@@ -9,8 +9,11 @@ from typing import Any, TextIO
 
 from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl
+from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import (
+    TangoctlDevices,
+    TangoctlDevicesBasic,
+)
 from ska_mid_itf_engineering_tools.tango_control.ska_jargon import print_jargon
-from ska_mid_itf_engineering_tools.tango_control.get_tango_devices2 import TangoctlDevices
 from ska_mid_itf_engineering_tools.tango_control.test_tango_device2 import TestTangoDevice
 
 logging.basicConfig(level=logging.WARNING)
@@ -29,6 +32,100 @@ def show_namespaces() -> None:
     print(f"Namespaces : {len(ns_list)}")
     for ns_name in ns_list:
         print(f"\t{ns_name}")
+
+
+def run_test(
+    dev_admin: int | None,
+    dev_off: bool,
+    dev_on: bool,
+    dev_sim: int | None,
+    dev_standby: bool,
+    dev_status: bool,
+    show_command: bool,
+    show_attrib: bool,
+    tgo_attrib: str | None,
+    tgo_name: str | None,
+) -> int:
+    """
+    Run tests on Tango device.
+
+    :param dev_admin: check admin mode
+    :param dev_off: turn device on
+    :param dev_on: turn device off
+    :param dev_sim: simulation flag
+    :param dev_standby: place device in standby
+    :param dev_status: set device status
+    :param show_command: test device commands
+    :param show_attrib: test device attributes
+    :param tgo_attrib: attribute name
+    :param tgo_name: device name
+    :return: error condition
+    """
+    if dev_admin is not None and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        dut.test_admin_mode(dev_admin)
+    elif dev_off and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_off(dev_sim)
+    elif dev_on and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_on(dev_sim)
+    elif dev_standby and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_standby(dev_sim)
+    elif dev_status and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_status()
+    elif dev_sim is not None and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_simulation_mode(dev_sim)
+    # elif show_attrib and tgo_name is not None:
+    #     dut = TestTangoDevice(_module_logger, tgo_name)
+    #     if dut.dev is None:
+    #         print(f"[FAILED] could not open device {tgo_name}")
+    #         return 1
+    #     dut.check_device()
+    #     dut.get_simulation_mode()
+    #     dut.show_device_attributes(True)
+    elif show_command and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.check_device()
+        # dut.get_simulation_mode()
+        dut.show_device_attributes(True)
+        dut.show_device_commands(True)
+    elif tgo_attrib is not None and tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_subscribe(tgo_attrib)
+    elif tgo_name is not None:
+        dut = TestTangoDevice(_module_logger, tgo_name)
+        if dut.dev is None:
+            print(f"[FAILED] could not open device {tgo_name}")
+            return 1
+        dut.test_all(show_attrib)
+    else:
+        pass
+    return 0
 
 
 def usage(p_name: str, cfg_data: Any) -> None:
@@ -151,6 +248,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     dev_off: bool = False
     dev_standby: bool = False
     dev_status: bool = False
+    dev_test: bool = False
     dev_admin: int | None = None
     dev_sim: int | None = None
     disp_action: int = 0
@@ -274,6 +372,8 @@ def main(y_arg: list) -> int:  # noqa: C901
             dev_standby = True
         elif opt == "--status":
             dev_status = True
+        elif opt == "--test":
+            dev_test = True
         elif opt == "-v":
             _module_logger.setLevel(logging.INFO)
         elif opt == "-V":
@@ -319,70 +419,30 @@ def main(y_arg: list) -> int:  # noqa: C901
     os.environ["TANGO_HOST"] = tango_host
     _module_logger.info("Set TANGO_HOST to %s", tango_host)
 
-    if dev_admin is not None and tgo_name is not None:
-        dut = TestTangoDevice(_module_logger, tgo_name)
-        dut.test_admin_mode(dev_admin)
-    elif dev_off and tgo_name is not None:
-        dut = TestTangoDevice(_module_logger, tgo_name)
-        if dut.dev is None:
-            print(f"[FAILED] could not open device {tgo_name}")
-            return 1
-        dut.test_off(dev_sim)
-    elif dev_on and tgo_name is not None:
-        dut = TestTangoDevice(_module_logger, tgo_name)
-        if dut.dev is None:
-            print(f"[FAILED] could not open device {tgo_name}")
-            return 1
-        dut.test_on(dev_sim)
-    elif dev_standby and tgo_name is not None:
-        dut = TestTangoDevice(_module_logger, tgo_name)
-        if dut.dev is None:
-            print(f"[FAILED] could not open device {tgo_name}")
-            return 1
-        dut.test_standby(dev_sim)
-    elif dev_status and tgo_name is not None:
-        dut = TestTangoDevice(_module_logger, tgo_name)
-        if dut.dev is None:
-            print(f"[FAILED] could not open device {tgo_name}")
-            return 1
-        dut.test_status()
-    elif dev_sim is not None and tgo_name is not None:
-        dut = TestTangoDevice(_module_logger, tgo_name)
-        if dut.dev is None:
-            print(f"[FAILED] could not open device {tgo_name}")
-            return 1
-        dut.test_simulation_mode(dev_sim)
-    # elif show_attrib and tgo_name is not None:
-    #     dut = TestTangoDevice(_module_logger, tgo_name)
-    #     if dut.dev is None:
-    #         print(f"[FAILED] could not open device {tgo_name}")
-    #         return 1
-    #     dut.check_device()
-    #     dut.get_simulation_mode()
-    #     dut.show_device_attributes(True)
-    elif show_command and tgo_name is not None:
-        dut = TestTangoDevice(_module_logger, tgo_name)
-        if dut.dev is None:
-            print(f"[FAILED] could not open device {tgo_name}")
-            return 1
-        dut.check_device()
-        # dut.get_simulation_mode()
-        dut.show_device_attributes(True)
-        dut.show_device_commands(True)
-    elif tgo_attrib is not None and tgo_name is not None:
-        dut = TestTangoDevice(_module_logger, tgo_name)
-        if dut.dev is None:
-            print(f"[FAILED] could not open device {tgo_name}")
-            return 1
-        dut.test_subscribe(tgo_attrib)
-    elif tgo_name is not None:
-        dut = TestTangoDevice(_module_logger, tgo_name)
-        if dut.dev is None:
-            print(f"[FAILED] could not open device {tgo_name}")
-            return 1
-        dut.test_all(show_attrib)
-    else:
-        pass
+    if dev_off or dev_on or dev_sim or dev_standby or dev_status or show_command or show_attrib:
+        dev_test = True
+    if dev_admin is not None:
+        dev_test = True
+    if dev_test:
+        rc: int = run_test(
+            dev_admin,
+            dev_off,
+            dev_on,
+            dev_sim,
+            dev_standby,
+            dev_status,
+            show_command,
+            show_attrib,
+            tgo_attrib,
+            tgo_name,
+        )
+        return rc
+
+    if disp_action == 4:
+        devices = TangoctlDevicesBasic(_module_logger, evrythng, cfg_data)
+        devices.read_config()
+        devices.print_txt_list()
+        return 0
 
     devices = TangoctlDevices(
         _module_logger, evrythng, cfg_data, tgo_name, tgo_attrib, tgo_cmd, tgo_prop

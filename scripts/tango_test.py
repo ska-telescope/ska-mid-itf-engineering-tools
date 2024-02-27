@@ -111,6 +111,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     dev_admin: int | None = None
     dev_sim: int | None = None
     dev_nodb: bool = False
+    run_test: bool = False
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
@@ -122,6 +123,7 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "on",
                 "standby",
                 "status",
+                "test",
                 "host=",
                 "admin=",
                 "device=",
