@@ -8,10 +8,10 @@ import numpy
 import tango
 
 from ska_mid_itf_engineering_tools.tango_info.get_tango_devices import (
-    list_devices,
-    md_format,
     COLUMN1,
     COLUMN2,
+    list_devices,
+    md_format,
 )
 
 
@@ -226,7 +226,6 @@ def show_attributes(  # noqa: C901
     :param fmt: output format
     """
     prefix: str = " " * (COLUMN1 + COLUMN2 + 1)
-    suffix: str = ""
 
     logger.info("Read attributes matching %s", a_name)
     if a_name is None:
@@ -246,8 +245,6 @@ def show_attributes(  # noqa: C901
         print("## Tango host\n```\n%s\n```" % tango_host)
         print(f"## Number of devices\n{len(device_list)}")
 
-    prefix: str
-    suffix: str
     if fmt == "md":
         if not dry_run:
             print("|DEVICE NAME|ATTRIBUTE|VALUE|")
@@ -255,15 +252,13 @@ def show_attributes(  # noqa: C901
         else:
             print("|DEVICE NAME|ATTRIBUTE|")
             print("|:----------|:--------|")
-        prefix: str = " " * (COLUMN1 + COLUMN2 + 1)
-        suffix: str = ""
+        prefix = " " * (COLUMN1 + COLUMN2 + 1)
     else:
         if not dry_run:
             print(f"{'DEVICE NAME':{COLUMN1}} {'ATTRIBUTE':{COLUMN2}} VALUE")
         else:
             print(f"{'DEVICE NAME':{COLUMN1}} ATTRIBUTE")
-        prefix: str = " " * (COLUMN1 + COLUMN2 + 1)
-        suffix: str = ""
+        prefix = " " * (COLUMN1 + COLUMN2 + 1)
     a_name = a_name.lower()
     for device in sorted(device_list):
         dev: tango.DeviceProxy = tango.DeviceProxy(device)
@@ -295,6 +290,6 @@ def show_attributes(  # noqa: C901
                     print(f"{' ':{COLUMN1}} \033[1m{attrib_name:{COLUMN2}}\033[0m", end="")
                 if not dry_run:
                     attrib_val = TangoAttributeInfo(logger, dev, attrib_name)
-                    attrib_val.show_value(fmt)  #, prefix, suffix)
+                    attrib_val.show_value(fmt)
                 else:
                     print()

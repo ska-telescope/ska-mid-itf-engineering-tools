@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import time
+from typing import Any
 
 from ska_ser_logging import configure_logging  # type: ignore
 from tango import DeviceProxy, DevState
@@ -18,8 +19,15 @@ logger = logging.getLogger(__name__)
 
 
 def wait_for_devices(
-    CBF, CSP, CSPSubarray1, CSPSubarray2, CSPSubarray3, CBFSubarray1, CBFSubarray2, CBFSubarray3
-):
+    CBF: Any,
+    CSP: Any,
+    CSPSubarray1: Any,
+    CSPSubarray2: Any,
+    CSPSubarray3: Any,
+    CBFSubarray1: Any,
+    CBFSubarray2: Any,
+    CBFSubarray3: Any,
+) -> None:
     """Wait for Tango Deviceproxies to change states.
 
     :param CBF : tango.DeviceProxy CBF Controller DeviceProxy

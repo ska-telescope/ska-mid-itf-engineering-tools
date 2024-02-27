@@ -6,10 +6,10 @@ from typing import Any
 import tango
 
 from ska_mid_itf_engineering_tools.tango_info.get_tango_devices import (
-    list_devices,
-    md_format,
     COLUMN1,
     COLUMN2,
+    list_devices,
+    md_format,
 )
 
 
@@ -37,7 +37,7 @@ class TangoPropertyInfo:
             "Device %s property %s value %s", self.dev.name(), self.prop_name, self.prop_value
         )
 
-    def _show_value_txt(self, prefix: str):
+    def _show_value_txt(self, prefix: str) -> None:
         """
         Print attribute value.
 
@@ -59,7 +59,7 @@ class TangoPropertyInfo:
                 print(f"{prefix} {prop_list[n]}  {prop_list[n+1]}")
                 n += 2
 
-    def _show_value_md(self, prefix: str, suffix: str):
+    def _show_value_md(self, prefix: str, suffix: str) -> None:
         """
         Print attribute value.
 
@@ -82,14 +82,14 @@ class TangoPropertyInfo:
                 print(f"{prefix}{md_format(prop_list[n])}  {md_format(prop_list[n+1])}{suffix}")
                 n += 2
 
-    def show_value(self, fmt: str, prefix: str, suffix: str):
+    def show_value(self, fmt: str, prefix: str, suffix: str) -> None:
         if fmt == "md":
             self._show_value_md(prefix, suffix)
         else:
             self._show_value_txt(prefix)
 
 
-def show_properties(
+def show_properties(  # noqa: C901
     logger: logging.Logger,
     cfg_data: dict,
     disp_action: int,

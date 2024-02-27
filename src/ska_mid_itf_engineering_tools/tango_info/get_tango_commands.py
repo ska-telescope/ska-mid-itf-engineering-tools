@@ -6,14 +6,15 @@ from typing import Any
 import tango
 
 from ska_mid_itf_engineering_tools.tango_info.get_tango_devices import (
-    list_devices,
-    md_format,
     COLUMN1,
     COLUMN2,
+    list_devices,
+    md_format,
 )
 
 
-class TangoCommandInfo():
+class TangoCommandInfo:
+    """Read Python commands."""
 
     def __init__(self, logger: logging.Logger, dev: Any, cmd: str, args: Any = None):
         """
@@ -77,7 +78,7 @@ class TangoCommandInfo():
             rval = f"{prefix}{inout}{suffix}"
         print(f"{rval}")
 
-    def show_value(self, fmt: str, prefix: str, suffix: str):
+    def show_value(self, fmt: str, prefix: str, suffix: str) -> None:
         if fmt == "md":
             self._show_value_md(prefix, suffix)
         else:

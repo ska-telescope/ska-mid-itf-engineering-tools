@@ -96,7 +96,7 @@ class TangoDeviceInfo:
         except AttributeError:
             self.adminMode = None
         self.logger.debug(
-            "Admin mode: %d %s (%s)",self.adminMode, str(self.adminMode), type(self.adminMode)
+            "Admin mode: %d %s (%s)", self.adminMode, str(self.adminMode), type(self.adminMode)
         )
         self.adminModeStr: str = ""
         if self.adminMode is None:
@@ -219,7 +219,7 @@ class TangoDeviceInfo:
         self.logger.debug("Command return <%s>", rval)
         return rval
 
-    def show_device_command_short(self, prefix: str, cmd: Any, fmt: str) -> None:
+    def show_device_command_short(self, prefix: str, cmd: Any, fmt: str = "txt") -> None:
         """
         Print info on device command.
 
@@ -242,7 +242,7 @@ class TangoDeviceInfo:
         else:
             print(" N/A")
 
-    def show_device_command_full(self, prefix: str, cmd: Any, fmt: str) -> None:
+    def show_device_command_full(self, prefix: str, cmd: Any, fmt: str = "txt") -> None:
         """
         Print info on device command.
 
@@ -299,7 +299,9 @@ class TangoDeviceInfo:
                 print(f"{' ':{PFIX1}}   \033[1m{cmd.cmd_name:30}\033[0m", end="")
                 self.show_device_command_full(" ", cmd)
 
-    def show_attribute_value_scalar(self, prefix: str, attrib_value: Any, fmt: str) -> None:  # noqa: C901
+    def show_attribute_value_scalar(  # noqa: C901
+        self, prefix: str, attrib_value: Any, fmt: str = "txt"
+    ) -> None:
         """
         Print attribute scalar value.
 
@@ -364,7 +366,9 @@ class TangoDeviceInfo:
         else:
             print(f" '{attrib_value}' (type {type(attrib_value)})")
 
-    def show_attribute_value_spectrum(self, prefix: str, attrib_value: Any, fmt: str) -> None:  # noqa: C901
+    def show_attribute_value_spectrum(  # noqa: C901
+        self, prefix: str, attrib_value: Any, fmt: str = "txt"
+    ) -> None:  # noqa: C901
         """
         Print attribute spectrum value.
 
@@ -420,7 +424,7 @@ class TangoDeviceInfo:
         else:
             print(f" {type(attrib_value)}:{attrib_value}")
 
-    def show_attribute_value_other(self, prefix: str, attrib_value: Any, fmt: str) -> None:
+    def show_attribute_value_other(self, prefix: str, attrib_value: Any, fmt: str = "txt") -> None:
         self.logger.debug("Attribute value %s : %s", type(attrib_value), attrib_value)
         if type(attrib_value) is numpy.ndarray:
             a_list = attrib_value.tolist()
@@ -457,7 +461,9 @@ class TangoDeviceInfo:
             attrib_value = None
         return attrib_value
 
-    def show_attribute_value(self, attrib: str, prefix: str, dry_run: bool, fmt: str) -> Any:  # noqa: C901
+    def show_attribute_value(
+        self, attrib: str, prefix: str, dry_run: bool, fmt: str = "txt"
+    ) -> Any:  # noqa: C901
         """
         Print attribute value.
 
@@ -489,7 +495,7 @@ class TangoDeviceInfo:
         return attrib_value
 
     def show_attribute_config(
-        self, attrib: str, prefix: str, dry_run: bool, attrib_value: Any, fmt: str
+        self, attrib: str, prefix: str, dry_run: bool, attrib_value: Any, fmt: str = "txt"
     ) -> None:  # noqa: C901
         """
         Print attribute configuration.
@@ -562,7 +568,7 @@ class TangoDeviceInfo:
                 print(f"{' ':{PFIX1}}   \033[1m{attrib:30}\033[0m", end="")
                 self.show_attribute_value(attrib, prefix, dry_run)
 
-    def _show_property(self, props: list, fmt: str) -> None:  # noqa: C901
+    def _show_property(self, props: list, fmt: str = "txt") -> None:  # noqa: C901
         """
         Display properties.
 
@@ -760,7 +766,7 @@ class TangoDeviceInfo:
                     self.show_device_command_short(f"{' ':{PFIX1}}  ", cmd)
         # Print attributes
         prefix = f"{' ':{PFIX1}}"
-        self.show_device_attributes_short(prefix, dry_run, fmt)
+        self.show_device_attributes_short(dry_run, fmt)
         # Print properties
         self._show_device_properties(prefix, dry_run, fmt)
         print()
@@ -840,7 +846,7 @@ class TangoDeviceInfo:
         self.show_device_commands()
         # Print attributes
         prefix = f"{' ':{PFIX1}}"
-        self.show_device_attributes(prefix, dry_run, fmt)
+        self.show_device_attributes(dry_run, fmt)
         # Print properties
         self._show_device_properties(prefix, dry_run, fmt)
         return rv
