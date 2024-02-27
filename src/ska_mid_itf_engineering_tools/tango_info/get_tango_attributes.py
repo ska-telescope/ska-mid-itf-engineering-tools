@@ -25,7 +25,6 @@ class TangoAttributeInfo:
         :param logger: logging handle
         :param dev: Tango device handle
         :param attrib_name: attribute name
-        :return: attribute value
         """
         self.attrib_value: Any
         self.data_format: Any

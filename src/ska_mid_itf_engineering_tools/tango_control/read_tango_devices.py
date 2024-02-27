@@ -29,7 +29,7 @@ class TangoctlDevicesBasic:
         :param logger: logging handle
         :param evrythng: read and display the whole thing
         :param cfg_data: configuration data
-        :raise Exception: database connect failed
+        :raises Exception: database connect failed
         """
         self.logger = logger
         # Get Tango database host
@@ -100,7 +100,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         :param tgo_attrib: filter attribute name
         :param tgo_cmd: filter command name
         :param tgo_prop: filter property name
-        :raise Exception: when database connect fails
+        :raises Exception: when database connect fails
         """
         self.logger = logger
         # Get Tango database host

@@ -81,7 +81,7 @@ class TangoPropertyInfo:
 
     def show_value(self, fmt: str, prefix: str, suffix: str) -> None:
         """
-        SHow the value of the thing.
+        Show the value of the thing.
 
         :param fmt: output format
         :param prefix: put in front
