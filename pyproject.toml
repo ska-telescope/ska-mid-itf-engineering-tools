@@ -10,10 +10,17 @@ packages = [{ include = "src/ska_mid_itf_engineering_tools" }, { include = "test
 [[tool.poetry.source]]
 name = 'skao'
 url = 'https://artefact.skao.int/repository/pypi-internal/simple'
+priority = "primary"
+
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
 
 [tool.poetry.scripts]
 tmc_dish_ids = 'src.ska_mid_itf_engineering_tools.tmc_config.tmc_dish_ids:main'
 talon_on = 'src.ska_mid_itf_engineering_tools.cbf_config.talon_on:main'
+check_dependencies = 'src.ska_mid_itf_engineering_tools.dependency_checker.dependency_checker:main'
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
@@ -28,6 +35,7 @@ ska-control-model = "^0.3.1"
 pyyaml = "^6.0.1"
 nbqa = "^1.7.1"
 nbsphinx = "^0.9.3"
+slack-sdk = "^3.27.1"
 
 [tool.poetry.group.docs.dependencies]
 Sphinx = "^5.1.1"
