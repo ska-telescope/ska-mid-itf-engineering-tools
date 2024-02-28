@@ -32,9 +32,12 @@ class TangoctlDeviceBasic:
         :param device: device name
         """
         self.logger = logger
-        self.logger.debug("Add device %s", device)
-        self.dev_name = device
+        self.logger.debug("Open device %s", device)
         self.dev = tango.DeviceProxy(device)
+        try:
+            self.dev_name = self.dev.name()
+        except tango.DevFailed:
+            self.dev_name = device
         try:
             self.dev_ok = True
         except tango.ConnectionFailed:
@@ -129,7 +132,11 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 self.logger.debug("Add attribute %s", attrib)
                 self.attributes[attrib] = {}
             # self.attributes[attrib]["config"] = None
-        props = sorted(self.dev.get_property_list("*"))
+        try:
+            props = sorted(self.dev.get_property_list("*"))
+        except tango.NonDbDevice:
+            self.logger.info("Not reading properties in nodb mode")
+            props = []
         for prop in props:
             if tgo_prop:
                 if tgo_prop in prop.lower():
@@ -189,7 +196,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 self.attribs_found.append(attrib)
         return self.attribs_found
 
-    def get_json(self, delimiter: str) -> dict:  # noqa: C901
+    def get_json(self, delimiter: str = ",") -> dict:  # noqa: C901
         """
         Convert internal values to JSON.
 
@@ -209,34 +216,37 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 self.attributes[attrib]["data_format"]
             )
             if self.attributes[attrib]["config"] is not None:
-                devdict["attributes"][attrib]["description"] = self.attributes[attrib][
+                devdict["attributes"][attrib]["config"] = {}
+                devdict["attributes"][attrib]["config"]["description"] = self.attributes[attrib][
                     "config"
                 ].description
-                devdict["attributes"][attrib]["root_attr_name"] = self.attributes[attrib][
+                devdict["attributes"][attrib]["config"]["root_attr_name"] = self.attributes[
+                    attrib
+                ]["config"].root_attr_name
+                devdict["attributes"][attrib]["config"]["format"] = self.attributes[attrib][
                     "config"
-                ].root_attr_name
-                devdict["attributes"][attrib]["format"] = self.attributes[attrib]["config"].format
-                devdict["attributes"][attrib]["data_format"] = str(
+                ].format
+                devdict["attributes"][attrib]["config"]["data_format"] = str(
                     self.attributes[attrib]["config"].data_format
                 )
-                devdict["attributes"][attrib]["disp_level"] = str(
+                devdict["attributes"][attrib]["config"]["disp_level"] = str(
                     self.attributes[attrib]["config"].disp_level
                 )
-                devdict["attributes"][attrib]["data_type"] = str(
+                devdict["attributes"][attrib]["config"]["data_type"] = str(
                     self.attributes[attrib]["config"].data_type
                 )
-                devdict["attributes"][attrib]["display_unit"] = self.attributes[attrib][
+                devdict["attributes"][attrib]["config"]["display_unit"] = self.attributes[attrib][
                     "config"
                 ].display_unit
-                devdict["attributes"][attrib]["standard_unit"] = self.attributes[attrib][
+                devdict["attributes"][attrib]["config"]["standard_unit"] = self.attributes[attrib][
                     "config"
                 ].standard_unit
-                devdict["attributes"][attrib]["writable"] = str(
+                devdict["attributes"][attrib]["config"]["writable"] = str(
                     self.attributes[attrib]["config"].writable
                 )
-                devdict["attributes"][attrib]["writable_attr_name"] = self.attributes[attrib][
-                    "config"
-                ].writable_attr_name
+                devdict["attributes"][attrib]["config"]["writable_attr_name"] = self.attributes[
+                    attrib
+                ]["config"].writable_attr_name
 
         def set_json_command() -> None:
             """Add commands to dictionary."""
@@ -268,8 +278,15 @@ class TangoctlDevice(TangoctlDeviceBasic):
         devdict: dict = {}
         devdict["name"] = self.dev_name
         devdict["version"] = self.version
-        devdict["versioninfo"] = self.dev.getversioninfo()
-        devdict["adminMode"] = str(self.dev.adminMode).split(".")[1]
+        try:
+            devdict["versioninfo"] = self.dev.getversioninfo()
+        except AttributeError:
+            self.logger.info("Could not read version info")
+            devdict["versioninfo"] = ["N/A"]
+        try:
+            devdict["adminMode"] = str(self.dev.adminMode).split(".")[1]
+        except IndexError:
+            devdict["adminMode"] = self.dev.adminMode
         devdict["info"] = {}
         devdict["info"]["dev_class"] = self.info.dev_class
         devdict["info"]["server_host"] = self.info.server_host

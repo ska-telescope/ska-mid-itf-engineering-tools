@@ -89,6 +89,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         tgo_attrib: str | None,
         tgo_cmd: str | None,
         tgo_prop: str | None,
+        tango_port: int,
     ):
         """
         Get a dict of devices.
@@ -100,6 +101,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         :param tgo_attrib: filter attribute name
         :param tgo_cmd: filter command name
         :param tgo_prop: filter property name
+        :param tango_port: device port
         :raises Exception: when database connect fails
         """
         self.logger = logger
@@ -112,49 +114,54 @@ class TangoctlDevices(TangoctlDevicesBasic):
         self.run_commands_name = cfg_data["run_commands_name"]
         self.logger.info("Run commands with name %s", self.run_commands_name)
 
-        # Connect to database
-        try:
-            database = tango.Database()
-        except Exception as terr:
-            self.logger.error("Could not connect to Tango database %s", tango_host)
-            raise terr
-
-        # Read devices
-        device_list = database.get_device_exported("*")
-        self.logger.info(f"{len(device_list)} devices available")
-
-        for device in sorted(device_list.value_string):
-            # Check device name against mask
-            if not evrythng:
-                chk_fail = False
-                for dev_chk in cfg_data["ignore_device"]:
-                    chk_len = len(dev_chk)
-                    if device[0:chk_len] == dev_chk:
-                        chk_fail = True
-                        break
-                if chk_fail:
-                    self.logger.debug("'%s' matches '%s'", device, cfg_data["ignore_device"])
-                    continue
-            if tgo_name:
-                iupp = device.upper()
-                if tgo_name not in iupp:
-                    self.logger.info(f"Ignore {device}")
-                    continue
+        if tango_port:
+            trl = f"tango://127.0.0.1:{tango_port}/{tgo_name}#dbase=no"
+            new_dev = TangoctlDevice(logger, trl, tgo_attrib, tgo_cmd, tgo_prop)
+            self.devices[tgo_name] = new_dev
+        else:
+            # Connect to database
             try:
-                new_dev = TangoctlDevice(logger, device, tgo_attrib, tgo_cmd, tgo_prop)
-            except tango.ConnectionFailed:
-                logger.info("Could not read device %s", device)
-                continue
-            if tgo_attrib:
-                attribs_found = new_dev.check_for_attribute(tgo_attrib)
-                if attribs_found:
-                    self.logger.info("Device %s matched attributes %s", device, attribs_found)
-                    self.devices[device] = new_dev
+                database = tango.Database()
+            except Exception as terr:
+                self.logger.error("Could not connect to Tango database %s", tango_host)
+                raise terr
+
+            # Read devices
+            device_list = database.get_device_exported("*")
+            self.logger.info(f"{len(device_list)} devices available")
+
+            for device in sorted(device_list.value_string):
+                # Check device name against mask
+                if not evrythng:
+                    chk_fail = False
+                    for dev_chk in cfg_data["ignore_device"]:
+                        chk_len = len(dev_chk)
+                        if device[0:chk_len] == dev_chk:
+                            chk_fail = True
+                            break
+                    if chk_fail:
+                        self.logger.debug("'%s' matches '%s'", device, cfg_data["ignore_device"])
+                        continue
+                if tgo_name:
+                    iupp = device.upper()
+                    if tgo_name not in iupp:
+                        self.logger.info(f"Ignore {device}")
+                        continue
+                try:
+                    new_dev = TangoctlDevice(logger, device, tgo_attrib, tgo_cmd, tgo_prop)
+                except tango.ConnectionFailed:
+                    logger.info("Could not read device %s", device)
+                    continue
+                if tgo_attrib:
+                    attribs_found = new_dev.check_for_attribute(tgo_attrib)
+                    if attribs_found:
+                        self.logger.info("Device %s matched attributes %s", device, attribs_found)
+                        self.devices[device] = new_dev
+                    else:
+                        logger.debug("Skip device %s", device)
                 else:
-                    logger.debug("Skip device %s", device)
-            else:
-                self.logger.debug("Add device %s", device)
-                self.devices[device] = new_dev
+                    self.logger.debug("Add device %s", device)
+                    self.devices[device] = new_dev
         logger.debug("Read %d devices", len(self.devices))
 
     def read_attribute_values(self) -> None:
@@ -249,48 +256,95 @@ class TangoctlDevices(TangoctlDevicesBasic):
                     continue
                 j = 0
                 for devkey in devkeys:
-                    if not j:
-                        print(f"{devkey:40} ", end="")
-                    else:
-                        print(f"{' ':61} {devkey:40} ", end="")
-                    j += 1
                     devkeyval = devkeys[devkey]
-                    if not devkeyval:
-                        print()
-                    elif "\n" in devkeyval:
-                        keyvals = devkeyval.split("\n")
-                        # Remove empty lines
-                        keyvals2 = []
-                        for keyval in keyvals:
-                            keyval2 = keyval.strip()
-                            if keyval2:
-                                if len(keyval2) > 70:
-                                    lsp = keyval2[0:70].rfind(" ")
-                                    keyvals2.append(keyval2[0:lsp])
-                                    keyvals2.append(keyval2[lsp + 1 :])
+                    if type(devkeyval) is dict:
+                        # Read dictionary value
+                        for devkey2 in devkeyval:
+                            devkeyval2 = devkeyval[devkey2]
+                            if not j:
+                                print(f"{devkey2:40} ", end="")
+                            else:
+                                print(f"{' ':61} {devkey2:40} ", end="")
+                            j += 1
+                            if not devkeyval2:
+                                print()
+                            elif "\n" in devkeyval2:
+                                keyvals = devkeyval2.split("\n")
+                                # Remove empty lines
+                                keyvals2 = []
+                                for keyval in keyvals:
+                                    keyval2 = keyval.strip()
+                                    if keyval2:
+                                        if len(keyval2) > 70:
+                                            lsp = keyval2[0:70].rfind(" ")
+                                            keyvals2.append(keyval2[0:lsp])
+                                            keyvals2.append(keyval2[lsp + 1 :])
+                                        else:
+                                            keyvals2.append(" ".join(keyval2.split()))
+                                print(f"{keyvals2[0]}")
+                                for keyval2 in keyvals2[1:]:
+                                    print(f"{' ':102} {keyval2}")
+                            elif "," in devkeyval2:
+                                keyvals = devkeyval2.split(",")
+                                keyval = keyvals[0]
+                                print(f"{keyval}")
+                                for keyval in keyvals[1:]:
+                                    print(f"{' ':102} {keyval}")
+                            else:
+                                keyvals2 = []
+                                if len(devkeyval2) > 70:
+                                    lsp = devkeyval2[0:70].rfind(" ")
+                                    keyvals2.append(devkeyval2[0:lsp])
+                                    keyvals2.append(devkeyval2[lsp + 1 :])
                                 else:
-                                    keyvals2.append(" ".join(keyval2.split()))
-                        print(f"{keyvals2[0]}")
-                        for keyval2 in keyvals2[1:]:
-                            print(f"{' ':102} {keyval2}")
-                    elif "," in devkeyval:
-                        keyvals = devkeyval.split(",")
-                        keyval = keyvals[0]
-                        print(f"{keyval}")
-                        for keyval in keyvals[1:]:
-                            print(f"{' ':102} {keyval}")
+                                    keyvals2.append(" ".join(devkeyval2.split()))
+                                # print(f"{' '.join(devkeyval.split())}")
+                                print(f"{keyvals2[0]}")
+                                for keyval2 in keyvals2[1:]:
+                                    print(f"{' ':102} {keyval2}")
                     else:
-                        keyvals2 = []
-                        if len(devkeyval) > 70:
-                            lsp = devkeyval[0:70].rfind(" ")
-                            keyvals2.append(devkeyval[0:lsp])
-                            keyvals2.append(devkeyval[lsp + 1 :])
+                        # Read string value
+                        if not j:
+                            print(f"{devkey:40} ", end="")
                         else:
-                            keyvals2.append(" ".join(devkeyval.split()))
-                        # print(f"{' '.join(devkeyval.split())}")
-                        print(f"{keyvals2[0]}")
-                        for keyval2 in keyvals2[1:]:
-                            print(f"{' ':102} {keyval2}")
+                            print(f"{' ':61} {devkey:40} ", end="")
+                        j += 1
+                        if not devkeyval:
+                            print()
+                        elif "\n" in devkeyval:
+                            keyvals = devkeyval.split("\n")
+                            # Remove empty lines
+                            keyvals2 = []
+                            for keyval in keyvals:
+                                keyval2 = keyval.strip()
+                                if keyval2:
+                                    if len(keyval2) > 70:
+                                        lsp = keyval2[0:70].rfind(" ")
+                                        keyvals2.append(keyval2[0:lsp])
+                                        keyvals2.append(keyval2[lsp + 1 :])
+                                    else:
+                                        keyvals2.append(" ".join(keyval2.split()))
+                            print(f"{keyvals2[0]}")
+                            for keyval2 in keyvals2[1:]:
+                                print(f"{' ':102} {keyval2}")
+                        elif "," in devkeyval:
+                            keyvals = devkeyval.split(",")
+                            keyval = keyvals[0]
+                            print(f"{keyval}")
+                            for keyval in keyvals[1:]:
+                                print(f"{' ':102} {keyval}")
+                        else:
+                            keyvals2 = []
+                            if len(devkeyval) > 70:
+                                lsp = devkeyval[0:70].rfind(" ")
+                                keyvals2.append(devkeyval[0:lsp])
+                                keyvals2.append(devkeyval[lsp + 1 :])
+                            else:
+                                keyvals2.append(" ".join(devkeyval.split()))
+                            # print(f"{' '.join(devkeyval.split())}")
+                            print(f"{keyvals2[0]}")
+                            for keyval2 in keyvals2[1:]:
+                                print(f"{' ':102} {keyval2}")
 
         devsdict = self.get_json()
         for device in devsdict:

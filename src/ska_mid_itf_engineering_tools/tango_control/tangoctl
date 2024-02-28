@@ -9,6 +9,7 @@ from typing import Any, TextIO
 
 from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl
+from ska_mid_itf_engineering_tools.tango_control.read_tango_config import TangoctlDeviceConfig
 from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import (
     TangoctlDevices,
     TangoctlDevicesBasic,
@@ -17,7 +18,7 @@ from ska_mid_itf_engineering_tools.tango_control.ska_jargon import print_jargon
 from ska_mid_itf_engineering_tools.tango_control.test_tango_device2 import TestTangoDevice
 
 logging.basicConfig(level=logging.WARNING)
-_module_logger = logging.getLogger("tangoctl2")
+_module_logger = logging.getLogger("tangoctl")
 _module_logger.setLevel(logging.WARNING)
 
 KUBE_NAMESPACE = "ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
@@ -45,6 +46,7 @@ def run_test(
     show_attrib: bool,
     tgo_attrib: str | None,
     tgo_name: str | None,
+    tango_port: int,
 ) -> int:
     """
     Run tests on Tango devices.
@@ -59,6 +61,7 @@ def run_test(
     :param show_attrib: test device attributes
     :param tgo_attrib: attribute name
     :param tgo_name: device name
+    :param tango_port: device port
     :return: error condition
     """
     if dev_admin is not None and tgo_name is not None:
@@ -137,6 +140,7 @@ def run_info(
     tgo_attrib: str | None,
     tgo_cmd: str | None,
     tgo_prop: str | None,
+    tango_port: int
 ) -> int:
     """
     Read information on Tango devices.
@@ -149,6 +153,7 @@ def run_info(
     :param tgo_attrib: attribute name
     :param tgo_cmd: filter command name
     :param tgo_prop: filter property name
+    :param tango_port: device port
     :return: error condition
     """
 
@@ -158,8 +163,21 @@ def run_info(
         devices.print_txt_list()
         return 0
 
+    if tgo_name and fmt == "json" and disp_action == 1:
+        _module_logger.info("Print device %s", tgo_name)
+        if tango_port:
+            tgo_name = f"tango://127.0.0.1:{tango_port}/{tgo_name}#dbase=no"
+        device = TangoctlDeviceConfig(_module_logger, tgo_name)
+        devsdict = device.get_json()
+        # print(devsdict)
+        try:
+            print(json.dumps(devsdict, indent=4))
+        except TypeError:
+            print(devsdict)
+        return 0
+
     devices = TangoctlDevices(
-        _module_logger, evrythng, cfg_data, tgo_name, tgo_attrib, tgo_cmd, tgo_prop
+        _module_logger, evrythng, cfg_data, tgo_name, tgo_attrib, tgo_cmd, tgo_prop, tango_port,
     )
     devices.read_device_values()
     # devices.print_device_values()
@@ -313,11 +331,23 @@ def main(y_arg: list) -> int:  # noqa: C901
     tgo_in_type: str | None = None
     tgo_prop: str | None = None
     tango_host: str | None = None
+    tango_port: int = 0
     fmt: str = "txt"
+
+    # Read configuration file
+    cfg_name: str | bytes = y_arg[0] + ".json"
+    cfg_file: TextIO = open(cfg_name)
+    cfg_data: Any = json.load(cfg_file)
+    cfg_file.close()
+
+    databaseds_name: str = cfg_data["databaseds_name"]
+    cluster_domain: str = cfg_data["cluster_domain"]
+    databaseds_port: int = cfg_data["databaseds_port"]
+
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
-            "acefhjlmnqstvVA:C:H:D:N:P:T:",
+            "acefhjlmnqstvVA:C:H:D:N:p:P:T:",
             [
                 "dry-run",
                 "everything",
@@ -343,6 +373,7 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "device=",
                 "host=",
                 "namespace=",
+                "port=",
                 "property=",
                 "simul=",
             ],
@@ -350,16 +381,6 @@ def main(y_arg: list) -> int:  # noqa: C901
     except getopt.GetoptError as opt_err:
         print(f"Could not read command line: {opt_err}")
         return 1
-
-    # Read configuration file
-    cfg_name: str | bytes = y_arg[0] + ".json"
-    cfg_file: TextIO = open(cfg_name)
-    cfg_data: Any = json.load(cfg_file)
-    cfg_file.close()
-    databaseds_name: str = cfg_data["databaseds_name"]
-    cluster_domain: str = cfg_data["cluster_domain"]
-    min_str_len: int = cfg_data["min_str_len"]
-    databaseds_port: int = cfg_data["databaseds_port"]
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
@@ -376,7 +397,7 @@ def main(y_arg: list) -> int:  # noqa: C901
         # elif opt in ("-d", "--show-dev"):
         #     disp_action = 4
         elif opt in ("--device", "-D"):
-            tgo_name = arg.upper()
+            tgo_name = arg.lower()
         elif opt == "--dry-run":
             # Undocumented feature for dry runs
             dry_run = True
@@ -406,6 +427,8 @@ def main(y_arg: list) -> int:  # noqa: C901
             dev_off = True
         elif opt == "--on":
             dev_on = True
+        elif opt in ("--port", "-p"):
+            tango_port = int(arg)
         elif opt in ("--quick", "-q"):
             disp_action = 3
         elif opt in ("--short", "-s"):
@@ -482,6 +505,7 @@ def main(y_arg: list) -> int:  # noqa: C901
             show_attrib,
             tgo_attrib,
             tgo_name,
+            tango_port,
         )
         return rc
 
@@ -494,6 +518,7 @@ def main(y_arg: list) -> int:  # noqa: C901
         tgo_attrib,
         tgo_cmd,
         tgo_prop,
+        tango_port,
     )
     return rc
 

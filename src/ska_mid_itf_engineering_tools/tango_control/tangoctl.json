@@ -2,6 +2,7 @@
   "cluster_domain": "miditf.internal.skao.int",
   "databaseds_name": "tango-databaseds",
   "databaseds_port": 10000,
+  "device_port": 45450,
   "run_commands":  ["QueryClass", "QueryDevice", "QuerySubDevice", "GetVersionInfo", "State", "Status"],
   "run_commands_name": ["DevLockStatus", "DevPollStatus", "GetLoggingTarget"],
   "long_attributes": ["internalModel", "transformedInternalModel"],
