@@ -1,4 +1,4 @@
-import json
+"""DependencyChecker is used to check for stale project dependencies."""
 import logging
 import os
 import subprocess
@@ -10,12 +10,22 @@ from slack_sdk.webhook import WebhookClient
 
 
 @dataclass
-class Dependency:
+class PoetryDependency:
+    """PoetryDependency represents a stale poetry dependency."""
+
     name: str = ""
     project_version: str = ""
     available_version: str = ""
 
     def as_slack_section(self) -> Dict:
+        """
+        Create a Slack section from the current dependency.
+
+        See https://api.slack.com/reference/block-kit/blocks#section
+
+        :return: A Slack section.
+        :rtype: Dict
+        """
         return {
             "type": "section",
             "text": {
@@ -45,25 +55,42 @@ class Dependency:
 
 @dataclass
 class ProjectInfo:
+    """ProjectInfo is store information about the current project."""
+
     name: str
     version: str
 
 
 class DependencyChecker:
+    """DependencyChecker is used to check for stale project dependencies."""
+
     __slack_webhook_url = ""
 
     def __init__(self, slack_webhook_url: str):
+        """
+        Initialise the dependency checker.
+
+        :param slack_webhook_url: The webhook URL used to send Slack notifications.
+        :type slack_webhook_url: str
+        """
         self.__slack_webhook_url = slack_webhook_url
         self.logger = logging.getLogger(__name__)
 
     def run(self):
+        """Run the dependency checker."""
         project_info = self.get_project_info()
-        deps = self.check_dependencies()
+        deps = self.get_stale_poetry_dependencies()
         msg = self.build_slack_message(project_info, deps)
-        print(json.dumps(msg))
         self.send_slack_message(msg)
 
     def get_project_info(self) -> ProjectInfo:
+        """
+        Retrieve the project's info (name and version).
+
+        :raises RuntimeError: If `poetry version` returns non-zero.
+        :return: An object containing the project name and version.
+        :rtype: ProjectInfo
+        """
         result = subprocess.run(
             ["poetry", "version"],
             capture_output=True,
@@ -76,7 +103,14 @@ class DependencyChecker:
         vals = result.stdout.split()
         return ProjectInfo(name=vals[0], version=vals[1])
 
-    def check_dependencies(self) -> List[Dependency]:
+    def get_stale_poetry_dependencies(self) -> List[PoetryDependency]:
+        """
+        Retrieve all stale top-level python dependencies in the project.
+
+        :raises RuntimeError: If `poetry show --outdated --top-level` returns non-zero.
+        :return: The parsed list of stale dependencies.
+        :rtype: List[Dependency]
+        """
         result = subprocess.run(
             ["poetry", "show", "--outdated", "--top-level"],
             capture_output=True,
@@ -86,22 +120,44 @@ class DependencyChecker:
             raise RuntimeError(
                 f"'poetry show' failed: stderr={result.stderr}; stdout={result.stdout}"
             )
-        deps = self.parse_dependencies(result.stdout)
+        deps = self.parse_poetry_dependencies(result.stdout)
         return deps
 
-    def parse_dependencies(self, poetry_dependencies: str) -> List[Dependency]:
+    def parse_poetry_dependencies(self, poetry_dependencies: str) -> List[PoetryDependency]:
+        """
+        Parse dependencies from the string output of `poetry show --outdated --top-level`.
+
+        :param poetry_dependencies: The Poetry output.
+        :type poetry_dependencies: str
+        :return: The parsed list of stale dependencies.
+        :rtype: List[Dependency]
+        """
         dependencies = []
         lines = poetry_dependencies.splitlines()
         for line in lines:
             words = line.split()
             dependencies.append(
-                Dependency(name=words[0], project_version=words[1], available_version=words[2])
+                PoetryDependency(
+                    name=words[0], project_version=words[1], available_version=words[2]
+                )
             )
         return dependencies
 
     def build_slack_message(
-        self, project_info: ProjectInfo, dependencies: List[Dependency]
+        self, project_info: ProjectInfo, dependencies: List[PoetryDependency]
     ) -> List[Dict]:
+        """
+        Create a slack message using Block Kit Builder.
+
+        See: https://api.slack.com/block-kit
+
+        :param project_info: The project name and version.
+        :type project_info: ProjectInfo
+        :param dependencies: The stale Poetry dependencies.
+        :type dependencies: List[Dependency]
+        :return: A message in Block Kit Builder format.
+        :rtype: List[Dict]
+        """
         msg_blocks = [
             {
                 "type": "section",
@@ -136,6 +192,13 @@ class DependencyChecker:
         return msg_blocks
 
     def send_slack_message(self, msg_blocks: List[Dict]):
+        """
+        Send a Slack notification to the configured webhook URL.
+
+        :param msg_blocks: The blocks used to create the message.
+        :type msg_blocks: List[Dict]
+        :raises RuntimeError: If the request failed.
+        """
         webhook = WebhookClient(self.__slack_webhook_url)
         response = webhook.send(
             blocks=msg_blocks,
@@ -149,6 +212,7 @@ class DependencyChecker:
 
 
 def main():
+    """Run the dependency checker."""
     configure_logging(level=logging.DEBUG)
     slack_webhook_url = os.environ["ATLAS_DEPENDENCY_CHECKER_WEBHOOK_URL"]
     DependencyChecker(slack_webhook_url).run()

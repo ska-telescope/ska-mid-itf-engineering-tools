@@ -1,0 +1,15 @@
+check-dependencies:
+  stage: lint
+  image: thehale/python-poetry:1.7.1-py3.10-slim
+  tags:
+    - k8srunner
+  script:
+    - poetry install
+    - poetry run check_dependencies
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+      allow_failure: false
+    - when: manual
+      allow_failure: true
+  
