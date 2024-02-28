@@ -29,12 +29,6 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
         :param device: device name
         """
         super().__init__(logger, device)
-        # self.logger = logger
-        # # self.logger.debug("Open device %s", device)
-        # self.logger.debug("Read device %s config", device)
-        # self.dev = tango.DeviceProxy(device)
-        # time.sleep(2)
-        # self.dev_name = self.dev.name()
 
         attribs = self.dev.get_attribute_list()
         for attrib in sorted(attribs):

@@ -117,7 +117,6 @@ class TangoctlDevice(TangoctlDeviceBasic):
             else:
                 self.logger.debug("Add command %s", cmd)
                 self.commands[cmd] = {}
-            # self.commands[cmd]["config"] = None
         attribs = sorted(self.dev.get_attribute_list())
         for attrib in attribs:
             if tgo_attrib:
@@ -131,7 +130,6 @@ class TangoctlDevice(TangoctlDeviceBasic):
             else:
                 self.logger.debug("Add attribute %s", attrib)
                 self.attributes[attrib] = {}
-            # self.attributes[attrib]["config"] = None
         try:
             props = sorted(self.dev.get_property_list("*"))
         except tango.NonDbDevice:
@@ -207,13 +205,18 @@ class TangoctlDevice(TangoctlDeviceBasic):
         def set_json_attribute() -> None:
             """Add attributes to dictionary."""
             devdict["attributes"][attrib] = {}
-            if "value" in self.attributes[attrib]:
-                devdict["attributes"][attrib]["value"] = str(self.attributes[attrib]["value"])
+            devdict["attributes"][attrib]["data"] = {}
+            if "value" in self.attributes[attrib]["data"]:
+                devdict["attributes"][attrib]["data"]["value"] = str(
+                    self.attributes[attrib]["data"]["value"]
+                )
             if "error" in self.attributes[attrib]:
                 devdict["attributes"][attrib]["error"] = str(self.attributes[attrib]["error"])
-            devdict["attributes"][attrib]["type"] = str(self.attributes[attrib]["type"])
-            devdict["attributes"][attrib]["data_format"] = str(
-                self.attributes[attrib]["data_format"]
+            devdict["attributes"][attrib]["data"]["type"] = str(
+                self.attributes[attrib]["data"]["type"]
+            )
+            devdict["attributes"][attrib]["data"]["data_format"] = str(
+                self.attributes[attrib]["data"]["data_format"]
             )
             if self.attributes[attrib]["config"] is not None:
                 devdict["attributes"][attrib]["config"] = {}
@@ -316,6 +319,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
         for attrib in self.attributes:
             err_msg = None
             attrib_data = None
+            self.attributes[attrib]["data"] = {}
             try:
                 attrib_data = self.dev.read_attribute(attrib)
             except tango.DevFailed as terr:
@@ -323,13 +327,15 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 err_msg = str(terr.args[-1].desc)
                 self.logger.info("Failed on attribute %s : %s", attrib, err_msg)
                 self.attributes[attrib]["error"] = "<ERROR> " + err_msg
-                self.attributes[attrib]["type"] = "N/A"
-                self.attributes[attrib]["data_format"] = "N/A"
+                self.attributes[attrib]["data"]["type"] = "N/A"
+                self.attributes[attrib]["data"]["data_format"] = "N/A"
                 continue
-            self.attributes[attrib]["value"] = attrib_data.value
-            self.attributes[attrib]["type"] = str(attrib_data.type)
-            self.attributes[attrib]["data_format"] = str(attrib_data.data_format)
-            self.logger.info("Read attribute %s : %s", attrib, self.attributes[attrib]["value"])
+            self.attributes[attrib]["data"]["value"] = attrib_data.value
+            self.attributes[attrib]["data"]["type"] = str(attrib_data.type)
+            self.attributes[attrib]["data"]["data_format"] = str(attrib_data.data_format)
+            self.logger.info(
+                "Read attribute %s : %s", attrib, self.attributes[attrib]["data"]["value"]
+            )
 
     def read_command_value(self, run_commands: list, run_commands_name: list) -> None:
         """
