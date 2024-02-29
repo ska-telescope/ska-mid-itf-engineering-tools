@@ -30,17 +30,17 @@ class PoetryDependency:
         return {
             "type": "section",
             "text": {
-                "text": self.name,
+                "text": f"*{self.name}*",
                 "type": "mrkdwn",
             },
             "fields": [
                 {
                     "type": "mrkdwn",
-                    "text": "*Project Version*",
+                    "text": "Project Version",
                 },
                 {
                     "type": "mrkdwn",
-                    "text": "*Available Version*",
+                    "text": "Available Version",
                 },
                 {
                     "type": "mrkdwn",
@@ -163,7 +163,7 @@ class DependencyChecker:
             {
                 "type": "section",
                 "text": {
-                    "text": f"{project_info.name} - {project_info.version}",
+                    "text": f"*{project_info.name} - {project_info.version}*",
                     "type": "mrkdwn",
                 },
             },
