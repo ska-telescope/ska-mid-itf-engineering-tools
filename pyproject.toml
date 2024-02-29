@@ -1,4 +1,5 @@
 [tool.poetry]
+include = ["MANIFEST.skao.int"]
 name = "ska-mid-itf-engineering-tools"
 version = "0.3.4"
 description = "SKA MID ITF Engineering tools"
@@ -30,6 +31,7 @@ pyyaml = "^6.0.1"
 nbqa = "^1.7.1"
 nbsphinx = "^0.9.3"
 slack-sdk = "^3.27.1"
+python-build = "^0.2.13"
 
 [tool.poetry.group.docs.dependencies]
 Sphinx = "^5.1.1"

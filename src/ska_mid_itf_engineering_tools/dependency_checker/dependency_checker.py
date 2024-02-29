@@ -214,7 +214,7 @@ class DependencyChecker:
 def main():
     """Run the dependency checker."""
     configure_logging(level=logging.DEBUG)
-    slack_webhook_url = os.environ["ATLAS_DEPENDENCY_CHECKER_WEBHOOK_URL"]
+    slack_webhook_url = os.environ["DEPENDENCY_CHECKER_WEBHOOK_URL"]
     DependencyChecker(slack_webhook_url).run()
 
 

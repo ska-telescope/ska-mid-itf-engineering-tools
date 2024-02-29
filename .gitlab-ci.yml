@@ -54,8 +54,14 @@ notebook-lint:
 notebook-test:
   when: manual
 
-python-lint:
-  script:
-    - poetry --version
-    - make python-lint;
-  
+# These jobs are modified in order to avoid installing build with pip -- for some reason this fails with:
+# No module named build.__main__; 'build' is a package and cannot be directly executed
+python-build-for-development:
+  before_script:
+    - '[ -f .make/python.mk ] || (echo "File python.mk not included in Makefile; exit 1")'
+    - 'make help | grep python-build'
+
+python-build-for-publication:
+  before_script:
+    - '[ -f .make/python.mk ] || (echo "File python.mk not included in Makefile; exit 1")'
+    - 'make help | grep python-build'
