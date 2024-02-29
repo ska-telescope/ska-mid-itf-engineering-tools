@@ -1,4 +1,5 @@
 """DependencyChecker is used to check for stale project dependencies."""
+
 import logging
 import os
 import subprocess
