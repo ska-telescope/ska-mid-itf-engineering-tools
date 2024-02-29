@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import re
 import sys
 from typing import Any
 
@@ -316,28 +317,90 @@ class TangoctlDevices(TangoctlDevicesBasic):
     def print_markdown_all(self, devsdict: dict):
         """Print the whole thing."""
 
-        def read_data(dstr):
+        def print_attribute_data(dstr, dc1, dc2, dc3):
+            dc3a = (dc3 / 2) - 3
+            dc3b = (dc3 / 2)
+            dc4a = (dc3 / 3) - 3
+            dc4b = (dc3 / 3) - 2
+            dc4c = (dc3 / 3)
+            dstr = re.sub(' +', ' ', dstr)
             if dstr[0] == "{" and dstr[-1] == "}":
                 ddict = json.loads(dstr)
-                rval = f"```\n{ddict}\n```"
+                self.logger.debug("Print JSON :\n%s", json.dumps(ddict, indent=4))
+                n = 0
+                for ditem in ddict:
+                    if n:
+                        print(f"| {' ':{dc1}}.| {' ':{dc2}}.", end="")
+                    if type(ddict[ditem]) is dict:
+                        m = 0
+                        for ditem2 in ddict[ditem]:
+                            if m:
+                                print(f"| {' ':{dc1}}-| {' ':{dc2}}-", end="")
+                            print(f"| {ditem} | {ditem2} | {ddict[ditem][ditem2]} |")
+                            m += 1
+                    elif type(ddict[ditem]) is list:
+                        m = 0
+                        for ditem2 in ddict[ditem]:
+                            dname = f"{ditem} {m}"
+                            if not m:
+                                print(f"| {dname} ", end="")
+                            else:
+                                print(f"| {' ':{dc1}},| {' ':{dc2}},| {dname} ", end="")
+                            if type(ditem2) is dict:
+                                p = 0
+                                for ditem3 in ditem2:
+                                    if p:
+                                        print(f"| {' ':{dc1}},| {' ':{dc2}},| ,", end="")
+                                    print(f"| {ditem3} | {ditem2[ditem3]} |")
+                                    p += 1
+                            else:
+                                print(f"| {str(ditem2)} |")
+                            m += 1
+                    else:
+                        print(f"| {ditem} | {str(ddict[ditem])} |")
+                    n += 1
             elif "\n" in dstr:
-                lines = []
+                self.logger.debug("Print '%s'", dstr)
+                n = 0
                 for line in dstr.split("\n"):
                     line = line.strip()
                     if line:
-                        lines.append(line)
-                rval = '\n'.join(lines)
-                rval = f"```\n{rval}\n```"
+                        if n:
+                            print(f"| {' ':{dc1}}.| {' ':{dc2}}.", end="")
+                        print(f"| {line:{dc3}} |")
+                        n += 1
             else:
-                rval = dstr
-            # if len(rval) > 70:
-            #     rval = rval[0:70] + "..."
-            return md_format(rval)
+                print(f"| {md_format(dstr):{dc3}} |")
+            return
+
+        def print_data(dstr, dc1, dc2, dc3):
+            if "\n" in dstr:
+                self.logger.debug("Print '%s'", dstr)
+                n = 0
+                for line in dstr.split("\n"):
+                    line = line.strip()
+                    if line:
+                        if n:
+                            print(f"| {' ':{dc1}}.| {' ':{dc2}}.", end="")
+                        print(f"| {line:{dc3}} |")
+                        n += 1
+            elif len(dstr) > dc3 and "," in dstr:
+                n = 0
+                for line in dstr.split(","):
+                    if n:
+                        if dc2:
+                            print(f"| {' ':{dc1}}.| {' ':{dc2}}.", end="")
+                        else:
+                            print(f"| {' ':{dc1}}.", end="")
+                    print(f"| {line:{dc3}} |")
+                    n += 1
+            else:
+                print(f"| {md_format(dstr):{dc3}} |")
 
         def print_md_attributes():
             ac1 = 30
             ac2 = 50
-            ac3 = 80
+            ac3 = 90
             print(f"### Attributes\n")
             n = 0
             print(f"| {'NAME':{ac1}} | {'FIELD':{ac2}} | {'VALUE':{ac3}} |")
@@ -355,54 +418,19 @@ class TangoctlDevices(TangoctlDevicesBasic):
                     data = devdict["attributes"][attrib]["data"][item]
                     if m:
                         print(f"| {' '*ac1} ", end="")
-                    print(f"| {md_format(item):{ac2}} | {read_data(data):{ac3}} |")
+                    print(f"| {md_format(item):{ac2}} ", end="")
+                    print_attribute_data(data, ac1, ac2, ac3)
                     m += 1
                 for item in devdict["attributes"][attrib]["config"]:
                     config = devdict['attributes'][attrib]['config'][item]
-                    print(f"| {' '*ac1} | {md_format(item):{ac2}} | {read_data(config):{ac3}} |")
+                    print(f"| {' '*ac1} | {md_format(item):{ac2}} ", end="")
+                    print_attribute_data(config, ac1, ac2, ac3)
             print("\n")
-
-        # def print_md(stuff: str, stuff2: str = ""):
-        #     if not stuff2:
-        #         stuff2 = stuff
-        #     print(f"### {stuff[0].upper()}{stuff[1:]}\n")
-        #     self.logger.debug("Print %s", stuff)
-        #     if not devdict[stuff]:
-        #         return
-        #     print("|FIELD|DESCRIPTION|VALUE|")
-        #     print("|:----|:----------|:----|")
-        #     n = 0
-        #     for key in devdict[stuff]:
-        #         values = devdict[stuff][key]
-        #         self.logger.debug("Print %s : %s", key, values)
-        #         print(f"|{key}|", end="")
-        #         if values:
-        #             m = 0
-        #             for key2 in values:
-        #                 if n:
-        #                     print("||", end="")
-        #                 print(f"{md_format(key2)}|", end="")
-        #                 if m:
-        #                     print("||", end="")
-        #                 values2 = values[key2]
-        #                 self.logger.debug("Print (%d) %s : %s", m, key2, values)
-        #                 if type(values2) is dict:
-        #                     for key3 in values2:
-        #                         values3 = md_format(values2[key3])
-        #                         print(f"{md_format(key3)}|{values3}|")
-        #                 else:
-        #                     print(f"{md_format(values2)}|")
-        #                 m += 1
-        #         else:
-        #             print("||")
-        #         n += 1
-        #     print("\n")
-        #     return
 
         def print_md_commands():
             cc1 = 30
             cc2 = 50
-            cc3 = 80
+            cc3 = 90
             print(f"### Commands\n")
             n = 0
             print(f"| {'NAME':{cc1}} | {'FIELD':{cc2}} | {'VALUE':{cc3}} |")
@@ -416,24 +444,23 @@ class TangoctlDevices(TangoctlDevicesBasic):
                 for item in cmd_items:
                     if m:
                         print(f"| {' ':{cc1}} ", end="")
-                    print(
-                        f"| {md_format(item):{cc2}} "
-                        f"| {read_data(devdict['commands'][cmd][item]):{cc3}} |"
-                    )
+                    print(f"| {md_format(item):{cc2}} ", end="")
+                    print_data(devdict['commands'][cmd][item], cc1, cc2, cc3)
                     m += 1
                 n += 1
             print("\n")
 
         def print_md_properties():
             pc1 = 40
-            pc2 = 123
+            pc2 = 133
             print(f"### Properties\n")
             n = 0
             print(f"| {'NAME':{pc1}} | {'VALUE':{pc2}} |")
             print(f"|:{'-'*pc1}-|:{'-'*pc2}-|")
             for prop in devdict["properties"]:
-                print(f"| {md_format(prop):{pc1}} "
-                      f"| {read_data(devdict['properties'][prop]['value']):{pc2}} |")
+                self.logger.debug("Print command %s : %s", prop, devdict['properties'][prop]['value'])
+                print(f"| {md_format(prop):{pc1}} ", end="")
+                print_data(devdict['properties'][prop]['value'], pc1, 0, pc2)
             print("\n")
 
         print("# Tango devices in namespace\n")
@@ -451,9 +478,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
                 print(f"| Server host | {devdict['info']['server_host']} |")
                 print(f"| Server ID | {md_format(devdict['info']['server_id'])} |")
             print("\n")
-            # print_md("attributes", "Attribute")
-            # print_md("commands", "Command")
-            # print_md("properties", "Property")
             print_md_attributes()
             print_md_commands()
             print_md_properties()
