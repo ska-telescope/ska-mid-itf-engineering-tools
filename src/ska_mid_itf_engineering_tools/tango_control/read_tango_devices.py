@@ -2,6 +2,7 @@
 import json
 import logging
 import os
+import sys
 from typing import Any
 
 import tango
@@ -10,6 +11,65 @@ from ska_mid_itf_engineering_tools.tango_control.read_tango_device import (
     TangoctlDevice,
     TangoctlDeviceBasic,
 )
+
+def md_format(inp: str) -> str:
+    """
+    Change string to safe format.
+
+    :param inp: input
+    :return: output
+    """
+    outp = inp.replace("/", "\\/").replace("_", "\\_").replace("-", "\\-")
+    return outp
+
+
+def progress_bar(
+    iterable: list | dict,
+    show: bool,
+    prefix: str = '',
+    suffix: str = '',
+    decimals: int = 1,
+    length: int = 100,
+    fill: str = '█',
+    print_end: str = "\r",
+):
+    """
+    Call this in a loop to create a terminal progress bar.
+
+    :param iterable: Required - iterable object (Iterable)
+    :param quiet: suppress output
+    :param prefix: Optional - prefix string
+    :param suffix: Optional - suffix string
+    :param decimals: Optional - positive number of decimals in percent complete
+    :param length: Optional - character length of bar
+    :param fill: Optional - bar fill character
+    :param print_end: Optional - end character (e.g. "\r", "\r\n")
+    """
+
+    def print_progress_bar (iteration: Any):
+        """
+        Progress bar printing function.
+
+        :param iteration: the thing
+        """
+        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+        filledLength = int(length * iteration // total)
+        bar = fill * filledLength + '-' * (length - filledLength)
+        print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = print_end)
+
+    if show:
+        # Initial call
+        total = len(iterable)
+        print_progress_bar(0)
+        # Update progress bar
+        for i, item in enumerate(iterable):
+            yield item
+            print_progress_bar(i + 1)
+        # Erase line upon completion
+        sys.stdout.write("\033[K")
+    else:
+        for i, item in enumerate(iterable):
+            yield item
 
 
 class TangoctlDevicesBasic:
@@ -22,6 +82,7 @@ class TangoctlDevicesBasic:
         logger: logging.Logger,
         evrythng: bool,
         cfg_data: Any,
+        fmt: str = "json",
     ):
         """
         Read list of Tango devices.
@@ -29,6 +90,7 @@ class TangoctlDevicesBasic:
         :param logger: logging handle
         :param evrythng: read and display the whole thing
         :param cfg_data: configuration data
+        :param fmt: output format
         :raises Exception: database connect failed
         """
         self.logger = logger
@@ -42,10 +104,17 @@ class TangoctlDevicesBasic:
             raise terr
 
         # Read devices
-        device_list = database.get_device_exported("*")
+        device_list = sorted(database.get_device_exported("*").value_string)
         self.logger.info(f"{len(device_list)} devices available")
 
-        for device in sorted(device_list.value_string):
+        prog_bar: bool = True
+        if fmt == "md":
+            prog_bar = False
+        if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
+            prog_bar = False
+        for device in progress_bar(
+            device_list, prog_bar, prefix='Devices :', suffix='complete', decimals=0, length=100
+        ):
             if not evrythng:
                 chk_fail = False
                 for dev_chk in cfg_data["ignore_device"]:
@@ -62,7 +131,10 @@ class TangoctlDevicesBasic:
     def read_config(self) -> None:
         """Read additional data."""
         self.logger.info("Read %d devices", len(self.devices))
-        for device in self.devices:
+        # for device in self.devices:
+        for device in progress_bar(
+            self.devices, True, prefix='Config  :', suffix='complete', decimals=0, length=100
+        ):
             self.devices[device].read_config()
 
     def print_txt_list(self) -> None:
@@ -90,6 +162,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         tgo_cmd: str | None,
         tgo_prop: str | None,
         tango_port: int,
+        fmt: str = "json",
     ):
         """
         Get a dict of devices.
@@ -102,9 +175,17 @@ class TangoctlDevices(TangoctlDevicesBasic):
         :param tgo_cmd: filter command name
         :param tgo_prop: filter property name
         :param tango_port: device port
+        :param fmt: output format
         :raises Exception: when database connect fails
         """
         self.logger = logger
+        self.logger.info(
+            "Devices %s : attribute %s command %s property %s",
+            tgo_name,
+            tgo_attrib,
+            tgo_cmd,
+            tgo_prop,
+        )
         # Get Tango database host
         tango_host = os.getenv("TANGO_HOST")
 
@@ -127,10 +208,17 @@ class TangoctlDevices(TangoctlDevicesBasic):
                 raise terr
 
             # Read devices
-            device_list = database.get_device_exported("*")
-            self.logger.info(f"{len(device_list)} devices available")
+            device_list = sorted(database.get_device_exported("*").value_string)
+            self.logger.info("Read %d devices available", len(device_list))
 
-            for device in sorted(device_list.value_string):
+            prog_bar: bool = True
+            if fmt == "md":
+                prog_bar = False
+            if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
+                prog_bar = False
+            for device in progress_bar(
+                device_list, prog_bar, prefix='Devices:', suffix='Complete', length=100
+            ):
                 # Check device name against mask
                 if not evrythng:
                     chk_fail = False
@@ -143,9 +231,9 @@ class TangoctlDevices(TangoctlDevicesBasic):
                         self.logger.debug("'%s' matches '%s'", device, cfg_data["ignore_device"])
                         continue
                 if tgo_name:
-                    iupp = device.upper()
-                    if tgo_name not in iupp:
-                        self.logger.info(f"Ignore {device}")
+                    ichk = device.lower()
+                    if tgo_name not in ichk:
+                        self.logger.info("Ignore device %s", device)
                         continue
                 try:
                     new_dev = TangoctlDevice(logger, device, tgo_attrib, tgo_cmd, tgo_prop)
@@ -182,7 +270,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
     def read_device_values(self) -> None:
         """Read device data."""
         self.read_attribute_values()
-        # self.read_command_values()
         self.read_property_values()
 
     def get_json(self) -> dict:
@@ -202,7 +289,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         for device in self.devices:
             print(f"{device}")
 
-    def print_txt_quick(self) -> None:
+    def print_txt_quick(self, devsdict: dict) -> None:
         """Print text in short form."""
 
         def print_attributes() -> None:
@@ -217,7 +304,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
                 i += 1
                 print(f"{devdict['attributes'][attrib]['value']}")
 
-        devsdict = self.get_json()
         for device in devsdict:
             devdict = devsdict[device]
             print(f"{'name':20} {devdict['name']}")
@@ -227,10 +313,156 @@ class TangoctlDevices(TangoctlDevicesBasic):
             print_attributes()
             print()
 
-    def print_txt_all(self) -> None:  # noqa: C901
+    def print_markdown_all(self, devsdict: dict):
         """Print the whole thing."""
 
-        def print_stuff(stuff: str) -> None:
+        def read_data(dstr):
+            if dstr[0] == "{" and dstr[-1] == "}":
+                ddict = json.loads(dstr)
+                rval = f"```\n{ddict}\n```"
+            elif "\n" in dstr:
+                lines = []
+                for line in dstr.split("\n"):
+                    line = line.strip()
+                    if line:
+                        lines.append(line)
+                rval = '\n'.join(lines)
+                rval = f"```\n{rval}\n```"
+            else:
+                rval = dstr
+            # if len(rval) > 70:
+            #     rval = rval[0:70] + "..."
+            return md_format(rval)
+
+        def print_md_attributes():
+            ac1 = 30
+            ac2 = 50
+            ac3 = 80
+            print(f"### Attributes\n")
+            n = 0
+            print(f"| {'NAME':{ac1}} | {'FIELD':{ac2}} | {'VALUE':{ac3}} |")
+            print(f"|:{'-'*ac1}-|:{'-'*ac2}-|:{'-'*ac3}-|")
+            for attrib in devdict["attributes"]:
+                if n:
+                    print(f"| {' '*ac1} ", end="")
+                else:
+                    print(f"| {md_format(attrib):{ac1}} ", end="")
+                m = 0
+                self.logger.debug(
+                    "Print (%d) attribute %s : %s", m, attrib, devdict["attributes"][attrib]
+                )
+                for item in devdict["attributes"][attrib]["data"]:
+                    data = devdict["attributes"][attrib]["data"][item]
+                    if m:
+                        print(f"| {' '*ac1} ", end="")
+                    print(f"| {md_format(item):{ac2}} | {read_data(data):{ac3}} |")
+                    m += 1
+                for item in devdict["attributes"][attrib]["config"]:
+                    config = devdict['attributes'][attrib]['config'][item]
+                    print(f"| {' '*ac1} | {md_format(item):{ac2}} | {read_data(config):{ac3}} |")
+            print("\n")
+
+        # def print_md(stuff: str, stuff2: str = ""):
+        #     if not stuff2:
+        #         stuff2 = stuff
+        #     print(f"### {stuff[0].upper()}{stuff[1:]}\n")
+        #     self.logger.debug("Print %s", stuff)
+        #     if not devdict[stuff]:
+        #         return
+        #     print("|FIELD|DESCRIPTION|VALUE|")
+        #     print("|:----|:----------|:----|")
+        #     n = 0
+        #     for key in devdict[stuff]:
+        #         values = devdict[stuff][key]
+        #         self.logger.debug("Print %s : %s", key, values)
+        #         print(f"|{key}|", end="")
+        #         if values:
+        #             m = 0
+        #             for key2 in values:
+        #                 if n:
+        #                     print("||", end="")
+        #                 print(f"{md_format(key2)}|", end="")
+        #                 if m:
+        #                     print("||", end="")
+        #                 values2 = values[key2]
+        #                 self.logger.debug("Print (%d) %s : %s", m, key2, values)
+        #                 if type(values2) is dict:
+        #                     for key3 in values2:
+        #                         values3 = md_format(values2[key3])
+        #                         print(f"{md_format(key3)}|{values3}|")
+        #                 else:
+        #                     print(f"{md_format(values2)}|")
+        #                 m += 1
+        #         else:
+        #             print("||")
+        #         n += 1
+        #     print("\n")
+        #     return
+
+        def print_md_commands():
+            cc1 = 30
+            cc2 = 50
+            cc3 = 80
+            print(f"### Commands\n")
+            n = 0
+            print(f"| {'NAME':{cc1}} | {'FIELD':{cc2}} | {'VALUE':{cc3}} |")
+            print(f"|:{'-'*cc1}-|:{'-'*cc2}-|:{'-'*cc3}-|")
+            n = 0
+            for cmd in devdict["commands"]:
+                print(f"| {cmd:{cc1}} ", end="")
+                m = 0
+                cmd_items = devdict['commands'][cmd]
+                self.logger.debug("Print command %s : %s", cmd, cmd_items)
+                for item in cmd_items:
+                    if m:
+                        print(f"| {' ':{cc1}} ", end="")
+                    print(
+                        f"| {md_format(item):{cc2}} "
+                        f"| {read_data(devdict['commands'][cmd][item]):{cc3}} |"
+                    )
+                    m += 1
+                n += 1
+            print("\n")
+
+        def print_md_properties():
+            pc1 = 40
+            pc2 = 123
+            print(f"### Properties\n")
+            n = 0
+            print(f"| {'NAME':{pc1}} | {'VALUE':{pc2}} |")
+            print(f"|:{'-'*pc1}-|:{'-'*pc2}-|")
+            for prop in devdict["properties"]:
+                print(f"| {md_format(prop):{pc1}} "
+                      f"| {read_data(devdict['properties'][prop]['value']):{pc2}} |")
+            print("\n")
+
+        print("# Tango devices in namespace\n")
+        for device in devsdict:
+            self.logger.info("Print device %s", device)
+            devdict = devsdict[device]
+            print(f"## Device {md_format(devdict['name'])}\n")
+            print("| FIELD | VALUE |")
+            print("|:------|:------|")
+            print(f"| version | {devdict['version']} |")
+            print(f"| Version info | {devdict['versioninfo'][0]} |")
+            print(f"| Admin mode | {devdict['adminMode']} |")
+            if "info" in devdict:
+                print(f"| Device class | {devdict['info']['dev_class']} |")
+                print(f"| Server host | {devdict['info']['server_host']} |")
+                print(f"| Server ID | {md_format(devdict['info']['server_id'])} |")
+            print("\n")
+            # print_md("attributes", "Attribute")
+            # print_md("commands", "Command")
+            # print_md("properties", "Property")
+            print_md_attributes()
+            print_md_commands()
+            print_md_properties()
+            print("\n")
+
+    def print_txt_all(self, devsdict: dict) -> None:  # noqa: C901
+        """Print the whole thing."""
+
+        def print_txt(stuff: str) -> None:
             """
             Print attribute, command or property.
 
@@ -298,7 +530,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
                                     keyvals2.append(devkeyval2[lsp + 1 :])
                                 else:
                                     keyvals2.append(" ".join(devkeyval2.split()))
-                                # print(f"{' '.join(devkeyval.split())}")
                                 print(f"{keyvals2[0]}")
                                 for keyval2 in keyvals2[1:]:
                                     print(f"{' ':102} {keyval2}")
@@ -341,12 +572,10 @@ class TangoctlDevices(TangoctlDevicesBasic):
                                 keyvals2.append(devkeyval[lsp + 1 :])
                             else:
                                 keyvals2.append(" ".join(devkeyval.split()))
-                            # print(f"{' '.join(devkeyval.split())}")
                             print(f"{keyvals2[0]}")
                             for keyval2 in keyvals2[1:]:
                                 print(f"{' ':102} {keyval2}")
 
-        devsdict = self.get_json()
         for device in devsdict:
             self.logger.info("Print device %s", device)
             devdict = devsdict[device]
@@ -354,13 +583,13 @@ class TangoctlDevices(TangoctlDevicesBasic):
             print(f"{'version':20} {devdict['version']}")
             print(f"{'versioninfo':20} {devdict['versioninfo'][0]}")
             print(f"{'adminMode':20} {devdict['adminMode']}")
-            print(f"{' ':20} {'info':40} {'dev_class':40} {devdict['info']['dev_class']}")
-            print(f"{' ':20} {' ':40} {'server_host':40} {devdict['info']['server_host']}")
-            print(f"{' ':20} {' ':40} {'server_id':40} {devdict['info']['server_id']}")
-            # print_attributes()
-            print_stuff("attributes")
-            print_stuff("commands")
-            print_stuff("properties")
+            if "info" in devdict:
+                print(f"{' ':20} {'info':40} {'dev_class':40} {devdict['info']['dev_class']}")
+                print(f"{' ':20} {' ':40} {'server_host':40} {devdict['info']['server_host']}")
+                print(f"{' ':20} {' ':40} {'server_id':40} {devdict['info']['server_id']}")
+            print_txt("attributes")
+            print_txt("commands")
+            print_txt("properties")
             print()
 
     def print_txt(self, disp_action: int) -> None:
@@ -372,9 +601,11 @@ class TangoctlDevices(TangoctlDevicesBasic):
         if disp_action == 4:
             self.print_txt_list()
         elif disp_action == 3:
-            self.print_txt_quick()
+            devsdict = self.get_json()
+            self.print_txt_quick(devsdict)
         else:
-            self.print_txt_all()
+            devsdict = self.get_json()
+            self.print_txt_all(devsdict)
 
     def print_json(self, disp_action: int) -> None:
         """
@@ -384,3 +615,12 @@ class TangoctlDevices(TangoctlDevicesBasic):
         """
         devsdict = self.get_json()
         print(json.dumps(devsdict, indent=4))
+
+    def print_markdown(self, disp_action: int) -> None:
+        """
+        Print in JSON format.
+
+        :param disp_action: display control flag
+        """
+        devsdict = self.get_json()
+        self.print_markdown_all(devsdict)

@@ -117,7 +117,7 @@ class TestTangoDevice:
             self.dev.ping()
             print(f"[  OK  ] {self.dev_name} is online")
         except Exception as terr:
-            print("[FAILED] {self.dev_name} is not online")
+            print(f"[FAILED] {self.dev_name} is not online")
             self.logger.debug(terr)
             return False
         return True

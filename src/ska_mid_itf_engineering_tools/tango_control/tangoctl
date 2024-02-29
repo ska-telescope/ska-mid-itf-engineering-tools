@@ -4,6 +4,7 @@ import getopt
 import json
 import logging
 import os
+import socket
 import sys
 from typing import Any, TextIO
 
@@ -22,6 +23,25 @@ _module_logger = logging.getLogger("tangoctl")
 _module_logger.setLevel(logging.WARNING)
 
 KUBE_NAMESPACE = "ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
+
+
+def check_tango(tango_fqdn: str, tango_port: int = 10000) -> int:
+    """
+    Check Tango host address.
+
+    :param tango_fqdn: fully qualified domain name
+    :param tango_port: port number
+    :return: error condition
+    """
+    try:
+        tango_addr = socket.gethostbyname_ex(tango_fqdn)
+        tango_ip = tango_addr[2][0]
+    except socket.gaierror as e:
+        print("Could not read address %s : %s" % (tango_fqdn, e))
+        return 1
+    print(f"TANGO_HOST={tango_fqdn}:{tango_port}")
+    print(f"TANGO_HOST={tango_ip}:{tango_port}")
+    return 0
 
 
 def show_namespaces() -> None:
@@ -97,6 +117,7 @@ def run_test(
             print(f"[FAILED] could not open device {tgo_name}")
             return 1
         dut.test_simulation_mode(dev_sim)
+    # TODO for future use
     # elif show_attrib and tgo_name is not None:
     #     dut = TestTangoDevice(_module_logger, tgo_name)
     #     if dut.dev is None:
@@ -111,6 +132,7 @@ def run_test(
             print(f"[FAILED] could not open device {tgo_name}")
             return 1
         dut.check_device()
+        # TODO for future use
         # dut.get_simulation_mode()
         dut.show_device_attributes(True)
         dut.show_device_commands(True)
@@ -156,9 +178,17 @@ def run_info(
     :param tango_port: device port
     :return: error condition
     """
+    _module_logger.info(
+        "Info %d : device %s attribute %s command %s property %s",
+        disp_action,
+        tgo_name,
+        tgo_attrib,
+        tgo_cmd,
+        tgo_prop,
+    )
 
     if disp_action == 4:
-        devices = TangoctlDevicesBasic(_module_logger, evrythng, cfg_data)
+        devices = TangoctlDevicesBasic(_module_logger, evrythng, cfg_data, fmt)
         devices.read_config()
         devices.print_txt_list()
         return 0
@@ -169,7 +199,6 @@ def run_info(
             tgo_name = f"tango://127.0.0.1:{tango_port}/{tgo_name}#dbase=no"
         device = TangoctlDeviceConfig(_module_logger, tgo_name)
         devsdict = device.get_json()
-        # print(devsdict)
         try:
             print(json.dumps(devsdict, indent=4))
         except TypeError:
@@ -177,10 +206,16 @@ def run_info(
         return 0
 
     devices = TangoctlDevices(
-        _module_logger, evrythng, cfg_data, tgo_name, tgo_attrib, tgo_cmd, tgo_prop, tango_port,
+        _module_logger,
+        evrythng,
+        cfg_data,
+        tgo_name,
+        tgo_attrib,
+        tgo_cmd, tgo_prop,
+        tango_port,
+        fmt,
     )
     devices.read_device_values()
-    # devices.print_device_values()
 
     _module_logger.info("Read devices")
 
@@ -188,6 +223,8 @@ def run_info(
         devices.print_txt(disp_action)
     elif fmt == "json":
         devices.print_json(disp_action)
+    elif fmt == "md":
+        devices.print_markdown(disp_action)
     else:
         print("---")
 
@@ -271,6 +308,7 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print("\t-l|--list\t\t\t\tdisplay device name and status on one line")
     print("\t-q|--quick\t\t\t\tdisplay device name, status and query devices")
     print("\t-s|--short\t\t\t\tdisplay device name and status only")
+    # TODO undocumented for now
     # print("\t-m\t\t\t\tdisplay in markdown format")
     print("\t-f\t\t\t\tget commands, attributes and properties regardless of state")
     print(
@@ -296,8 +334,38 @@ def usage(p_name: str, cfg_data: Any) -> None:
         f"\t{cfg_data['databaseds_name']}.<NAMESPACE>.{cfg_data['cluster_domain']}"
         f":{cfg_data['databaseds_port']}"
     )
-    # print(f"Run commands : {','.join(cfg_data['run_commands'])}")
-    # print(f"Run commands with name : {','.join(cfg_data['run_commands_name'])}")
+    print(f"Run commands : {','.join(cfg_data['run_commands'])}")
+    print(f"Run commands with name : {','.join(cfg_data['run_commands_name'])}")
+    print("Examples:")
+    print(f"\t{p_name} --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -l")
+    print(f"\t{p_name} --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -l")
+    print(f"\t{p_name} --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout")
+    print(f"\t{p_name} --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -C Telescope")
+    print(f"\t{p_name} --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -P Power")
+    print(
+        f"\t{p_name} --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
+        " -D mid_csp_cbf/talon_lru/001 -f"
+    )
+    print(
+        f"\t{p_name} --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
+        " -D mid_csp_cbf/talon_lru/001 -s"
+    )
+    print(
+        f"\t{p_name} --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
+        " -D mid_csp_cbf/talon_lru/001 -q"
+    )
+    print(
+        f"\t{p_name} --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
+        " -D mid_csp_cbf/talon_board/001 -f"
+    )
+    print(
+        f"\t{p_name} --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
+        " -D mid_csp_cbf/talon_board/001 -f --dry"
+    )
+    print(
+        f"\t{p_name} --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
+        " -D mid-sdp/control/0 --on"
+    )
 
 
 def main(y_arg: list) -> int:  # noqa: C901
@@ -453,6 +521,7 @@ def main(y_arg: list) -> int:  # noqa: C901
             show_version = True
         else:
             _module_logger.error("Invalid option %s", opt)
+            return 1
 
     if show_version:
         print(f"{os.path.basename(y_arg[0])} version {__version__}")
@@ -482,6 +551,10 @@ def main(y_arg: list) -> int:  # noqa: C901
         tango_host = f"{tango_fqdn}:{databaseds_port}"
 
     _module_logger.info("Use Tango host %s", tango_host)
+
+    if show_tango:
+        check_tango(tango_fqdn)
+        return 0
 
     _module_logger.debug("Run commands: %s", cfg_data["run_commands_name"])
     _module_logger.debug("Run commands with name: %s", cfg_data["run_commands"])

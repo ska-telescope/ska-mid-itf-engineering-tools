@@ -42,9 +42,18 @@ class TestTangoDevice:
             except AttributeError as terr:
                 self.adminMode = None
                 self.logger.debug(terr)
-            self.dev_name = self.dev.name()
-            self.attribs = self.dev.get_attribute_list()
-            self.cmds = self.dev.get_command_list()
+            try:
+                self.dev_name = self.dev.name()
+            except tango.DevFailed:
+                self.dev_name = device_name + " (N/A)"
+            try:
+                self.attribs = self.dev.get_attribute_list()
+            except tango.DevFailed:
+                self.attribs = []
+            try:
+                self.cmds = self.dev.get_command_list()
+            except tango.DevFailed:
+                self.cmds = []
         self.dev_status: str | None = None
         self.dev_state: int | None = None
         self.simMode: int | None = None
@@ -116,9 +125,9 @@ class TestTangoDevice:
         try:
             self.dev.ping()
             print(f"[  OK  ] {self.dev_name} is online")
-        except Exception as terr:
-            print("[FAILED] {self.dev_name} is not online")
-            self.logger.debug(terr)
+        except tango.DevFailed as terr:
+            print(f"[FAILED] {self.dev_name} is not online")
+            self.logger.debug(terr.args[-1].desc)
             return False
         return True
 
