@@ -46,8 +46,22 @@ include:
   - project: 'ska-telescope/templates-repository'
     file : 'gitlab-ci/includes/release.gitlab-ci.yml'
 
+  - local: .gitlab/ci/check-dependencies/.pipeline.yaml
+
 notebook-lint:
   allow_failure: true
 
 notebook-test:
   when: manual
+
+# These jobs are modified in order to avoid installing build with pip -- for some reason this fails with:
+# No module named build.__main__; 'build' is a package and cannot be directly executed
+python-build-for-development:
+  before_script:
+    - '[ -f .make/python.mk ] || (echo "File python.mk not included in Makefile; exit 1")'
+    - 'make help | grep python-build'
+
+python-build-for-publication:
+  before_script:
+    - '[ -f .make/python.mk ] || (echo "File python.mk not included in Makefile; exit 1")'
+    - 'make help | grep python-build'

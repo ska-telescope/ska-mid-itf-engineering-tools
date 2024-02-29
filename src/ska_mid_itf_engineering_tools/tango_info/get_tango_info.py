@@ -1,4 +1,5 @@
 """Read information from Tango database."""
+
 import json
 import logging
 import os

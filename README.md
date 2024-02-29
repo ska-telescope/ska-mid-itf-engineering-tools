@@ -4,7 +4,8 @@
 
 ## How to Use
 
-Clone this repo: 
+Clone this repo:
+
 ```
 git clone https://gitlab.com/ska-telescope/ska-mid-itf-engineering-tools.git
 cd ska-mid-itf-engineering-tools
@@ -12,6 +13,7 @@ git submodule update --init --recursive
 ```
 
 Build a new Docker image for the project:
+
 ```
 $ make oci-build
 [...]
@@ -20,11 +22,13 @@ $ make oci-build
 ```
 
 Install python requirements:
+
 ```
 poetry install
 ```
 
 Run python-test:
+
 ```
 $ poetry shell
 $ make python-test
@@ -57,6 +61,7 @@ Coverage XML written to file build/reports/code-coverage.xml
 ```
 
 Python linting:
+
 ```
 $ make python-lint
 [...]
@@ -64,9 +69,21 @@ $ make python-lint
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
 
-# Tango information utility
+## Dependency Checker
 
-## Getting help
+The dependency checker is a tool which looks at a project's dependencies and reports any stale dependencies to a Slack channel. Currently it only looks at Poetry dependencies.
+
+### Configuration
+
+The only configuration needed is to set the environment variable `DEPENDENCY_CHECKER_WEBHOOK_URL`. This is typically set as a masked Gitlab variable.
+
+### Execution
+
+The dependency checker Gitlab job, *check-dependencies*, is run as part of a scheduled pipeline on a weekly basis. It can also be executed manually from any pipeline. It reports stale dependencies to the [#atlas-dependencies](https://skao.slack.com/archives/C06MR162K24) channel.
+
+## Tango information utility
+
+### Getting help
 
 To obtain help:
 
@@ -121,7 +138,7 @@ where:
         -C <COMMAND>                    command name, e.g. 'Status' (case sensitive)
 ```
 
-## Read all namespaces in Kubernetes cluster
+### Read all namespaces in Kubernetes cluster
 
 The user must be logged into the Mid ITF VPN, otherwise this will time out.
 
@@ -183,9 +200,9 @@ Namespaces : 53
         vault
 ```
 
-## Read Tango devices
+### Read Tango devices
 
-### Read all Tango devices
+#### Read all Tango devices
 
 This will display the name, current state and admin mode setting for each Tango device 
 in the database. Note that output has been shorteneded. By default, device names starting with **dserver** or sys **are** not listed.
@@ -290,11 +307,11 @@ DISABLE    mid_csp_cbf/talon_lru/004                1
 DISABLE    mid_csp_cbf/talondx_log_consumer/001     1
 ```
 
-## Find attributes, commands or properties
+### Find attributes, commands or properties
 
 It is possible to search for attributes, commands or properties by part of the name. This is not case sensitive.
 
-### Find attributes
+#### Find attributes
 
 To find all devices with attributes that contain **timeout**:
 
@@ -321,7 +338,7 @@ mid_csp_cbf/sub_elt/subarray_03                  assignResourcesTimeoutExpiredFl
                                                  releaseResourcesTimeoutExpiredFlag
 ```
 
-### Find commands
+#### Find commands
 
 To find all devices with commands that have **Telescope** in the name:
 
@@ -343,7 +360,7 @@ mid_csp_cbf/power_switch/003                     GetOutletPowerMode
                                                  TurnOnOutlet
 ```
 
-### Find properties
+#### Find properties
 
 To find all devices with properties that have **Power** in the name:
 
@@ -372,9 +389,9 @@ mid_csp_cbf/talon_lru/004                        PDU1PowerOutlet
                                                  PDU2PowerOutlet
 ```
 
-## Information on device
+### Information on device
 
-### Full description of device
+#### Full description of device
 
 This display all information about a device. The input and output of commands are displayed where available.
 
@@ -464,7 +481,7 @@ Properties        : PDU1                           002
                                                    adminmode  3000
 ```
 
-### Short display
+#### Short display
 
 This displays only status, commands, attributes and properties:
 
@@ -506,7 +523,7 @@ Properties        : PDU1
                   : TalonDxBoard2
 ```
 
-### Quick/query mode
+#### Quick/query mode
 
 This displays a shortened form, with query sub-devices where available:
 
@@ -525,7 +542,7 @@ Logging target    : <N/A>
 Query sub-devices : <N/A>
 ```
 
-### Error output
+#### Error output
 
 When a device attribute can not be read, a shortened error message is displayed:
 
@@ -575,7 +592,7 @@ Attributes        : BitstreamChecksum              <ERROR> System ID Device is n
 ...
 ```
 
-### Dry run
+#### Dry run
 
 To skip reading attribute values, use this option:
 

@@ -1,4 +1,5 @@
 """Start and check Tango device."""
+
 import logging
 import socket
 import time
