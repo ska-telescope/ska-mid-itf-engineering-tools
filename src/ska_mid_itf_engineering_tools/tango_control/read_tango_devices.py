@@ -269,6 +269,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         """Read device data."""
         self.read_attribute_values()
         self.read_property_values()
+        self.logger.info("Read devices %s", self.devices)
 
     def get_json(self) -> dict:
         """

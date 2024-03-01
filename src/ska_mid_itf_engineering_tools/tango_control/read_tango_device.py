@@ -217,6 +217,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
 
         def set_json_attribute() -> None:
             """Add attributes to dictionary."""
+            self.logger.debug("Set attribute %s", attrib)
             devdict["attributes"][attrib] = {}
             devdict["attributes"][attrib]["data"] = {}
             if "value" in self.attributes[attrib]["data"]:
@@ -227,7 +228,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
                     for key in data_val:
                         devdict["attributes"][attrib]["data"]["value"][key] = data_val[key]
                 elif type(data_val) is numpy.ndarray:
-                    devdict["attributes"][attrib]["data"]["value"] = str(data_val)
+                    devdict["attributes"][attrib]["data"]["value"] = data_val.tolist()
                 elif type(data_val) is str:
                     if data_val[0] == "{" and data_val[-1] == "}":
                         devdict["attributes"][attrib]["data"]["value"] = json.loads(data_val)
@@ -328,11 +329,9 @@ class TangoctlDevice(TangoctlDeviceBasic):
         devdict["attributes"] = {}
         if self.attribs_found:
             for attrib in self.attribs_found:
-                self.logger.debug("Set attribute %s", attrib)
                 set_json_attribute()
         else:
             for attrib in self.attributes:
-                self.logger.debug("Set attribute %s", attrib)
                 set_json_attribute()
         devdict["commands"] = {}
         for cmd in self.commands:
@@ -360,12 +359,11 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 self.attributes[attrib]["data"]["type"] = "N/A"
                 self.attributes[attrib]["data"]["data_format"] = "N/A"
                 continue
+            self.logger.info("Read attribute %s : %s", attrib, attrib_data)
             self.attributes[attrib]["data"]["value"] = attrib_data.value
             self.attributes[attrib]["data"]["type"] = str(attrib_data.type)
             self.attributes[attrib]["data"]["data_format"] = str(attrib_data.data_format)
-            self.logger.info(
-                "Read attribute %s : %s", attrib, self.attributes[attrib]["data"]["value"]
-            )
+            self.logger.info("Read attribute %s data : %s", attrib, self.attributes[attrib]["data"])
 
     def read_command_value(self, run_commands: list, run_commands_name: list) -> None:
         """

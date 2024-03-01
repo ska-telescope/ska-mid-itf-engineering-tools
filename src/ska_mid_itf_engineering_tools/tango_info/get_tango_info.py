@@ -468,6 +468,7 @@ class TangoDeviceInfo:
         except Exception:
             print(" <could not be read>")
             attrib_value = None
+        self.logger.debug("Read %s value : %s", attrib, attrib_value)
         return attrib_value
 
     def show_attribute_value(
