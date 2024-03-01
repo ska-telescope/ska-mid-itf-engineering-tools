@@ -1,5 +1,7 @@
 """Read and display Tango stuff."""
+import json
 import logging
+import numpy
 from typing import Any
 
 import tango
@@ -218,9 +220,21 @@ class TangoctlDevice(TangoctlDeviceBasic):
             devdict["attributes"][attrib] = {}
             devdict["attributes"][attrib]["data"] = {}
             if "value" in self.attributes[attrib]["data"]:
-                devdict["attributes"][attrib]["data"]["value"] = str(
-                    self.attributes[attrib]["data"]["value"]
-                )
+                data_val = self.attributes[attrib]["data"]["value"]
+                self.logger.debug("Attribute %s data type %s: %s", attrib, type(data_val), data_val)
+                if type(data_val) is dict:
+                    devdict["attributes"][attrib]["data"]["value"] = {}
+                    for key in data_val:
+                        devdict["attributes"][attrib]["data"]["value"][key] = data_val[key]
+                elif type(data_val) is numpy.ndarray:
+                    devdict["attributes"][attrib]["data"]["value"] = str(data_val)
+                elif type(data_val) is str:
+                    if data_val[0] == "{" and data_val[-1] == "}":
+                        devdict["attributes"][attrib]["data"]["value"] = json.loads(data_val)
+                    else:
+                        devdict["attributes"][attrib]["data"]["value"] = data_val
+                else:
+                    devdict["attributes"][attrib]["data"]["value"] = str(data_val)
             if "error" in self.attributes[attrib]:
                 devdict["attributes"][attrib]["error"] = str(self.attributes[attrib]["error"])
             devdict["attributes"][attrib]["data"]["type"] = str(

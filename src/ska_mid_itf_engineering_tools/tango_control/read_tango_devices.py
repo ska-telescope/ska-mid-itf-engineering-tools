@@ -1,7 +1,9 @@
 """Read and display Tango stuff."""
 import json
+import jsonschema2md
 import logging
 import os
+import pypandoc
 import re
 import sys
 from typing import Any
@@ -12,16 +14,7 @@ from ska_mid_itf_engineering_tools.tango_control.read_tango_device import (
     TangoctlDevice,
     TangoctlDeviceBasic,
 )
-
-def md_format(inp: str) -> str:
-    """
-    Change string to safe format.
-
-    :param inp: input
-    :return: output
-    """
-    outp = inp.replace("/", "\\/").replace("_", "\\_").replace("-", "\\-")
-    return outp
+from ska_mid_itf_engineering_tools.tango_control.tango_json import TangoJsonReader
 
 
 def progress_bar(
@@ -108,13 +101,14 @@ class TangoctlDevicesBasic:
         device_list = sorted(database.get_device_exported("*").value_string)
         self.logger.info(f"{len(device_list)} devices available")
 
+        self.fmt = fmt
         prog_bar: bool = True
-        if fmt == "md":
+        if self.fmt == "md":
             prog_bar = False
         if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
             prog_bar = False
         for device in progress_bar(
-            device_list, prog_bar, prefix='Devices :', suffix='complete', decimals=0, length=100
+            device_list, prog_bar, prefix='Read devices :', suffix='complete', decimals=0, length=100
         ):
             if not evrythng:
                 chk_fail = False
@@ -133,8 +127,11 @@ class TangoctlDevicesBasic:
         """Read additional data."""
         self.logger.info("Read %d devices", len(self.devices))
         # for device in self.devices:
+        prog_bar: bool = True
+        if self.fmt == "md":
+            prog_bar = False
         for device in progress_bar(
-            self.devices, True, prefix='Config  :', suffix='complete', decimals=0, length=100
+            self.devices, prog_bar, prefix='Read config  :', suffix='complete', decimals=0, length=100
         ):
             self.devices[device].read_config()
 
@@ -290,332 +287,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
         for device in self.devices:
             print(f"{device}")
 
-    def print_txt_quick(self, devsdict: dict) -> None:
-        """Print text in short form."""
-
-        def print_attributes() -> None:
-            """Print attribute in short form."""
-            print(f"{'attributes':20}", end="")
-            i = 0
-            for attrib in devdict["attributes"]:
-                if not i:
-                    print(f" {attrib:40}", end="")
-                else:
-                    print(f" {' ':20} {attrib:40}", end="")
-                i += 1
-                print(f"{devdict['attributes'][attrib]['value']}")
-
-        for device in devsdict:
-            devdict = devsdict[device]
-            print(f"{'name':20} {devdict['name']}")
-            print(f"{'version':20} {devdict['version']}")
-            print(f"{'versioninfo':20} {devdict['versioninfo'][0]}")
-            print(f"{'adminMode':20} {devdict['adminMode']}")
-            print_attributes()
-            print()
-
-    def print_markdown_all(self, devsdict: dict):
-        """Print the whole thing."""
-
-        def print_attribute_data(dstr, dc1, dc2, dc3):
-            dc3a = (dc3 / 2) - 3
-            dc3b = (dc3 / 2)
-            dc4a = (dc3 / 3) - 3
-            dc4b = (dc3 / 3) - 2
-            dc4c = (dc3 / 3)
-            dstr = re.sub(' +', ' ', dstr)
-            if dstr[0] == "{" and dstr[-1] == "}":
-                ddict = json.loads(dstr)
-                self.logger.debug("Print JSON :\n%s", json.dumps(ddict, indent=4))
-                n = 0
-                for ditem in ddict:
-                    if n:
-                        print(f"| {' ':{dc1}}.| {' ':{dc2}}.", end="")
-                    if type(ddict[ditem]) is dict:
-                        m = 0
-                        for ditem2 in ddict[ditem]:
-                            if m:
-                                print(f"| {' ':{dc1}}-| {' ':{dc2}}-", end="")
-                            print(f"| {ditem} | {ditem2} | {ddict[ditem][ditem2]} |")
-                            m += 1
-                    elif type(ddict[ditem]) is list:
-                        m = 0
-                        for ditem2 in ddict[ditem]:
-                            dname = f"{ditem} {m}"
-                            if not m:
-                                print(f"| {dname} ", end="")
-                            else:
-                                print(f"| {' ':{dc1}},| {' ':{dc2}},| {dname} ", end="")
-                            if type(ditem2) is dict:
-                                p = 0
-                                for ditem3 in ditem2:
-                                    if p:
-                                        print(f"| {' ':{dc1}},| {' ':{dc2}},| ,", end="")
-                                    print(f"| {ditem3} | {ditem2[ditem3]} |")
-                                    p += 1
-                            else:
-                                print(f"| {str(ditem2)} |")
-                            m += 1
-                    else:
-                        print(f"| {ditem} | {str(ddict[ditem])} |")
-                    n += 1
-            elif "\n" in dstr:
-                self.logger.debug("Print '%s'", dstr)
-                n = 0
-                for line in dstr.split("\n"):
-                    line = line.strip()
-                    if line:
-                        if n:
-                            print(f"| {' ':{dc1}}.| {' ':{dc2}}.", end="")
-                        print(f"| {line:{dc3}} |")
-                        n += 1
-            else:
-                print(f"| {md_format(dstr):{dc3}} |")
-            return
-
-        def print_data(dstr, dc1, dc2, dc3):
-            if "\n" in dstr:
-                self.logger.debug("Print '%s'", dstr)
-                n = 0
-                for line in dstr.split("\n"):
-                    line = line.strip()
-                    if line:
-                        if n:
-                            print(f"| {' ':{dc1}}.| {' ':{dc2}}.", end="")
-                        print(f"| {line:{dc3}} |")
-                        n += 1
-            elif len(dstr) > dc3 and "," in dstr:
-                n = 0
-                for line in dstr.split(","):
-                    if n:
-                        if dc2:
-                            print(f"| {' ':{dc1}}.| {' ':{dc2}}.", end="")
-                        else:
-                            print(f"| {' ':{dc1}}.", end="")
-                    print(f"| {line:{dc3}} |")
-                    n += 1
-            else:
-                print(f"| {md_format(dstr):{dc3}} |")
-
-        def print_md_attributes():
-            ac1 = 30
-            ac2 = 50
-            ac3 = 90
-            print(f"### Attributes\n")
-            n = 0
-            print(f"| {'NAME':{ac1}} | {'FIELD':{ac2}} | {'VALUE':{ac3}} |")
-            print(f"|:{'-'*ac1}-|:{'-'*ac2}-|:{'-'*ac3}-|")
-            for attrib in devdict["attributes"]:
-                if n:
-                    print(f"| {' '*ac1} ", end="")
-                else:
-                    print(f"| {md_format(attrib):{ac1}} ", end="")
-                m = 0
-                self.logger.debug(
-                    "Print (%d) attribute %s : %s", m, attrib, devdict["attributes"][attrib]
-                )
-                for item in devdict["attributes"][attrib]["data"]:
-                    data = devdict["attributes"][attrib]["data"][item]
-                    if m:
-                        print(f"| {' '*ac1} ", end="")
-                    print(f"| {md_format(item):{ac2}} ", end="")
-                    print_attribute_data(data, ac1, ac2, ac3)
-                    m += 1
-                for item in devdict["attributes"][attrib]["config"]:
-                    config = devdict['attributes'][attrib]['config'][item]
-                    print(f"| {' '*ac1} | {md_format(item):{ac2}} ", end="")
-                    print_attribute_data(config, ac1, ac2, ac3)
-            print("\n")
-
-        def print_md_commands():
-            cc1 = 30
-            cc2 = 50
-            cc3 = 90
-            print(f"### Commands\n")
-            n = 0
-            print(f"| {'NAME':{cc1}} | {'FIELD':{cc2}} | {'VALUE':{cc3}} |")
-            print(f"|:{'-'*cc1}-|:{'-'*cc2}-|:{'-'*cc3}-|")
-            n = 0
-            for cmd in devdict["commands"]:
-                print(f"| {cmd:{cc1}} ", end="")
-                m = 0
-                cmd_items = devdict['commands'][cmd]
-                self.logger.debug("Print command %s : %s", cmd, cmd_items)
-                for item in cmd_items:
-                    if m:
-                        print(f"| {' ':{cc1}} ", end="")
-                    print(f"| {md_format(item):{cc2}} ", end="")
-                    print_data(devdict['commands'][cmd][item], cc1, cc2, cc3)
-                    m += 1
-                n += 1
-            print("\n")
-
-        def print_md_properties():
-            pc1 = 40
-            pc2 = 133
-            print(f"### Properties\n")
-            n = 0
-            print(f"| {'NAME':{pc1}} | {'VALUE':{pc2}} |")
-            print(f"|:{'-'*pc1}-|:{'-'*pc2}-|")
-            for prop in devdict["properties"]:
-                self.logger.debug("Print command %s : %s", prop, devdict['properties'][prop]['value'])
-                print(f"| {md_format(prop):{pc1}} ", end="")
-                print_data(devdict['properties'][prop]['value'], pc1, 0, pc2)
-            print("\n")
-
-        print("# Tango devices in namespace\n")
-        for device in devsdict:
-            self.logger.info("Print device %s", device)
-            devdict = devsdict[device]
-            print(f"## Device {md_format(devdict['name'])}\n")
-            print("| FIELD | VALUE |")
-            print("|:------|:------|")
-            print(f"| version | {devdict['version']} |")
-            print(f"| Version info | {devdict['versioninfo'][0]} |")
-            print(f"| Admin mode | {devdict['adminMode']} |")
-            if "info" in devdict:
-                print(f"| Device class | {devdict['info']['dev_class']} |")
-                print(f"| Server host | {devdict['info']['server_host']} |")
-                print(f"| Server ID | {md_format(devdict['info']['server_id'])} |")
-            print("\n")
-            print_md_attributes()
-            print_md_commands()
-            print_md_properties()
-            print("\n")
-
-    def print_txt_all(self, devsdict: dict) -> None:  # noqa: C901
-        """Print the whole thing."""
-
-        def print_txt(stuff: str) -> None:
-            """
-            Print attribute, command or property.
-
-            :param stuff: name of the thing
-            """
-            self.logger.debug("Print %d %s", len(devdict[stuff]), stuff)
-            if not devdict[stuff]:
-                return
-            print(f"{stuff:20} ", end="")
-            if not devdict[stuff]:
-                print()
-                return
-            i = 0
-            for key in devdict[stuff]:
-                if not i:
-                    print(f"{key:40} ", end="")
-                else:
-                    print(f"{' ':20} {key:40} ", end="")
-                i += 1
-                devkeys = devdict[stuff][key]
-                if not devkeys:
-                    print()
-                    continue
-                j = 0
-                for devkey in devkeys:
-                    devkeyval = devkeys[devkey]
-                    if type(devkeyval) is dict:
-                        # Read dictionary value
-                        for devkey2 in devkeyval:
-                            devkeyval2 = devkeyval[devkey2]
-                            if not j:
-                                print(f"{devkey2:40} ", end="")
-                            else:
-                                print(f"{' ':61} {devkey2:40} ", end="")
-                            j += 1
-                            if not devkeyval2:
-                                print()
-                            elif "\n" in devkeyval2:
-                                keyvals = devkeyval2.split("\n")
-                                # Remove empty lines
-                                keyvals2 = []
-                                for keyval in keyvals:
-                                    keyval2 = keyval.strip()
-                                    if keyval2:
-                                        if len(keyval2) > 70:
-                                            lsp = keyval2[0:70].rfind(" ")
-                                            keyvals2.append(keyval2[0:lsp])
-                                            keyvals2.append(keyval2[lsp + 1 :])
-                                        else:
-                                            keyvals2.append(" ".join(keyval2.split()))
-                                print(f"{keyvals2[0]}")
-                                for keyval2 in keyvals2[1:]:
-                                    print(f"{' ':102} {keyval2}")
-                            elif "," in devkeyval2:
-                                keyvals = devkeyval2.split(",")
-                                keyval = keyvals[0]
-                                print(f"{keyval}")
-                                for keyval in keyvals[1:]:
-                                    print(f"{' ':102} {keyval}")
-                            else:
-                                keyvals2 = []
-                                if len(devkeyval2) > 70:
-                                    lsp = devkeyval2[0:70].rfind(" ")
-                                    keyvals2.append(devkeyval2[0:lsp])
-                                    keyvals2.append(devkeyval2[lsp + 1 :])
-                                else:
-                                    keyvals2.append(" ".join(devkeyval2.split()))
-                                print(f"{keyvals2[0]}")
-                                for keyval2 in keyvals2[1:]:
-                                    print(f"{' ':102} {keyval2}")
-                    else:
-                        # Read string value
-                        if not j:
-                            print(f"{devkey:40} ", end="")
-                        else:
-                            print(f"{' ':61} {devkey:40} ", end="")
-                        j += 1
-                        if not devkeyval:
-                            print()
-                        elif "\n" in devkeyval:
-                            keyvals = devkeyval.split("\n")
-                            # Remove empty lines
-                            keyvals2 = []
-                            for keyval in keyvals:
-                                keyval2 = keyval.strip()
-                                if keyval2:
-                                    if len(keyval2) > 70:
-                                        lsp = keyval2[0:70].rfind(" ")
-                                        keyvals2.append(keyval2[0:lsp])
-                                        keyvals2.append(keyval2[lsp + 1 :])
-                                    else:
-                                        keyvals2.append(" ".join(keyval2.split()))
-                            print(f"{keyvals2[0]}")
-                            for keyval2 in keyvals2[1:]:
-                                print(f"{' ':102} {keyval2}")
-                        elif "," in devkeyval:
-                            keyvals = devkeyval.split(",")
-                            keyval = keyvals[0]
-                            print(f"{keyval}")
-                            for keyval in keyvals[1:]:
-                                print(f"{' ':102} {keyval}")
-                        else:
-                            keyvals2 = []
-                            if len(devkeyval) > 70:
-                                lsp = devkeyval[0:70].rfind(" ")
-                                keyvals2.append(devkeyval[0:lsp])
-                                keyvals2.append(devkeyval[lsp + 1 :])
-                            else:
-                                keyvals2.append(" ".join(devkeyval.split()))
-                            print(f"{keyvals2[0]}")
-                            for keyval2 in keyvals2[1:]:
-                                print(f"{' ':102} {keyval2}")
-
-        for device in devsdict:
-            self.logger.info("Print device %s", device)
-            devdict = devsdict[device]
-            print(f"{'name':20} {devdict['name']}")
-            print(f"{'version':20} {devdict['version']}")
-            print(f"{'versioninfo':20} {devdict['versioninfo'][0]}")
-            print(f"{'adminMode':20} {devdict['adminMode']}")
-            if "info" in devdict:
-                print(f"{' ':20} {'info':40} {'dev_class':40} {devdict['info']['dev_class']}")
-                print(f"{' ':20} {' ':40} {'server_host':40} {devdict['info']['server_host']}")
-                print(f"{' ':20} {' ':40} {'server_id':40} {devdict['info']['server_id']}")
-            print_txt("attributes")
-            print_txt("commands")
-            print_txt("properties")
-            print()
-
     def print_txt(self, disp_action: int) -> None:
         """
         Print in text format.
@@ -626,10 +297,12 @@ class TangoctlDevices(TangoctlDevicesBasic):
             self.print_txt_list()
         elif disp_action == 3:
             devsdict = self.get_json()
-            self.print_txt_quick(devsdict)
+            json_reader =  TangoJsonReader(self.logger, devsdict)
+            json_reader.print_txt_quick()
         else:
             devsdict = self.get_json()
-            self.print_txt_all(devsdict)
+            json_reader =  TangoJsonReader(self.logger, devsdict)
+            json_reader.print_txt_all()
 
     def print_json(self, disp_action: int) -> None:
         """
@@ -646,5 +319,19 @@ class TangoctlDevices(TangoctlDevicesBasic):
 
         :param disp_action: display control flag
         """
+        self.logger.info("Markdown")
         devsdict = self.get_json()
-        self.print_markdown_all(devsdict)
+        # print(pypandoc.convert_text(source=json.dumps(devsdict), to='html', format='json'))
+
+        # import jsonschema2md
+        #
+        # parser = jsonschema2md.Parser(
+        #     examples_as_yaml=False,
+        #     show_examples="all",
+        # )
+        #
+        # md_lines = parser.parse_schema(devsdict)
+        # print(''.join(md_lines))\
+
+        json_reader =  TangoJsonReader(self.logger, devsdict)
+        json_reader.print_markdown_all()
