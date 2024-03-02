@@ -6,6 +6,7 @@ import sys
 from typing import Any
 
 import tango
+import yaml
 
 from ska_mid_itf_engineering_tools.tango_control.read_tango_device import (
     TangoctlDevice,
@@ -155,10 +156,12 @@ class TangoctlDevices(TangoctlDevicesBasic):
 
     devices: dict = {}
     attribs_found: list = []
+    tgo_space: str
 
     def __init__(  # noqa: C901s
         self,
         logger: logging.Logger,
+        kube_namespace: str | None,
         evrythng: bool,
         cfg_data: dict,
         tgo_name: str | None,
@@ -166,12 +169,14 @@ class TangoctlDevices(TangoctlDevicesBasic):
         tgo_cmd: str | None,
         tgo_prop: str | None,
         tango_port: int,
+        file_name: str | None,
         fmt: str = "json",
     ):
         """
         Get a dict of devices.
 
         :param logger: logging handle
+        :param kube_namespace: Kubernetes namespace
         :param cfg_data: configuration data in JSON format
         :param evrythng: get commands and attributes regadrless of state
         :param tgo_name: filter device name
@@ -179,10 +184,12 @@ class TangoctlDevices(TangoctlDevicesBasic):
         :param tgo_cmd: filter command name
         :param tgo_prop: filter property name
         :param tango_port: device port
+        :param file_name: output file name
         :param fmt: output format
         :raises Exception: when database connect fails
         """
         self.logger = logger
+        self.file_name = file_name
         self.logger.info(
             "Devices %s : attribute %s command %s property %s",
             tgo_name,
@@ -192,6 +199,10 @@ class TangoctlDevices(TangoctlDevicesBasic):
         )
         # Get Tango database host
         tango_host = os.getenv("TANGO_HOST")
+        if kube_namespace is not None:
+            self.tgo_space = f"namespace {kube_namespace}"
+        else:
+            self.tgo_space = f"host {tango_host}"
 
         self.delimiter = cfg_data["delimiter"]
         self.run_commands = cfg_data["run_commands"]
@@ -291,8 +302,13 @@ class TangoctlDevices(TangoctlDevicesBasic):
     def print_txt_list(self) -> None:
         """Print list of devices."""
         self.logger.info("List %d devices", len(self.devices))
-        for device in self.devices:
-            print(f"{device}")
+        if self.file_name is not None:
+            with open(self.file_name, "w") as outf:
+                for device in self.devices:
+                    outf.write(f"{device}\n")
+        else:
+            for device in self.devices:
+                print(f"{device}")
 
     def print_txt(self, disp_action: int) -> None:
         """
@@ -304,11 +320,11 @@ class TangoctlDevices(TangoctlDevicesBasic):
             self.print_txt_list()
         elif disp_action == 3:
             devsdict = self.get_json()
-            json_reader = TangoJsonReader(self.logger, devsdict)
+            json_reader = TangoJsonReader(self.logger, self.tgo_space, devsdict, self.file_name)
             json_reader.print_txt_quick()
         else:
             devsdict = self.get_json()
-            json_reader = TangoJsonReader(self.logger, devsdict)
+            json_reader = TangoJsonReader(self.logger, self.tgo_space, devsdict, self.file_name)
             json_reader.print_txt_all()
 
     def print_json(self, disp_action: int) -> None:
@@ -318,7 +334,11 @@ class TangoctlDevices(TangoctlDevicesBasic):
         :param disp_action: display control flag
         """
         devsdict = self.get_json()
-        print(json.dumps(devsdict, indent=4))
+        if self.file_name is not None:
+            with open(self.file_name, "w") as outf:
+                outf.write(json.dumps(devsdict, indent=4))
+        else:
+            print(json.dumps(devsdict, indent=4))
 
     def print_markdown(self, disp_action: int) -> None:
         """
@@ -328,5 +348,19 @@ class TangoctlDevices(TangoctlDevicesBasic):
         """
         self.logger.info("Markdown")
         devsdict = self.get_json()
-        json_reader = TangoJsonReader(self.logger, devsdict)
+        json_reader = TangoJsonReader(self.logger, self.tgo_space, devsdict, self.file_name)
         json_reader.print_markdown_all()
+
+    def print_yaml(self, disp_action: int) -> None:
+        """
+        Print in YAML format.
+
+        :param disp_action: display control flag
+        """
+        self.logger.info("YAML")
+        devsdict = self.get_json()
+        if self.file_name is not None:
+            with open(self.file_name, "w") as outf:
+                outf.write(yaml.dump(devsdict))
+        else:
+            print(yaml.dump(devsdict))

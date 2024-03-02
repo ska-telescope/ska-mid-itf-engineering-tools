@@ -2,7 +2,10 @@
 import ast
 import json
 import logging
+import os
 import re
+import sys
+from typing import TextIO
 
 
 def md_format(inp: str) -> str:
@@ -18,28 +21,50 @@ def md_format(inp: str) -> str:
     return outp
 
 
-def md_print(inp: str, end: str = "\n") -> None:
+def md_print(inp: str, end: str = "\n", file: TextIO = sys.stdout) -> None:
     """
     Print markdown string.
 
     :param inp: input
     :param end: at the end of the line
     """
-    print(inp.replace("_", "\\_").replace("-", "\\-"), end=end)
+    print(inp.replace("_", "\\_").replace("-", "\\-"), end=end, file=file)
 
 
 class TangoJsonReader:
     """Read JSON and print as markdown or text."""
 
-    def __init__(self, logger: logging.Logger, devsdict: dict):
+    outf: TextIO
+    tgo_space: str
+
+    def __init__(
+        self,
+        logger: logging.Logger,
+        kube_namespace: str | None,
+        devsdict: dict,
+        file_name: str | None = None,
+    ):
         """
         Rock and roll.
 
         :param logger: logging handle
+        :param kube_namespace: Kubernetes namespace
         :param devsdict: dictionary with device data
+        :param file_name: output file name
         """
         self.logger = logger
         self.devices_dict = devsdict
+        if file_name is not None:
+            self.logger.info("Write file %s", file_name)
+            self.outf = open(file_name, "w")
+        else:
+            self.outf = sys.stdout
+        # Get Tango database host
+        tango_host = os.getenv("TANGO_HOST")
+        if kube_namespace is not None:
+            self.tgo_space = f"namespace {kube_namespace}"
+        else:
+            self.tgo_space = f"host {tango_host}"
 
     def print_markdown_all(self) -> None:  # noqa: C901
         """Print the whole thing."""
@@ -52,18 +77,21 @@ class TangoJsonReader:
             :param dstr: itmen value
             """
             dstr = re.sub(" +", " ", dstr)
-            md_print(f"| {item:30} ", end="")
+            md_print(f"| {item:30} ", end="", file=self.outf)
             if dstr[0] == "{" and dstr[-1] == "}":
                 ddict = json.loads(dstr)
                 self.logger.debug("Print JSON :\n%s", json.dumps(ddict, indent=4))
                 n = 0
                 for ditem in ddict:
                     if n:
-                        print(f"| {' ':30} ", end="")
+                        print(f"| {' ':30} ", end="", file=self.outf)
                     if type(ddict[ditem]) is dict:
                         m = 0
                         for ditem2 in ddict[ditem]:
-                            md_print(f"| {ditem:{50}} | {ditem2:42} | {ddict[ditem][ditem2]:45} |")
+                            md_print(
+                                f"| {ditem:{50}} | {ditem2:42} | {ddict[ditem][ditem2]:45} |",
+                                file=self.outf,
+                            )
                             m += 1
                     elif type(ddict[ditem]) is list or type(ddict[ditem]) is tuple:
                         m = 0
@@ -73,20 +101,24 @@ class TangoJsonReader:
                             )
                             dname = f"{ditem} {m}"
                             if not m:
-                                md_print(f"| {dname:90} ", end="")
+                                md_print(f"| {dname:90} ", end="", file=self.outf)
                             else:
-                                md_print(f"| {' ':30} | {' ':50} | {dname:90} ", end="")
-                            md_print(f"| {dname:50} ", end="")
+                                md_print(
+                                    f"| {' ':30} | {' ':50} | {dname:90} ", end="", file=self.outf
+                                )
+                            md_print(f"| {dname:50} ", end="", file=self.outf)
                             if type(ditem2) is dict:
                                 p = 0
                                 for ditem3 in ditem2:
-                                    md_print(f"| {ditem3:42} | {ditem2[ditem3]:45} |")
+                                    md_print(
+                                        f"| {ditem3:42} | {ditem2[ditem3]:45} |", file=self.outf
+                                    )
                                     p += 1
                             else:
-                                md_print(f"| {ditem2:143}  ||")
+                                md_print(f"| {ditem2:143}  ||", file=self.outf)
                             m += 1
                     else:
-                        md_print(f"| {ditem:50} | {ddict[ditem]:90} ||")
+                        md_print(f"| {ditem:50} | {ddict[ditem]:90} ||", file=self.outf)
                     n += 1
             elif dstr[0] == "[" and dstr[-1] == "]":
                 dlist = ast.literal_eval(dstr)
@@ -94,13 +126,13 @@ class TangoJsonReader:
                 n = 0
                 for ditem in dlist:
                     if n:
-                        print(f"| {' ':30} ", end="")
+                        print(f"| {' ':30} ", end="", file=self.outf)
                     if type(ditem) is dict:
                         m = 0
                         for ditem2 in ditem:
                             ditem_val = str(ditem[ditem2])
                             if m:
-                                print(f"| {' ':30} ", end="")
+                                print(f"| {' ':30} ", end="", file=self.outf)
                             md_print(f"| {ditem2:50} ", end="")
                             md_print(f"| {ditem_val:90} |")
                             m += 1
@@ -114,7 +146,7 @@ class TangoJsonReader:
                     line = line.strip()
                     if line:
                         if n:
-                            print(f"| {' ':30} ", end="")
+                            print(f"| {' ':30} ", end="", file=self.outf)
                         md_print(f"| {line:143} ||")
                         n += 1
             else:
@@ -142,29 +174,29 @@ class TangoJsonReader:
                     line = line.strip()
                     if line:
                         if n:
-                            print(f"| {' ':{dc1}}.| {' ':{dc2}}.", end="")
-                        md_print(f"| {line:{dc3}} |")
+                            print(f"| {' ':{dc1}}.| {' ':{dc2}}.", end="", file=self.outf)
+                        md_print(f"| {line:{dc3}} |", file=self.outf)
                         n += 1
             elif len(dstr) > dc3 and "," in dstr:
                 n = 0
                 for line in dstr.split(","):
                     if n:
                         if dc2:
-                            print(f"| {' ':{dc1}}.| {' ':{dc2}}.", end="")
+                            print(f"| {' ':{dc1}}.| {' ':{dc2}}.", end="", file=self.outf)
                         else:
-                            print(f"| {' ':{dc1}}.", end="")
-                    md_print(f"| {line:{dc3}} |")
+                            print(f"| {' ':{dc1}}.", end="", file=self.outf)
+                    md_print(f"| {line:{dc3}} |", file=self.outf)
                     n += 1
             else:
-                md_print(f"| {dstr:{dc3}} |")
+                md_print(f"| {dstr:{dc3}} |", file=self.outf)
 
         def print_md_attributes() -> None:
             """Print attributes."""
-            print("### Attributes\n")
+            print("### Attributes\n", file=self.outf)
             for attrib in devdict["attributes"]:
-                print(f"#### {attrib}\n")
-                print("| ITEM | VALUE |       |")
-                print("|:-----|:------|:------|")
+                print(f"#### {attrib}\n", file=self.outf)
+                print("| ITEM | VALUE |       |", file=self.outf)
+                print("|:-----|:------|:------|", file=self.outf)
                 attrib_data = devdict["attributes"][attrib]["data"]
                 for item in attrib_data:
                     data = attrib_data[item]
@@ -182,10 +214,10 @@ class TangoJsonReader:
                         n = 0
                         for item2 in data:
                             if not n:
-                                md_print(f"| {item:30} ", end="")
+                                md_print(f"| {item:30} ", end="", file=self.outf)
                             else:
-                                print(f"| {' ':30} ", end="")
-                            md_print(f"| {item2:143} ||")
+                                print(f"| {' ':30} ", end="", file=self.outf)
+                            md_print(f"| {item2:143} ||", file=self.outf)
                             n += 1
                     else:
                         self.logger.warning(
@@ -194,67 +226,67 @@ class TangoJsonReader:
                 for item in devdict["attributes"][attrib]["config"]:
                     config = devdict["attributes"][attrib]["config"][item]
                     print_attribute_data(item, config)
-                print()
-            print("\n")
+                print("", file=self.outf)
+            print("\n", file=self.outf)
 
         def print_md_commands() -> None:
             """Print commands."""
             cc1 = 30
             cc2 = 50
             cc3 = 90
-            print("### Commands\n")
+            print("### Commands\n", file=self.outf)
             n = 0
-            print(f"| {'NAME':{cc1}} | {'FIELD':{cc2}} | {'VALUE':{cc3}} |")
-            print(f"|:{'-'*cc1}-|:{'-'*cc2}-|:{'-'*cc3}-|")
+            print(f"| {'NAME':{cc1}} | {'FIELD':{cc2}} | {'VALUE':{cc3}} |", file=self.outf)
+            print(f"|:{'-'*cc1}-|:{'-'*cc2}-|:{'-'*cc3}-|", file=self.outf)
             n = 0
             for cmd in devdict["commands"]:
-                print(f"| {cmd:{cc1}} ", end="")
+                print(f"| {cmd:{cc1}} ", end="", file=self.outf)
                 m = 0
                 cmd_items = devdict["commands"][cmd]
                 self.logger.debug("Print command %s : %s", cmd, cmd_items)
                 for item in cmd_items:
                     if m:
-                        print(f"| {' ':{cc1}} ", end="")
-                    md_print(f"| {item:{cc2}} ", end="")
+                        print(f"| {' ':{cc1}} ", end="", file=self.outf)
+                    md_print(f"| {item:{cc2}} ", end="", file=self.outf)
                     print_data(devdict["commands"][cmd][item], cc1, cc2, cc3)
                     m += 1
                 n += 1
-            print("\n")
+            print("\n", file=self.outf)
 
         def print_md_properties() -> None:
             """Print properties."""
             pc1 = 40
             pc2 = 133
-            print("### Properties\n")
-            print(f"| {'NAME':{pc1}} | {'VALUE':{pc2}} |")
-            print(f"|:{'-'*pc1}-|:{'-'*pc2}-|")
+            print("### Properties\n", file=self.outf)
+            print(f"| {'NAME':{pc1}} | {'VALUE':{pc2}} |", file=self.outf)
+            print(f"|:{'-'*pc1}-|:{'-'*pc2}-|", file=self.outf)
             for prop in devdict["properties"]:
                 self.logger.debug(
                     "Print command %s : %s", prop, devdict["properties"][prop]["value"]
                 )
-                md_print(f"| {prop:{pc1}} ", end="")
+                md_print(f"| {prop:{pc1}} ", end="", file=self.outf)
                 print_data(devdict["properties"][prop]["value"], pc1, 0, pc2)
             print("\n")
 
-        print("# Tango devices in namespace\n")
+        print(f"# Tango devices in {self.tgo_space}\n", file=self.outf)
         for device in self.devices_dict:
             self.logger.info("Print device %s", device)
             devdict = self.devices_dict[device]
-            md_print(f"## Device {devdict['name']}\n")
+            md_print(f"## Device {devdict['name']}\n", file=self.outf)
             print("| FIELD | VALUE |")
             print("|:------|:------|")
             print(f"| version | {devdict['version']} |")
             print(f"| Version info | {devdict['versioninfo'][0]} |")
             print(f"| Admin mode | {devdict['adminMode']} |")
             if "info" in devdict:
-                print(f"| Device class | {devdict['info']['dev_class']} |")
-                print(f"| Server host | {devdict['info']['server_host']} |")
-                md_print(f"| Server ID | {devdict['info']['server_id']} |")
-            print("\n")
+                print(f"| Device class | {devdict['info']['dev_class']} |", file=self.outf)
+                print(f"| Server host | {devdict['info']['server_host']} |", file=self.outf)
+                md_print(f"| Server ID | {devdict['info']['server_id']} |", file=self.outf)
+            print("\n", file=self.outf)
             print_md_attributes()
             print_md_commands()
             print_md_properties()
-            print("\n")
+            print("\n", file=self.outf)
 
     def print_txt_all(self) -> None:  # noqa: C901
         """Print the whole thing."""
@@ -268,16 +300,16 @@ class TangoJsonReader:
             self.logger.debug("Print %d %s", len(devdict[stuff]), stuff)
             if not devdict[stuff]:
                 return
-            print(f"{stuff:20} ", end="")
+            print(f"{stuff:20} ", end="", file=self.outf)
             if not devdict[stuff]:
-                print()
+                print(file=self.outf)
                 return
             i = 0
             for key in devdict[stuff]:
                 if not i:
-                    print(f"{key:40} ", end="")
+                    print(f"{key:40} ", end="", file=self.outf)
                 else:
-                    print(f"{' ':20} {key:40} ", end="")
+                    print(f"{' ':20} {key:40} ", end="", file=self.outf)
                 i += 1
                 devkeys = devdict[stuff][key]
                 if not devkeys:
@@ -291,43 +323,49 @@ class TangoJsonReader:
                         for devkey2 in devkeyval:
                             devkeyval2 = devkeyval[devkey2]
                             if not j:
-                                print(f"{devkey2:40} ", end="")
+                                print(f"{devkey2:40} ", end="", file=self.outf)
                             else:
-                                print(f"{' ':61} {devkey2:40} ", end="")
+                                print(f"{' ':61} {devkey2:40} ", end="", file=self.outf)
                             j += 1
                             if not devkeyval2:
-                                print()
+                                print(file=self.outf)
                             elif type(devkeyval2) is list:
                                 keyval = devkeyval2[0]
-                                print(f"{keyval}")
+                                print(f"{keyval}", file=self.outf)
                                 for keyval in devkeyval2[1:]:
-                                    print(f"{' ':102} {keyval}")
+                                    print(f"{' ':102} {keyval}", file=self.outf)
                             elif type(devkeyval2) is dict:
                                 n = 0
                                 for keyval in devkeyval2:
                                     if n:
-                                        print(f"{' ':102} ", end="")
+                                        print(f"{' ':102} ", end="", file=self.outf)
                                     if type(devkeyval2[keyval]) is list:
                                         m = 0
                                         for item in devkeyval2[keyval][1:]:
                                             if m:
-                                                print(f"{' ':102} ", end="")
-                                            print(f"{keyval:24}", end="")
+                                                print(f"{' ':102} ", end="", file=self.outf)
+                                            print(f"{keyval:24}", end="", file=self.outf)
                                             if type(item) is dict:
                                                 k = 0
                                                 for key2 in item:
                                                     if k:
-                                                        print(f"{' ':126} ", end="")
-                                                    print(f" {key2:32} {item[key2]}")
+                                                        print(
+                                                            f"{' ':126} ", end="", file=self.outf
+                                                        )
+                                                    print(
+                                                        f" {key2:32} {item[key2]}", file=self.outf
+                                                    )
                                                     k += 1
                                             else:
-                                                print(f" {item}")
+                                                print(f" {item}", file=self.outf)
                                             m += 1
                                     elif type(devkeyval2[keyval]) is not str:
-                                        print(f"{keyval:24} ", end="")
-                                        print(f"{devkeyval2[keyval]}")
+                                        print(f"{keyval:24} ", end="", file=self.outf)
+                                        print(f"{devkeyval2[keyval]}", file=self.outf)
                                     else:
-                                        print(f"{keyval:24} -> {devkeyval2[keyval]}")
+                                        print(
+                                            f"{keyval:24} -> {devkeyval2[keyval]}", file=self.outf
+                                        )
                                     n += 1
                             elif "\n" in devkeyval2:
                                 keyvals = devkeyval2.split("\n")
@@ -342,15 +380,15 @@ class TangoJsonReader:
                                             keyvals2.append(keyval2[lsp + 1 :])
                                         else:
                                             keyvals2.append(" ".join(keyval2.split()))
-                                print(f"{keyvals2[0]}")
+                                print(f"{keyvals2[0]}", file=self.outf)
                                 for keyval2 in keyvals2[1:]:
-                                    print(f"{' ':102} {keyval2}")
+                                    print(f"{' ':102} {keyval2}", file=self.outf)
                             elif "," in devkeyval2:
                                 keyvals = devkeyval2.split(",")
                                 keyval = keyvals[0]
-                                print(f"{keyval}")
+                                print(f"{keyval}", file=self.outf)
                                 for keyval in keyvals[1:]:
-                                    print(f"{' ':102} {keyval}")
+                                    print(f"{' ':102} {keyval}", file=self.outf)
                             else:
                                 keyvals2 = []
                                 if len(devkeyval2) > 70:
@@ -359,18 +397,18 @@ class TangoJsonReader:
                                     keyvals2.append(devkeyval2[lsp + 1 :])
                                 else:
                                     keyvals2.append(" ".join(devkeyval2.split()))
-                                print(f"{keyvals2[0]}")
+                                print(f"{keyvals2[0]}", file=self.outf)
                                 for keyval2 in keyvals2[1:]:
-                                    print(f"{' ':102} {keyval2}")
+                                    print(f"{' ':102} {keyval2}", file=self.outf)
                     else:
                         # Read string value
                         if not j:
-                            print(f"{devkey:40} ", end="")
+                            print(f"{devkey:40} ", end="", file=self.outf)
                         else:
-                            print(f"{' ':61} {devkey:40} ", end="")
+                            print(f"{' ':61} {devkey:40} ", end="", file=self.outf)
                         j += 1
                         if not devkeyval:
-                            print()
+                            print(file=self.outf)
                         elif "\n" in devkeyval:
                             keyvals = devkeyval.split("\n")
                             # Remove empty lines
@@ -384,15 +422,15 @@ class TangoJsonReader:
                                         keyvals2.append(keyval2[lsp + 1 :])
                                     else:
                                         keyvals2.append(" ".join(keyval2.split()))
-                            print(f"{keyvals2[0]}")
+                            print(f"{keyvals2[0]}", file=self.outf)
                             for keyval2 in keyvals2[1:]:
-                                print(f"{' ':102} {keyval2}")
+                                print(f"{' ':102} {keyval2}", file=self.outf)
                         elif "," in devkeyval:
                             keyvals = devkeyval.split(",")
                             keyval = keyvals[0]
-                            print(f"{keyval}")
+                            print(f"{keyval}", file=self.outf)
                             for keyval in keyvals[1:]:
-                                print(f"{' ':102} {keyval}")
+                                print(f"{' ':102} {keyval}", file=self.outf)
                         else:
                             keyvals2 = []
                             if len(devkeyval) > 70:
@@ -401,21 +439,30 @@ class TangoJsonReader:
                                 keyvals2.append(devkeyval[lsp + 1 :])
                             else:
                                 keyvals2.append(" ".join(devkeyval.split()))
-                            print(f"{keyvals2[0]}")
+                            print(f"{keyvals2[0]}", file=self.outf)
                             for keyval2 in keyvals2[1:]:
-                                print(f"{' ':102} {keyval2}")
+                                print(f"{' ':102} {keyval2}", file=self.outf)
 
         for device in self.devices_dict:
             self.logger.info("Print device %s", device)
             devdict = self.devices_dict[device]
-            print(f"{'name':20} {devdict['name']}")
-            print(f"{'version':20} {devdict['version']}")
-            print(f"{'versioninfo':20} {devdict['versioninfo'][0]}")
-            print(f"{'adminMode':20} {devdict['adminMode']}")
+            print(f"{'name':20} {devdict['name']}", file=self.outf)
+            print(f"{'version':20} {devdict['version']}", file=self.outf)
+            print(f"{'versioninfo':20} {devdict['versioninfo'][0]}", file=self.outf)
+            print(f"{'adminMode':20} {devdict['adminMode']}", file=self.outf)
             if "info" in devdict:
-                print(f"{' ':20} {'info':40} {'dev_class':40} {devdict['info']['dev_class']}")
-                print(f"{' ':20} {' ':40} {'server_host':40} {devdict['info']['server_host']}")
-                print(f"{' ':20} {' ':40} {'server_id':40} {devdict['info']['server_id']}")
+                print(
+                    f"{' ':20} {'info':40} {'dev_class':40} {devdict['info']['dev_class']}",
+                    file=self.outf,
+                )
+                print(
+                    f"{' ':20} {' ':40} {'server_host':40} {devdict['info']['server_host']}",
+                    file=self.outf,
+                )
+                print(
+                    f"{' ':20} {' ':40} {'server_id':40} {devdict['info']['server_id']}",
+                    file=self.outf,
+                )
             print_txt("attributes")
             print_txt("commands")
             print_txt("properties")
@@ -426,21 +473,21 @@ class TangoJsonReader:
 
         def print_attributes() -> None:
             """Print attribute in short form."""
-            print(f"{'attributes':20}", end="")
+            print(f"{'attributes':20}", end="", file=self.outf)
             i = 0
             for attrib in devdict["attributes"]:
                 if not i:
-                    print(f" {attrib:40}", end="")
+                    print(f" {attrib:40}", end="", file=self.outf)
                 else:
-                    print(f" {' ':20} {attrib:40}", end="")
+                    print(f" {' ':20} {attrib:40}", end="", file=self.outf)
                 i += 1
-                print(f"{devdict['attributes'][attrib]['value']}")
+                print(f"{devdict['attributes'][attrib]['value']}", file=self.outf)
 
         for device in self.devices_dict:
             devdict = self.devices_dict[device]
-            print(f"{'name':20} {devdict['name']}")
-            print(f"{'version':20} {devdict['version']}")
-            print(f"{'versioninfo':20} {devdict['versioninfo'][0]}")
-            print(f"{'adminMode':20} {devdict['adminMode']}")
+            print(f"{'name':20} {devdict['name']}", file=self.outf)
+            print(f"{'version':20} {devdict['version']}", file=self.outf)
+            print(f"{'versioninfo':20} {devdict['versioninfo'][0]}", file=self.outf)
+            print(f"{'adminMode':20} {devdict['adminMode']}", file=self.outf)
             print_attributes()
-            print()
+            print(file=self.outf)

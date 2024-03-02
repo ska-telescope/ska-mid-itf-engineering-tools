@@ -8,6 +8,8 @@ import socket
 import sys
 from typing import Any, TextIO
 
+import tango
+
 from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl
 from ska_mid_itf_engineering_tools.tango_control.read_tango_config import TangoctlDeviceConfig
@@ -56,6 +58,7 @@ def show_namespaces() -> None:
 
 
 def run_test(
+    kube_namespace: str | None,
     dev_admin: int | None,
     dev_off: bool,
     dev_on: bool,
@@ -71,6 +74,7 @@ def run_test(
     """
     Run tests on Tango devices.
 
+    :param kube_namespace: Kubernetes namespace
     :param dev_admin: check admin mode
     :param dev_off: turn device on
     :param dev_on: turn device off
@@ -154,6 +158,8 @@ def run_test(
 
 
 def run_info(
+    kube_namespace: str | None,
+    file_name: str | None,
     fmt: str,
     evrythng: bool,
     disp_action: int,
@@ -167,6 +173,8 @@ def run_info(
     """
     Read information on Tango devices.
 
+    :param kube_namespace: Kubernetes namespace
+    :param file_name: output file name
     :param fmt: output format
     :param evrythng: get commands and attributes regadrless of state
     :param disp_action: flag for output format
@@ -188,7 +196,11 @@ def run_info(
     )
 
     if disp_action == 4:
-        devices = TangoctlDevicesBasic(_module_logger, evrythng, cfg_data, fmt)
+        try:
+            devices = TangoctlDevicesBasic(_module_logger, evrythng, cfg_data, fmt)
+        except tango.ConnectionFailed:
+            _module_logger.error("Tango connection failed")
+            return 1
         devices.read_config()
         devices.print_txt_list()
         return 0
@@ -197,7 +209,11 @@ def run_info(
         _module_logger.info("Print device %s", tgo_name)
         if tango_port:
             tgo_name = f"tango://127.0.0.1:{tango_port}/{tgo_name}#dbase=no"
-        device = TangoctlDeviceConfig(_module_logger, tgo_name)
+        try:
+            device = TangoctlDeviceConfig(_module_logger, tgo_name)
+        except tango.ConnectionFailed:
+            _module_logger.error("Tango connection failed")
+            return 1
         devsdict = device.get_json()
         try:
             print(json.dumps(devsdict, indent=4))
@@ -205,16 +221,27 @@ def run_info(
             print(devsdict)
         return 0
 
-    devices = TangoctlDevices(
-        _module_logger,
-        evrythng,
-        cfg_data,
-        tgo_name,
-        tgo_attrib,
-        tgo_cmd, tgo_prop,
-        tango_port,
-        fmt,
-    )
+    if os.path.splitext(file_name)[-1] != f".{fmt}":
+        file_name = f"{file_name}.{fmt}"
+        _module_logger.warning("File name changed to %s", file_name)
+
+    try:
+        devices = TangoctlDevices(
+            _module_logger,
+            kube_namespace,
+            evrythng,
+            cfg_data,
+            tgo_name,
+            tgo_attrib,
+            tgo_cmd,
+            tgo_prop,
+            tango_port,
+            file_name,
+            fmt,
+        )
+    except tango.ConnectionFailed:
+        _module_logger.error("Tango connection failed")
+        return 1
     devices.read_device_values()
 
     _module_logger.info("Read devices")
@@ -225,6 +252,8 @@ def run_info(
         devices.print_json(disp_action)
     elif fmt == "md":
         devices.print_markdown(disp_action)
+    elif fmt == "yaml":
+        devices.print_yaml(disp_action)
     else:
         print("---")
 
@@ -386,6 +415,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     dev_sim: int | None = None
     disp_action: int = 0
     evrythng: bool = False
+    file_name: str | None = None
     headers = True
     show_attrib: bool = False
     show_command: bool = False
@@ -414,7 +444,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
-            "acefhjlmnqstvVA:C:H:D:N:p:P:T:",
+            "acefhjlmnqstvyVA:C:H:D:N:p:O:P:T:",
             [
                 "dry-run",
                 "everything",
@@ -422,6 +452,7 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "help",
                 "input",
                 "list",
+                "md",
                 "no-headers",
                 "off",
                 "on",
@@ -434,12 +465,14 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "show-dev",
                 "show-ns",
                 "version",
+                "yaml",
                 "admin=",
                 "attribute=",
                 "command=",
                 "device=",
                 "host=",
                 "namespace=",
+                "output=",
                 "port=",
                 "property=",
                 "simul=",
@@ -479,7 +512,7 @@ def main(y_arg: list) -> int:  # noqa: C901
             fmt = "json"
         elif opt in ("--list", "-l"):
             disp_action = 4
-        elif opt == "-m":
+        elif opt in ("--md", "-m"):
             fmt = "md"
         elif opt in ("--namespace", "-N"):
             kube_namespace = arg
@@ -491,6 +524,8 @@ def main(y_arg: list) -> int:  # noqa: C901
             dev_off = True
         elif opt == "--on":
             dev_on = True
+        elif opt in ("--output", "-O"):
+            file_name = arg
         elif opt in ("--port", "-p"):
             tango_port = int(arg)
         elif opt in ("--quick", "-q"):
@@ -515,6 +550,8 @@ def main(y_arg: list) -> int:  # noqa: C901
             _module_logger.setLevel(logging.DEBUG)
         elif opt == "--version":
             show_version = True
+        elif opt in ("--yaml", "-y"):
+            fmt = "yaml"
         else:
             _module_logger.error("Invalid option %s", opt)
             return 1
@@ -564,6 +601,7 @@ def main(y_arg: list) -> int:  # noqa: C901
         dev_test = True
     if dev_test:
         rc: int = run_test(
+            kube_namespace,
             dev_admin,
             dev_off,
             dev_on,
@@ -579,6 +617,8 @@ def main(y_arg: list) -> int:  # noqa: C901
         return rc
 
     rc = run_info(
+        kube_namespace,
+        file_name,
         fmt,
         evrythng,
         disp_action,
