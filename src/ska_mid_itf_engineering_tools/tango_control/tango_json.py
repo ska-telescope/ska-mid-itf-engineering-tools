@@ -37,32 +37,27 @@ class TangoJsonReader:
     def print_markdown_all(self):
         """Print the whole thing."""
 
-        def print_attribute_data(item: str, dstr: str, dc1, dc2, dc3):
-            dc2a = (dc2 / 2) - 3
-            dc2b = (dc2 / 2)
-            dc3a = (dc3 / 2) - 3
-            dc3b = (dc3 / 2)
-            # fill = " "
+        def print_attribute_data(item: str, dstr: str):
             dstr = re.sub(' +', ' ', dstr)
-            md_print(f"| {item:{dc1}} ", end="")
+            md_print(f"| {item:30} ", end="")
             if dstr[0] == "{" and dstr[-1] == "}":
                 ddict = json.loads(dstr)
                 self.logger.debug("Print JSON :\n%s", json.dumps(ddict, indent=4))
                 n = 0
                 for ditem in ddict:
                     if n:
-                        print(f"| {' ':{dc1}} ", end="")
+                        print(f"| {' ':30} ", end="")
                     if type(ddict[ditem]) is dict:
                         m = 0
                         for ditem2 in ddict[ditem]:
                             # if m:
-                            #     print(f"| {' ':{dc1}}-| {' ':{dc2}}-", end="")
+                            #     print(f"| {' ':30}-| {' ':{50}}-", end="")
                             md_print(
-                                f"| {ditem:{dc2}} | {ditem2:{dc3a}} "
-                                f"| {ddict[ditem][ditem2]:{dc3b}} |"
+                                f"| {ditem:{50}} | {ditem2:42} "
+                                f"| {ddict[ditem][ditem2]:45} |"
                             )
                             m += 1
-                    elif type(ddict[ditem]) is list:
+                    elif type(ddict[ditem]) is list or type(ddict[ditem]) is tuple:
                         m = 0
                         for ditem2 in ddict[ditem]:
                             self.logger.debug(
@@ -70,22 +65,22 @@ class TangoJsonReader:
                             )
                             dname = f"{ditem} {m}"
                             if not m:
-                                md_print(f"| {dname} ", end="")
+                                md_print(f"| {dname:90} ", end="")
                             else:
-                                md_print(f"| {' ':{dc1}} | {' ':{dc2}},| {dname} ", end="")
-                            md_print(f"| {dname:{dc2}} ", end="")
+                                md_print(f"| {' ':30} | {' ':50} | {dname:90} ", end="")
+                            md_print(f"| {dname:50} ", end="")
                             if type(ditem2) is dict:
                                 p = 0
                                 for ditem3 in ditem2:
                                     # if p:
-                                    #     print(f"| {' ':{dc1}},| {' ':{dc2}},| ,", end="")
-                                    md_print(f"| {ditem3:{dc2a}} | {ditem2[ditem3]:{dc2b}} |")
+                                    #     print(f"| {' ':30},| {' ':50},| ,", end="")
+                                    md_print(f"| {ditem3:42} | {ditem2[ditem3]:45} |")
                                     p += 1
                             else:
-                                md_print(f"| {ditem2:{dc2}}  ||")
+                                md_print(f"| {ditem2:143}  ||")
                             m += 1
                     else:
-                        md_print(f"| {ditem:{dc2}} | {ddict[ditem]:{dc3}} ||")
+                        md_print(f"| {ditem:50} | {ddict[ditem]:90} ||")
                     n += 1
             elif dstr[0] == "[" and dstr[-1] == "]":
                 dlist = ast.literal_eval(dstr)
@@ -93,16 +88,18 @@ class TangoJsonReader:
                 n = 0
                 for ditem in dlist:
                     if n:
-                        print(f"| {' ':{dc1}} ", end="")
+                        print(f"| {' ':30} ", end="")
                     if type(ditem) is dict:
                         m = 0
                         for ditem2 in ditem:
+                            ditem_val = str(ditem[ditem2])
                             if m:
-                                print(f"| {' ':{dc1}} ", end="")
-                            md_print(f"| {ditem2} | {ditem[ditem2]} |")
+                                print(f"| {' ':30} ", end="")
+                            md_print(f"| {ditem2:50} ", end="")
+                            md_print(f"| {ditem_val:90} |")
                             m += 1
                     else:
-                        md_print(f"| {str(ditem):{dc2}} ||")
+                        md_print(f"| {str(ditem):143} ||")
                     n += 1
             elif "\n" in dstr:
                 self.logger.debug("Print attribute value str %s (%s)", dstr, type(dstr))
@@ -111,11 +108,16 @@ class TangoJsonReader:
                     line = line.strip()
                     if line:
                         if n:
-                            print(f"| {' ':{dc1}} ", end="")
-                        md_print(f"| {line:{dc2}} ||")
+                            print(f"| {' ':30} ", end="")
+                        md_print(f"| {line:143} ||")
                         n += 1
             else:
-                md_print(f"| {dstr:{dc2}} ||")
+                if len(dstr) > 140:
+                    lsp = dstr[0:140].rfind(" ")
+                    md_print(f" | {dstr[0:lsp]:143} ||")
+                    md_print(f"| {' ':30}  | {dstr[lsp + 1 :]:143} ||")
+                else:
+                    md_print(f"| {dstr:143} ||")
             return
 
         def print_data(dstr, dc1, dc2, dc3):
@@ -143,9 +145,6 @@ class TangoJsonReader:
                 md_print(f"| {dstr:{dc3}} |")
 
         def print_md_attributes():
-            ac1 = 30
-            ac2 = 50
-            ac3 = 90
             print(f"### Attributes\n")
             for attrib in devdict["attributes"]:
                 print(f"#### {attrib}\n")
@@ -156,29 +155,29 @@ class TangoJsonReader:
                     data = attrib_data[item]
                     if type(data) is str:
                         self.logger.debug("Print attribute str %s : %s", item, data)
-                        print_attribute_data(item, data, ac1, ac2, ac3)
+                        print_attribute_data(item, data)
                     elif type(data) is dict:
                         self.logger.debug("Print attribute dict %s : %s", item, data)
                         n = 0
                         for item2 in data:
-                            print_attribute_data(item2, str(data[item2]), ac1, ac2, ac3)
+                            print_attribute_data(item2, str(data[item2]))
                             n += 1
                     elif type(data) is list:
                         self.logger.debug("Print attribute list %s : %s", item, data)
                         n = 0
                         for item2 in data:
                             if not n:
-                                md_print(f"| {item:{ac1}} ", end="")
+                                md_print(f"| {item:30} ", end="")
                             else:
-                                print(f"| {' ':{ac1}} ", end="")
-                            md_print(f"| {item2:{ac2}} ||")
+                                print(f"| {' ':30} ", end="")
+                            md_print(f"| {item2:143} ||")
                             n += 1
                     else:
                         self.logger.warning("Data type for %s (%s) not supported", item, type(data))
                 for item in devdict["attributes"][attrib]["config"]:
                     # self.logger.debug("Print config item %s : %s", item, data)
                     config = devdict['attributes'][attrib]['config'][item]
-                    print_attribute_data(item, config, ac1, ac2, ac3)
+                    print_attribute_data(item, config)
                 print()
             print("\n")
 

@@ -229,6 +229,10 @@ class TangoctlDevice(TangoctlDeviceBasic):
                         devdict["attributes"][attrib]["data"]["value"][key] = data_val[key]
                 elif type(data_val) is numpy.ndarray:
                     devdict["attributes"][attrib]["data"]["value"] = data_val.tolist()
+                elif type(data_val) is list:
+                    devdict["attributes"][attrib]["data"]["value"] = data_val
+                elif type(data_val) is tuple:
+                    devdict["attributes"][attrib]["data"]["value"] = list(data_val)
                 elif type(data_val) is str:
                     if data_val[0] == "{" and data_val[-1] == "}":
                         devdict["attributes"][attrib]["data"]["value"] = json.loads(data_val)
