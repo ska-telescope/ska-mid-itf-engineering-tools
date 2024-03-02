@@ -35,6 +35,7 @@ def progress_bar(
     :param length: character length of bar
     :param fill: bar fill character
     :param print_end: end character (e.g. "\r", "\r\n")
+    :yields: the next one in line
     """
 
     def print_progress_bar(iteration: Any) -> None:
