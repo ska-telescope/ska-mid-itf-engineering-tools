@@ -23,6 +23,7 @@ def md_print(inp: str, end: str = "\n") -> None:
     Print markdown string.
 
     :param inp: input
+    :param end: at the end of the line
     """
     # print(inp.replace("/", "\\/").replace("_", "\\_").replace("-", "\\-"), end=end)
     print(inp.replace("_", "\\_").replace("-", "\\-"), end=end)

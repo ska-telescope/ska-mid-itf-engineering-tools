@@ -1,7 +1,5 @@
 #!/usr/bin/python
-"""
-Read all information about Tango devices.
-"""
+"""Read all information about Tango devices."""
 import getopt
 import json
 import logging
@@ -27,9 +25,7 @@ _module_logger.setLevel(logging.WARNING)
 
 
 def show_namespaces() -> None:
-    """
-    Display namespace in Kubernetes cluster.
-    """
+    """Display namespace in Kubernetes cluster."""
     k8s = KubernetesControl(_module_logger)
     ns_list = k8s.get_namespaces()
     print(f"Namespaces : {len(ns_list)}")

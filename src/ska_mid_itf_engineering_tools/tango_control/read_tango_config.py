@@ -64,39 +64,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
         """
 
         def set_attribute() -> None:
-            """
-            Add attribute to dictionary
-
-            DeviceAttribute(
-                data_format = tango._tango.AttrDataFormat.SCALAR,
-                dim_x = 1,
-                dim_y = 0,
-                has_failed = False,
-                is_empty = False,
-                name = 'attenuation',
-                nb_read = 1,
-                nb_written = 1,
-                quality = tango._tango.AttrQuality.ATTR_VALID,
-                r_dimension = AttributeDimension(
-                    dim_x = 1,
-                    dim_y = 0
-                ),
-                time = TimeVal(
-                    tv_nsec = 131,
-                    tv_sec = 1709148253,
-                    tv_usec = 879110
-                ),
-                type = tango._tango.CmdArgType.DevLong64,
-                value = 10,
-                w_dim_x = 1,
-                w_dim_y = 0,
-                w_dimension = AttributeDimension(
-                    dim_x = 1,
-                    dim_y = 0
-                ),
-                w_value = 0
-            )
-            """
+            """Add attribute to dictionary."""
             data = self.attributes[attrib]["data"]
             if data is None:
                 return
@@ -130,61 +98,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
             devdict["attributes"][attrib]["data"]["w_value"] = str(data.w_value)
 
         def set_attribute_config() -> None:
-            """
-            Add attribute configuration to dictionary.
-
-            AttributeInfoEx(
-                alarms = AttributeAlarmInfo(
-                    delta_t = 'Not specified',
-                    delta_val = 'Not specified',
-                    extensions = [],
-                    max_alarm = 'Not specified',
-                    max_warning = 'Not specified',
-                    min_alarm = 'Not specified',
-                    min_warning = 'Not specified'
-                ),
-                data_format = tango._tango.AttrDataFormat.SCALAR,
-                data_type = tango._tango.CmdArgType.DevBoolean,
-                description = 'Control device status.\nreturns admin mode flag\n',
-                disp_level = tango._tango.DispLevel.OPERATOR,
-                display_unit = 'No display unit',
-                enum_labels = [],
-                events = AttributeEventInfo(
-                    arch_event = ArchiveEventInfo(
-                        archive_abs_change = 'Not specified',
-                        archive_period = 'Not specified',
-                        archive_rel_change = 'Not specified',
-                        extensions = []
-                    ),
-                    ch_event = ChangeEventInfo(
-                        abs_change = 'Not specified',
-                        extensions = [],
-                        rel_change = 'Not specified'
-                    ),
-                    per_event = PeriodicEventInfo(
-                        extensions = [],
-                        period = '1000'
-                    )
-                ),
-                extensions = [],
-                format = 'Not specified',
-                label = 'adminMode',
-                max_alarm = 'Not specified',
-                max_dim_x = 1,
-                max_dim_y = 0,
-                max_value = 'Not specified',
-                memorized = tango._tango.AttrMemorizedType.NONE,
-                min_alarm = 'Not specified',
-                min_value = 'Not specified',
-                name = 'adminMode',
-                root_attr_name = 'Not specified',
-                standard_unit = 'No standard unit',
-                sys_extensions = [],
-                unit = '',
-                writable = tango._tango.AttrWriteType.READ_WRITE,
-                writable_attr_name = 'adminMode'
-            )
-            """
+            """Add attribute configuration to dictionary."""
             devdict["attributes"][attrib]["config"] = {}
             dcfg = self.attributes[attrib]["config"]
             alarms = dcfg.alarms
@@ -260,19 +174,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
             devdict["attributes"][attrib]["config"]["writable_attr_name"] = dcfg.writable_attr_name
 
         def set_command_config() -> None:
-            """
-            Add command to dictionary.
-
-            CommandInfo(
-                cmd_name = 'Status',
-                cmd_tag = 0,
-                disp_level = tango._tango.DispLevel.OPERATOR,
-                in_type = tango._tango.CmdArgType.DevVoid,
-                in_type_desc = 'Uninitialised',
-                out_type = tango._tango.CmdArgType.DevString,
-                out_type_desc = 'Device status'
-            )
-            """
+            """Add command to dictionary."""
             devdict["commands"][cmd] = {}
             devdict["commands"][cmd]["cmd_name"] = self.commands[cmd]["config"].cmd_name
             devdict["commands"][cmd]["cmd_tag"] = self.commands[cmd]["config"].cmd_tag
