@@ -301,7 +301,6 @@ class TangoctlDevice(TangoctlDeviceBasic):
             if "value" in self.properties[prop]:
                 prop_val = self.properties[prop]["value"]
                 devdict["properties"][prop] = {}
-                # devdict["properties"][prop]["type"] = str(type(prop_val))
                 # pylint: disable-next=c-extension-no-member
                 if type(prop_val) is tango._tango.StdStringVector:
                     devdict["properties"][prop]["value"] = delimiter.join(prop_val)
@@ -329,9 +328,6 @@ class TangoctlDevice(TangoctlDeviceBasic):
             devdict["info"]["dev_class"] = self.info.dev_class
             devdict["info"]["server_host"] = self.info.server_host
             devdict["info"]["server_id"] = self.info.server_id
-        # TODO to be or not to be
-        # else:
-        #     devdict["info"] = "N/A"
         devdict["attributes"] = {}
         if self.attribs_found:
             for attrib in self.attribs_found:

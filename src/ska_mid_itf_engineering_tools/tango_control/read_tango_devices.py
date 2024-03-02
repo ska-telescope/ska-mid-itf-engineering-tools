@@ -129,7 +129,6 @@ class TangoctlDevicesBasic:
     def read_config(self) -> None:
         """Read additional data."""
         self.logger.info("Read %d devices", len(self.devices))
-        # for device in self.devices:
         prog_bar: bool = True
         if self.fmt == "md":
             prog_bar = False
@@ -148,7 +147,6 @@ class TangoctlDevicesBasic:
         self.logger.info("List %d devices", len(self.devices))
         print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN':11} {'VERSION':8} CLASS")
         for device in self.devices:
-            # print(f"{device}")
             self.devices[device].print_list()
 
 
@@ -330,17 +328,5 @@ class TangoctlDevices(TangoctlDevicesBasic):
         """
         self.logger.info("Markdown")
         devsdict = self.get_json()
-        # print(pypandoc.convert_text(source=json.dumps(devsdict), to='html', format='json'))
-
-        # import jsonschema2md
-        #
-        # parser = jsonschema2md.Parser(
-        #     examples_as_yaml=False,
-        #     show_examples="all",
-        # )
-        #
-        # md_lines = parser.parse_schema(devsdict)
-        # print(''.join(md_lines))\
-
         json_reader = TangoJsonReader(self.logger, devsdict)
         json_reader.print_markdown_all()

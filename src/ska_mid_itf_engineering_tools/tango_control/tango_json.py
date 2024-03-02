@@ -25,7 +25,6 @@ def md_print(inp: str, end: str = "\n") -> None:
     :param inp: input
     :param end: at the end of the line
     """
-    # print(inp.replace("/", "\\/").replace("_", "\\_").replace("-", "\\-"), end=end)
     print(inp.replace("_", "\\_").replace("-", "\\-"), end=end)
 
 
@@ -64,8 +63,6 @@ class TangoJsonReader:
                     if type(ddict[ditem]) is dict:
                         m = 0
                         for ditem2 in ddict[ditem]:
-                            # if m:
-                            #     print(f"| {' ':30}-| {' ':{50}}-", end="")
                             md_print(f"| {ditem:{50}} | {ditem2:42} | {ddict[ditem][ditem2]:45} |")
                             m += 1
                     elif type(ddict[ditem]) is list or type(ddict[ditem]) is tuple:
@@ -83,8 +80,6 @@ class TangoJsonReader:
                             if type(ditem2) is dict:
                                 p = 0
                                 for ditem3 in ditem2:
-                                    # if p:
-                                    #     print(f"| {' ':30},| {' ':50},| ,", end="")
                                     md_print(f"| {ditem3:42} | {ditem2[ditem3]:45} |")
                                     p += 1
                             else:
@@ -197,7 +192,6 @@ class TangoJsonReader:
                             "Data type for %s (%s) not supported", item, type(data)
                         )
                 for item in devdict["attributes"][attrib]["config"]:
-                    # self.logger.debug("Print config item %s : %s", item, data)
                     config = devdict["attributes"][attrib]["config"][item]
                     print_attribute_data(item, config)
                 print()
@@ -314,13 +308,11 @@ class TangoJsonReader:
                                     if n:
                                         print(f"{' ':102} ", end="")
                                     if type(devkeyval2[keyval]) is list:
-                                        # print(f" {type(devkeyval2[keyval][0])} ->", end="")
                                         m = 0
                                         for item in devkeyval2[keyval][1:]:
                                             if m:
                                                 print(f"{' ':102} ", end="")
                                             print(f"{keyval:24}", end="")
-                                            # print(f" {type(devkeyval2[keyval][0])} ->", end="")
                                             if type(item) is dict:
                                                 k = 0
                                                 for key2 in item:
@@ -333,7 +325,6 @@ class TangoJsonReader:
                                             m += 1
                                     elif type(devkeyval2[keyval]) is not str:
                                         print(f"{keyval:24} ", end="")
-                                        # print(f" ({type(devkeyval2[keyval])})", end="")
                                         print(f"{devkeyval2[keyval]}")
                                     else:
                                         print(f"{keyval:24} -> {devkeyval2[keyval]}")

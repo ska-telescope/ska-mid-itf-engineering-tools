@@ -8,7 +8,7 @@ from ska_mid_itf_engineering_tools.tango_control.read_tango_device import Tangoc
 
 
 class TangoctlDeviceConfig(TangoctlDeviceBasic):
-    """Read all of the configuration on offer."""
+    """Read all the configuration on offer."""
 
     logger: logging.Logger
     dev: tango.DeviceProxy

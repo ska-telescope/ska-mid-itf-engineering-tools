@@ -308,8 +308,7 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print("\t-l|--list\t\t\t\tdisplay device name and status on one line")
     print("\t-q|--quick\t\t\t\tdisplay device name, status and query devices")
     print("\t-s|--short\t\t\t\tdisplay device name and status only")
-    # TODO undocumented for now
-    # print("\t-m\t\t\t\tdisplay in markdown format")
+    print("\t-m\t\t\t\tdisplay in markdown format")
     print("\t-f\t\t\t\tget commands, attributes and properties regardless of state")
     print(
         "\t--device=<DEVICE>\t\tdevice name, e.g. 'csp'"
@@ -462,8 +461,6 @@ def main(y_arg: list) -> int:  # noqa: C901
             show_command = True
         elif opt in ("--command", "-C"):
             tgo_cmd = arg.lower()
-        # elif opt in ("-d", "--show-dev"):
-        #     disp_action = 4
         elif opt in ("--device", "-D"):
             tgo_name = arg.lower()
         elif opt == "--dry-run":
@@ -483,7 +480,6 @@ def main(y_arg: list) -> int:  # noqa: C901
         elif opt in ("--list", "-l"):
             disp_action = 4
         elif opt == "-m":
-            # Undocumented feature to display in mark-down format
             fmt = "md"
         elif opt in ("--namespace", "-N"):
             kube_namespace = arg
