@@ -1,9 +1,9 @@
 """Read and display Tango stuff."""
 import json
 import logging
-import numpy
 from typing import Any
 
+import numpy
 import tango
 
 
@@ -222,7 +222,9 @@ class TangoctlDevice(TangoctlDeviceBasic):
             devdict["attributes"][attrib]["data"] = {}
             if "value" in self.attributes[attrib]["data"]:
                 data_val = self.attributes[attrib]["data"]["value"]
-                self.logger.debug("Attribute %s data type %s: %s", attrib, type(data_val), data_val)
+                self.logger.debug(
+                    "Attribute %s data type %s: %s", attrib, type(data_val), data_val
+                )
                 if type(data_val) is dict:
                     devdict["attributes"][attrib]["data"]["value"] = {}
                     for key in data_val:
@@ -367,7 +369,9 @@ class TangoctlDevice(TangoctlDeviceBasic):
             self.attributes[attrib]["data"]["value"] = attrib_data.value
             self.attributes[attrib]["data"]["type"] = str(attrib_data.type)
             self.attributes[attrib]["data"]["data_format"] = str(attrib_data.data_format)
-            self.logger.info("Read attribute %s data : %s", attrib, self.attributes[attrib]["data"])
+            self.logger.info(
+                "Read attribute %s data : %s", attrib, self.attributes[attrib]["data"]
+            )
 
     def read_command_value(self, run_commands: list, run_commands_name: list) -> None:
         """

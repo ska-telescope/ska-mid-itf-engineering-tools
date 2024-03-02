@@ -29,16 +29,29 @@ def md_print(inp: str, end: str = "\n") -> None:
 
 
 class TangoJsonReader:
+    """Read JSON and print as markdown or text."""
 
     def __init__(self, logger: logging.Logger, devsdict: dict):
+        """
+        Rock and roll.
+
+        :param logger: logging handle
+        :param devsdict: dictionary with device data
+        """
         self.logger = logger
         self.devices_dict = devsdict
 
-    def print_markdown_all(self):
+    def print_markdown_all(self) -> None:  # noqa: C901
         """Print the whole thing."""
 
-        def print_attribute_data(item: str, dstr: str):
-            dstr = re.sub(' +', ' ', dstr)
+        def print_attribute_data(item: str, dstr: str) -> None:
+            """
+            Print attribute data in various formats.
+
+            :param item: item name
+            :param dstr: itmen value
+            """
+            dstr = re.sub(" +", " ", dstr)
             md_print(f"| {item:30} ", end="")
             if dstr[0] == "{" and dstr[-1] == "}":
                 ddict = json.loads(dstr)
@@ -52,10 +65,7 @@ class TangoJsonReader:
                         for ditem2 in ddict[ditem]:
                             # if m:
                             #     print(f"| {' ':30}-| {' ':{50}}-", end="")
-                            md_print(
-                                f"| {ditem:{50}} | {ditem2:42} "
-                                f"| {ddict[ditem][ditem2]:45} |"
-                            )
+                            md_print(f"| {ditem:{50}} | {ditem2:42} | {ddict[ditem][ditem2]:45} |")
                             m += 1
                     elif type(ddict[ditem]) is list or type(ddict[ditem]) is tuple:
                         m = 0
@@ -120,7 +130,15 @@ class TangoJsonReader:
                     md_print(f"| {dstr:143} ||")
             return
 
-        def print_data(dstr, dc1, dc2, dc3):
+        def print_data(dstr: str, dc1: int, dc2: int, dc3: int) -> None:
+            """
+            Print device data.
+
+            :param dstr: data string
+            :param dc1: column 1 width
+            :param dc2: column 2 width
+            :param dc3: column 2 width
+            """
             if "\n" in dstr:
                 self.logger.debug("Print '%s'", dstr)
                 n = 0
@@ -144,8 +162,9 @@ class TangoJsonReader:
             else:
                 md_print(f"| {dstr:{dc3}} |")
 
-        def print_md_attributes():
-            print(f"### Attributes\n")
+        def print_md_attributes() -> None:
+            """Print attributes."""
+            print("### Attributes\n")
             for attrib in devdict["attributes"]:
                 print(f"#### {attrib}\n")
                 print("| ITEM | VALUE |       |")
@@ -173,19 +192,22 @@ class TangoJsonReader:
                             md_print(f"| {item2:143} ||")
                             n += 1
                     else:
-                        self.logger.warning("Data type for %s (%s) not supported", item, type(data))
+                        self.logger.warning(
+                            "Data type for %s (%s) not supported", item, type(data)
+                        )
                 for item in devdict["attributes"][attrib]["config"]:
                     # self.logger.debug("Print config item %s : %s", item, data)
-                    config = devdict['attributes'][attrib]['config'][item]
+                    config = devdict["attributes"][attrib]["config"][item]
                     print_attribute_data(item, config)
                 print()
             print("\n")
 
-        def print_md_commands():
+        def print_md_commands() -> None:
+            """Print commands."""
             cc1 = 30
             cc2 = 50
             cc3 = 90
-            print(f"### Commands\n")
+            print("### Commands\n")
             n = 0
             print(f"| {'NAME':{cc1}} | {'FIELD':{cc2}} | {'VALUE':{cc3}} |")
             print(f"|:{'-'*cc1}-|:{'-'*cc2}-|:{'-'*cc3}-|")
@@ -193,28 +215,30 @@ class TangoJsonReader:
             for cmd in devdict["commands"]:
                 print(f"| {cmd:{cc1}} ", end="")
                 m = 0
-                cmd_items = devdict['commands'][cmd]
+                cmd_items = devdict["commands"][cmd]
                 self.logger.debug("Print command %s : %s", cmd, cmd_items)
                 for item in cmd_items:
                     if m:
                         print(f"| {' ':{cc1}} ", end="")
                     md_print(f"| {item:{cc2}} ", end="")
-                    print_data(devdict['commands'][cmd][item], cc1, cc2, cc3)
+                    print_data(devdict["commands"][cmd][item], cc1, cc2, cc3)
                     m += 1
                 n += 1
             print("\n")
 
-        def print_md_properties():
+        def print_md_properties() -> None:
+            """Print properties."""
             pc1 = 40
             pc2 = 133
-            print(f"### Properties\n")
-            n = 0
+            print("### Properties\n")
             print(f"| {'NAME':{pc1}} | {'VALUE':{pc2}} |")
             print(f"|:{'-'*pc1}-|:{'-'*pc2}-|")
             for prop in devdict["properties"]:
-                self.logger.debug("Print command %s : %s", prop, devdict['properties'][prop]['value'])
+                self.logger.debug(
+                    "Print command %s : %s", prop, devdict["properties"][prop]["value"]
+                )
                 md_print(f"| {prop:{pc1}} ", end="")
-                print_data(devdict['properties'][prop]['value'], pc1, 0, pc2)
+                print_data(devdict["properties"][prop]["value"], pc1, 0, pc2)
             print("\n")
 
         print("# Tango devices in namespace\n")

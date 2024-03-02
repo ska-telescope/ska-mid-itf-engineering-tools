@@ -1,10 +1,7 @@
 """Read and display Tango stuff."""
 import json
-import jsonschema2md
 import logging
 import os
-import pypandoc
-import re
 import sys
 from typing import Any
 
@@ -20,13 +17,13 @@ from ska_mid_itf_engineering_tools.tango_control.tango_json import TangoJsonRead
 def progress_bar(
     iterable: list | dict,
     show: bool,
-    prefix: str = '',
-    suffix: str = '',
+    prefix: str = "",
+    suffix: str = "",
     decimals: int = 1,
     length: int = 100,
-    fill: str = '█',
+    fill: str = "",
     print_end: str = "\r",
-):
+) -> Any:
     """
     Call this in a loop to create a terminal progress bar.
 
@@ -40,16 +37,16 @@ def progress_bar(
     :param print_end: Optional - end character (e.g. "\r", "\r\n")
     """
 
-    def print_progress_bar (iteration: Any):
+    def print_progress_bar(iteration: Any) -> None:
         """
         Progress bar printing function.
 
         :param iteration: the thing
         """
         percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-        filledLength = int(length * iteration // total)
-        bar = fill * filledLength + '-' * (length - filledLength)
-        print(f'\r{prefix} |{bar}| {percent}% {suffix}', end = print_end)
+        filled_length = int(length * iteration // total)
+        bar = fill * filled_length + "-" * (length - filled_length)
+        print(f"\r{prefix} |{bar}| {percent}% {suffix}", end=print_end)
 
     if show:
         # Initial call
@@ -108,7 +105,12 @@ class TangoctlDevicesBasic:
         if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
             prog_bar = False
         for device in progress_bar(
-            device_list, prog_bar, prefix='Read devices :', suffix='complete', decimals=0, length=100
+            device_list,
+            prog_bar,
+            prefix="ead devices :",
+            suffix="complete",
+            decimals=0,
+            length=100,
         ):
             if not evrythng:
                 chk_fail = False
@@ -131,7 +133,12 @@ class TangoctlDevicesBasic:
         if self.fmt == "md":
             prog_bar = False
         for device in progress_bar(
-            self.devices, prog_bar, prefix='Read config  :', suffix='complete', decimals=0, length=100
+            self.devices,
+            prog_bar,
+            prefix="Read config  :",
+            suffix="complete",
+            decimals=0,
+            length=100,
         ):
             self.devices[device].read_config()
 
@@ -215,7 +222,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
             if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
                 prog_bar = False
             for device in progress_bar(
-                device_list, prog_bar, prefix='Devices:', suffix='Complete', length=100
+                device_list, prog_bar, prefix="Devices:", suffix="Complete", length=100
             ):
                 # Check device name against mask
                 if not evrythng:
@@ -298,11 +305,11 @@ class TangoctlDevices(TangoctlDevicesBasic):
             self.print_txt_list()
         elif disp_action == 3:
             devsdict = self.get_json()
-            json_reader =  TangoJsonReader(self.logger, devsdict)
+            json_reader = TangoJsonReader(self.logger, devsdict)
             json_reader.print_txt_quick()
         else:
             devsdict = self.get_json()
-            json_reader =  TangoJsonReader(self.logger, devsdict)
+            json_reader = TangoJsonReader(self.logger, devsdict)
             json_reader.print_txt_all()
 
     def print_json(self, disp_action: int) -> None:
@@ -334,5 +341,5 @@ class TangoctlDevices(TangoctlDevicesBasic):
         # md_lines = parser.parse_schema(devsdict)
         # print(''.join(md_lines))\
 
-        json_reader =  TangoJsonReader(self.logger, devsdict)
+        json_reader = TangoJsonReader(self.logger, devsdict)
         json_reader.print_markdown_all()
