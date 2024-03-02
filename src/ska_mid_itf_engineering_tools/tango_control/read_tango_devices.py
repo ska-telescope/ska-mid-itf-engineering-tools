@@ -24,17 +24,17 @@ def progress_bar(
     fill: str = "",
     print_end: str = "\r",
 ) -> Any:
-    """
+    r"""
     Call this in a loop to create a terminal progress bar.
 
     :param iterable: Required - iterable object (Iterable)
-    :param quiet: suppress output
-    :param prefix: Optional - prefix string
-    :param suffix: Optional - suffix string
-    :param decimals: Optional - positive number of decimals in percent complete
-    :param length: Optional - character length of bar
-    :param fill: Optional - bar fill character
-    :param print_end: Optional - end character (e.g. "\r", "\r\n")
+    :param show: print the actual thing
+    :param prefix: prefix string
+    :param suffix: suffix string
+    :param decimals: positive number of decimals in percent complete
+    :param length: character length of bar
+    :param fill: bar fill character
+    :param print_end: end character (e.g. "\r", "\r\n")
     """
 
     def print_progress_bar(iteration: Any) -> None:
