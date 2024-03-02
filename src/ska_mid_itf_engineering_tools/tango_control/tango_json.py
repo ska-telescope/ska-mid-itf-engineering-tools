@@ -278,6 +278,41 @@ class TangoJsonReader:
                             j += 1
                             if not devkeyval2:
                                 print()
+                            elif type(devkeyval2) is list:
+                                keyval = devkeyval2[0]
+                                print(f"{keyval}")
+                                for keyval in devkeyval2[1:]:
+                                    print(f"{' ':102} {keyval}")
+                            elif type(devkeyval2) is dict:
+                                n = 0
+                                for keyval in devkeyval2:
+                                    if n:
+                                        print(f"{' ':102} ", end="")
+                                    if type(devkeyval2[keyval]) is list:
+                                        # print(f" {type(devkeyval2[keyval][0])} ->", end="")
+                                        m = 0
+                                        for item in devkeyval2[keyval][1:]:
+                                            if m:
+                                                print(f"{' ':102} ", end="")
+                                            print(f"{keyval:24}", end="")
+                                            # print(f" {type(devkeyval2[keyval][0])} ->", end="")
+                                            if type(item) is dict:
+                                                k = 0
+                                                for key2 in item:
+                                                    if k:
+                                                        print(f"{' ':126} ", end="")
+                                                    print(f" {key2:32} {item[key2]}")
+                                                    k += 1
+                                            else:
+                                                print(f" {item}")
+                                            m += 1
+                                    elif type(devkeyval2[keyval]) is not str:
+                                        print(f"{keyval:24} ", end="")
+                                        # print(f" ({type(devkeyval2[keyval])})", end="")
+                                        print(f"{devkeyval2[keyval]}")
+                                    else:
+                                        print(f"{keyval:24} -> {devkeyval2[keyval]}")
+                                    n += 1
                             elif "\n" in devkeyval2:
                                 keyvals = devkeyval2.split("\n")
                                 # Remove empty lines
