@@ -85,6 +85,7 @@ class TangoctlDevicesBasic:
         :param evrythng: read and display the whole thing
         :param cfg_data: configuration data
         :param fmt: output format
+        :param tgo_name: device name
         :raises Exception: database connect failed
         """
         self.logger = logger
