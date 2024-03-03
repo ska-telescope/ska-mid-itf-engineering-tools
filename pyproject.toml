@@ -1,6 +1,7 @@
 [tool.poetry]
+include = ["MANIFEST.skao.int"]
 name = "ska-mid-itf-engineering-tools"
-version = "0.3.4"
+version = "0.4.0"
 description = "SKA MID ITF Engineering tools"
 authors = ["Matteo Di Carlo", "ATLAS"]
 license = "BSD 3-Clause"
@@ -14,44 +15,42 @@ url = 'https://artefact.skao.int/repository/pypi-internal/simple'
 [tool.poetry.scripts]
 tmc_dish_ids = 'src.ska_mid_itf_engineering_tools.tmc_config.tmc_dish_ids:main'
 talon_on = 'src.ska_mid_itf_engineering_tools.cbf_config.talon_on:main'
+check_dependencies = 'src.ska_mid_itf_engineering_tools.dependency_checker.dependency_checker:main'
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
 ska-ser-skallop = { version = "2.29.8", extras = ["bit"] }
-ska-tmc-cdm = "7.3.1"
+ska-tmc-cdm = "8.3.0"
 pytest-json-report = "^1.5.0"
 pytest-repeat = "^0.9.1"
 kubernetes = "^21.7.0"
-asyncua = "^1.0.4"
 ska_ser_logging = "^0.4.1"
-ska-control-model = "^0.3.1"
+ska-control-model = "^0.3.4"
 pyyaml = "^6.0.1"
 nbqa = "^1.7.1"
 nbsphinx = "^0.9.3"
+slack-sdk = "^3.27.1"
 
 [tool.poetry.group.docs.dependencies]
-Sphinx = "^5.1.1"
-sphinx-rtd-theme = "^1.0.0"
+Sphinx = "^7.2.6"
+sphinx-rtd-theme = "^1.2.2"
 recommonmark = "^0.7.1"
-markupsafe = "^2.1.0"
+markupsafe = "^2.1.5"
 ska-ser-sphinx-theme = "^0.1.2"
 
 [tool.poetry.group.dev.dependencies]
-black = "^22.12.0"
-flake8 = "^6.0.0"
+black = "^24.2.0"
+flake8 = "^6.1.0"
 isort = "^5.12.0"
-pylint = "^2.15.10"
+pylint = "^3.1.0"
 pylint-junit = "^0.3.2"
 pytest-cov = "^4.0.0"
 flake8-docstrings = "^1.7.0"
 flake8-rst-docstrings = "^0.3.0"
 darglint = "^1.8.1"
-mypy = "^0.991"
-twine = "^4.0.2"
-
-[tool.poetry.group.ansible.dependencies]
-ansible = "^7.5.0"
-ansible-lint = { version = "^6.20.0", markers = "platform_system != 'Windows'" }
+mypy = "^1.8.0"
+twine = "^5.0.0"
+python-build = "^0.2.13"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

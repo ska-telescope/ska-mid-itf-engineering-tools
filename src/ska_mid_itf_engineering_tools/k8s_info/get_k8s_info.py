@@ -3,6 +3,7 @@ A class for doing all sorts of Kubernetes stuff.
 
 Avoids calling 'kubectl' in a subprocess, which is not Pythonic.
 """
+
 import logging
 from typing import Any, Tuple
 
