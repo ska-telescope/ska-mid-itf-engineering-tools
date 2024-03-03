@@ -83,7 +83,7 @@ def run_test(
     :param dev_status: set device status
     :param show_command: test device commands
     :param show_attrib: test device attributes
-    :param tgo_attrib: attribute name
+    :param tgo_attrib: name of attribute
     :param tgo_name: device name
     :param tango_port: device port
     :return: error condition
@@ -161,6 +161,7 @@ def set_value(tgo_name: str | None, tgo_attrib: str | None, tgo_value: str | Non
     """
     Set value for a Tango device.
 
+    :param tgo_name: device name
     :param tgo_attrib: attribute name
     :param tgo_value: attribute value
     :return: error condition
@@ -168,11 +169,11 @@ def set_value(tgo_name: str | None, tgo_attrib: str | None, tgo_value: str | Non
     # dev = TangoctlDevice(_module_logger, tgo_name, tgo_attrib, None, None)
     dev = TangoctlDevice(_module_logger, tgo_name, None, None, None)
     dev.read_attribute_value()
-    # dev.read_config()
     _module_logger.info(
         "Set device %s attribute %s value to %s", tgo_name, tgo_attrib, tgo_value
     )
     dev.write_attribute_value(tgo_attrib, tgo_value)
+    return 0
 
 
 def run_info(
@@ -441,7 +442,6 @@ def main(y_arg: list) -> int:  # noqa: C901
     disp_action: int = 0
     evrythng: bool = False
     file_name: str | None = None
-    headers = True
     show_attrib: bool = False
     show_command: bool = False
     show_jargon: bool = False
@@ -479,7 +479,6 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "input",
                 "list",
                 "md",
-                "no-headers",
                 "off",
                 "on",
                 "standby",
@@ -543,8 +542,6 @@ def main(y_arg: list) -> int:  # noqa: C901
             fmt = "md"
         elif opt in ("--namespace", "-N"):
             kube_namespace = arg
-        elif opt == "--no-headers":
-            headers = False
         elif opt in ("--property", "-P"):
             tgo_prop = arg.lower()
         elif opt == "--off":

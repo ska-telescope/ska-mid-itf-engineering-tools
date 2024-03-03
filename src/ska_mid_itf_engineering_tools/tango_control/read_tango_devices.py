@@ -34,7 +34,7 @@ def progress_bar(
     :param suffix: suffix string
     :param decimals: positive number of decimals in percent complete
     :param length: character length of bar
-    :param fill: bar fill character
+    :param fill: fill character for bar
     :param print_end: end character (e.g. "\r", "\r\n")
     :yields: the next one in line
     """

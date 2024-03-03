@@ -375,8 +375,6 @@ class TangoctlDevice(TangoctlDeviceBasic):
     def read_attribute_value(self) -> None:
         """Read device attributes."""
         for attrib in self.attributes:
-            err_msg = None
-            attrib_data = None
             self.attributes[attrib]["data"] = {}
             try:
                 attrib_data = self.dev.read_attribute(attrib)

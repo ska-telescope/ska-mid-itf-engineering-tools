@@ -276,16 +276,12 @@ class TangoDeviceInfo:
             if "\n" in in_type_desc:
                 in_type_desc = in_type_desc[:-1].replace("\n", lpre)
             print(f"{prefix:{PFIX3}} IN  {in_type_desc}")
-        else:
-            in_type_desc = ""
         # Output type description
         out_type_desc = cmd.out_type_desc
         if out_type_desc != "Uninitialised":
             if "\n" in out_type_desc:
                 out_type_desc = out_type_desc[:-1].replace("\n", lpre)
             print(f"{prefix:{PFIX3}} OUT {out_type_desc}")
-        else:
-            out_type_desc = ""
 
     def show_device_commands(self) -> None:
         """Print commands."""
@@ -315,6 +311,7 @@ class TangoDeviceInfo:
         try:
             attrib_json = json.loads(attrib_value)
         except Exception:
+            attrib_json = {}
             json_fmt = False
         self.logger.debug("Scalar %s : %s", type(attrib_value), attrib_value)
         if not json_fmt:
@@ -389,7 +386,7 @@ class TangoDeviceInfo:
                         for value in int_model_values:
                             print(f"{prefix+'     '} {value} : {int_model_values[value]}")
                     else:
-                        print(f"{prefix+'     '} {value} : {int_model_values}")
+                        print(f"{prefix+'     '} {int_model_values}")
             else:
                 print(" {}")
         elif type(attrib_value) is tuple:
@@ -758,7 +755,7 @@ class TangoDeviceInfo:
             print(f"{'Admin mode':{PFIX1}} : {self.adminMode}")
         rv = 1
         # Read commands
-        cmds: tuple = ()
+        cmds: tuple
         try:
             cmds = self.dev.get_command_list()
         except Exception:
@@ -800,7 +797,7 @@ class TangoDeviceInfo:
         if self.adminMode is not None:
             print(f"{'Admin mode':{PFIX1}} : {self.adminMode}")
         # Read commands
-        cmds: tuple = ()
+        cmds: tuple
         try:
             cmds = self.dev.get_command_list()
         except Exception:
@@ -987,7 +984,7 @@ class TangoDeviceInfo:
             print("Nothing to do!")
 
 
-def setup_device(logger: logging.Logger, dev_name: str) -> Tuple[int, tango.DeviceProxy]:
+def setup_device(logger: logging.Logger, dev_name: str) -> Tuple[int, tango.DeviceProxy | None]:
     """
     Set up device connection and timeouts.
 

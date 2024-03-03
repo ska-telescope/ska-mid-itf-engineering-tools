@@ -236,7 +236,6 @@ class TangoJsonReader:
             cc2 = 50
             cc3 = 90
             print("### Commands\n", file=self.outf)
-            n = 0
             print(f"| {'NAME':{cc1}} | {'FIELD':{cc2}} | {'VALUE':{cc3}} |", file=self.outf)
             print(f"|:{'-'*cc1}-|:{'-'*cc2}-|:{'-'*cc3}-|", file=self.outf)
             n = 0
