@@ -51,6 +51,9 @@ class TangoctlDeviceBasic:
         """Read additional data."""
         try:
             self.info = self.dev.info()
+        except tango.DevFailed:
+            self.logger.info("Could not read device %s", self.dev_name)
+            return
         except tango.ConnectionFailed:
             self.logger.info("Could not read device %s", self.dev_name)
             return
@@ -236,7 +239,9 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 elif type(data_val) is tuple:
                     devdict["attributes"][attrib]["data"]["value"] = list(data_val)
                 elif type(data_val) is str:
-                    if data_val[0] == "{" and data_val[-1] == "}":
+                    if not data_val:
+                        devdict["attributes"][attrib]["data"]["value"] = ""
+                    elif data_val[0] == "{" and data_val[-1] == "}":
                         devdict["attributes"][attrib]["data"]["value"] = json.loads(data_val)
                     else:
                         devdict["attributes"][attrib]["data"]["value"] = data_val
@@ -345,6 +350,27 @@ class TangoctlDevice(TangoctlDeviceBasic):
             set_json_property()
         self.logger.info("INFO: %s", devdict)
         return devdict
+
+    def write_attribute_value(self, attrib: str, value: str) -> int:
+        """
+        Set value of attribute.
+
+        :param attrib: attribute name
+        :param value: attribute value
+        :return: error condition
+        """
+        if attrib not in self.attributes:
+            self.logger.error("Attribute %s not found in %s", attrib, self.attributes.keys())
+            return 1
+        devtype = self.attributes[attrib]["data"]["type"]
+        wval: Any
+        if devtype == "DevEnum":
+            wval = int(value)
+        else:
+            wval = value
+        self.logger.info("Set attribute %s (%s) to %s (%s)", attrib, devtype, wval, type(wval))
+        self.dev.write_attribute(attrib, wval)
+        return 0
 
     def read_attribute_value(self) -> None:
         """Read device attributes."""

@@ -75,7 +75,8 @@ class TangoctlDevicesBasic:
         logger: logging.Logger,
         evrythng: bool,
         cfg_data: Any,
-        fmt: str = "json",
+        tgo_name: str | None,
+        fmt: str,
     ):
         """
         Read list of Tango devices.
@@ -99,6 +100,9 @@ class TangoctlDevicesBasic:
         # Read devices
         device_list = sorted(database.get_device_exported("*").value_string)
         self.logger.info(f"{len(device_list)} devices available")
+
+        if tgo_name:
+            tgo_name = tgo_name.lower()
 
         self.fmt = fmt
         prog_bar: bool = True
@@ -124,6 +128,11 @@ class TangoctlDevicesBasic:
                 if chk_fail:
                     self.logger.debug("'%s' matches '%s'", device, cfg_data["ignore_device"])
                     continue
+            if tgo_name:
+                ichk = device.lower()
+                if tgo_name not in ichk:
+                    self.logger.info("Ignore device %s", device)
+                    continue
             new_dev = TangoctlDeviceBasic(logger, device)
             self.devices[device] = new_dev
 
@@ -132,6 +141,8 @@ class TangoctlDevicesBasic:
         self.logger.info("Read %d devices", len(self.devices))
         prog_bar: bool = True
         if self.fmt == "md":
+            prog_bar = False
+        if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
             prog_bar = False
         for device in progress_bar(
             self.devices,

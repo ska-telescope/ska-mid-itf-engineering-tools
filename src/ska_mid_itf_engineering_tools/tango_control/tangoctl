@@ -12,7 +12,7 @@ import tango
 
 from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl
-from ska_mid_itf_engineering_tools.tango_control.read_tango_config import TangoctlDeviceConfig
+from ska_mid_itf_engineering_tools.tango_control.read_tango_device import TangoctlDevice
 from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import (
     TangoctlDevices,
     TangoctlDevicesBasic,
@@ -157,6 +157,24 @@ def run_test(
     return 0
 
 
+def set_value(tgo_name: str | None, tgo_attrib: str | None, tgo_value: str | None) -> int:
+    """
+    Set value for a Tango device.
+
+    :param tgo_attrib: attribute name
+    :param tgo_value: attribute value
+    :return: error condition
+    """
+    # dev = TangoctlDevice(_module_logger, tgo_name, tgo_attrib, None, None)
+    dev = TangoctlDevice(_module_logger, tgo_name, None, None, None)
+    dev.read_attribute_value()
+    # dev.read_config()
+    _module_logger.info(
+        "Set device %s attribute %s value to %s", tgo_name, tgo_attrib, tgo_value
+    )
+    dev.write_attribute_value(tgo_attrib, tgo_value)
+
+
 def run_info(
     kube_namespace: str | None,
     file_name: str | None,
@@ -196,8 +214,9 @@ def run_info(
     )
 
     if disp_action == 4:
+        _module_logger.info("List devices")
         try:
-            devices = TangoctlDevicesBasic(_module_logger, evrythng, cfg_data, fmt)
+            devices = TangoctlDevicesBasic(_module_logger, evrythng, cfg_data, tgo_name, fmt)
         except tango.ConnectionFailed:
             _module_logger.error("Tango connection failed")
             return 1
@@ -226,9 +245,10 @@ def run_info(
     #         print(json_out)
     #     return 0
 
-    if os.path.splitext(file_name)[-1] != f".{fmt}":
-        file_name = f"{file_name}.{fmt}"
-        _module_logger.warning("File name changed to %s", file_name)
+    if file_name is not None:
+        if os.path.splitext(file_name)[-1] != f".{fmt}":
+            file_name = f"{file_name}.{fmt}"
+            _module_logger.warning("File name changed to %s", file_name)
 
     try:
         devices = TangoctlDevices(
@@ -432,6 +452,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     tgo_cmd: str | None = None
     tgo_in_type: str | None = None
     tgo_prop: str | None = None
+    tgo_value: str | None = None
     tango_host: str | None = None
     tango_port: int = 0
     fmt: str = "txt"
@@ -449,7 +470,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
-            "acefhjlmnqstvyVA:C:H:D:N:p:O:P:T:",
+            "acefhjlmnqstvyVA:C:H:D:N:p:O:P:T:W:",
             [
                 "dry-run",
                 "everything",
@@ -481,6 +502,7 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "port=",
                 "property=",
                 "simul=",
+                "value=",
             ],
         )
     except getopt.GetoptError as opt_err:
@@ -494,7 +516,7 @@ def main(y_arg: list) -> int:  # noqa: C901
         elif opt == "-a":
             show_attrib = True
         elif opt in ("--attribute", "-A"):
-            tgo_attrib = arg.lower()
+            tgo_attrib = arg
         elif opt == "-c":
             show_command = True
         elif opt in ("--command", "-C"):
@@ -553,6 +575,8 @@ def main(y_arg: list) -> int:  # noqa: C901
             _module_logger.setLevel(logging.INFO)
         elif opt == "-V":
             _module_logger.setLevel(logging.DEBUG)
+        elif opt in ("--value", "-W"):
+            tgo_value = str(arg)
         elif opt == "--version":
             show_version = True
         elif opt in ("--yaml", "-y"):
@@ -619,6 +643,10 @@ def main(y_arg: list) -> int:  # noqa: C901
             tgo_name,
             tango_port,
         )
+        return rc
+
+    if tgo_value and tgo_attrib and tgo_name:
+        rc = set_value(tgo_name, tgo_attrib, tgo_value)
         return rc
 
     rc = run_info(

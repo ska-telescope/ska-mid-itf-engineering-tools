@@ -27,6 +27,7 @@ def md_print(inp: str, end: str = "\n", file: TextIO = sys.stdout) -> None:
 
     :param inp: input
     :param end: at the end of the line
+    :param file: output file pointer
     """
     print(inp.replace("_", "\\_").replace("-", "\\-"), end=end, file=file)
 
