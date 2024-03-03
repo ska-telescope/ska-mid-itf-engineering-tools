@@ -205,21 +205,26 @@ def run_info(
         devices.print_txt_list()
         return 0
 
-    if tgo_name and fmt == "json" and disp_action == 1:
-        _module_logger.info("Print device %s", tgo_name)
-        if tango_port:
-            tgo_name = f"tango://127.0.0.1:{tango_port}/{tgo_name}#dbase=no"
-        try:
-            device = TangoctlDeviceConfig(_module_logger, tgo_name)
-        except tango.ConnectionFailed:
-            _module_logger.error("Tango connection failed")
-            return 1
-        devsdict = device.get_json()
-        try:
-            print(json.dumps(devsdict, indent=4))
-        except TypeError:
-            print(devsdict)
-        return 0
+    # if tgo_name and fmt == "json" and disp_action == 1:
+    #     _module_logger.info("Print device %s", tgo_name)
+    #     if tango_port:
+    #         tgo_name = f"tango://127.0.0.1:{tango_port}/{tgo_name}#dbase=no"
+    #     try:
+    #         device = TangoctlDeviceConfig(_module_logger, tgo_name)
+    #     except tango.ConnectionFailed:
+    #         _module_logger.error("Tango connection failed")
+    #         return 1
+    #     devsdict = device.get_json()
+    #     try:
+    #         json_out = json.dumps(devsdict, indent=4)
+    #     except TypeError:
+    #         json_out = devsdict
+    #     if file_name:
+    #         with open(file_name, "w") as outf:
+    #             outf.write(json_out)
+    #     else:
+    #         print(json_out)
+    #     return 0
 
     if os.path.splitext(file_name)[-1] != f".{fmt}":
         file_name = f"{file_name}.{fmt}"

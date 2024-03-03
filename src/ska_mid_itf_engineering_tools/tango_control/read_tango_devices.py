@@ -22,7 +22,7 @@ def progress_bar(
     suffix: str = "",
     decimals: int = 1,
     length: int = 100,
-    fill: str = "",
+    fill: str = "*",
     print_end: str = "\r",
 ) -> Any:
     r"""
@@ -109,7 +109,7 @@ class TangoctlDevicesBasic:
         for device in progress_bar(
             device_list,
             prog_bar,
-            prefix="ead devices :",
+            prefix="Read exported devices :",
             suffix="complete",
             decimals=0,
             length=100,
@@ -136,7 +136,7 @@ class TangoctlDevicesBasic:
         for device in progress_bar(
             self.devices,
             prog_bar,
-            prefix="Read config  :",
+            prefix="Read config :",
             suffix="complete",
             decimals=0,
             length=100,
@@ -227,12 +227,16 @@ class TangoctlDevices(TangoctlDevicesBasic):
             self.logger.info("Read %d devices available", len(device_list))
 
             prog_bar: bool = True
-            if fmt == "md":
+            if fmt == "md" and file_name is None:
                 prog_bar = False
             if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
                 prog_bar = False
             for device in progress_bar(
-                device_list, prog_bar, prefix="Devices:", suffix="Complete", length=100
+                device_list,
+                prog_bar,
+                prefix="Read exported devices:",
+                suffix="Complete",
+                length=100,
             ):
                 # Check device name against mask
                 if not evrythng:
