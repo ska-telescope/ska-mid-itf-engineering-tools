@@ -1,0 +1,20 @@
+{
+  "test_on": [
+    {
+      "attribute": "adminMode",
+       "read" : ""
+    },
+    {
+      "attribute": "adminMode",
+      "write": 0
+    },
+    {
+      "attribute": "adminMode",
+      "read": 0
+    },
+    {
+      "command": "State",
+      "read": "ONLINE"
+    }
+  ]
+}

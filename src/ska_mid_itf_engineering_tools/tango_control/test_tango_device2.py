@@ -64,7 +64,7 @@ class TestTangoDevice:
 
         :return: attribute value
         """
-        if "adminMode" not in self.attribs:
+        if "  " not in self.attribs:
             print(f"[ WARN ] {self.dev_name} does not have an adminMode attribute")
             self.adminMode = None
             return None

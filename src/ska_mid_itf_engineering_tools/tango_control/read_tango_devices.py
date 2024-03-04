@@ -51,8 +51,11 @@ def progress_bar(
         print(f"\r{prefix} |{bar}| {percent}% {suffix}", end=print_end)
 
     if show:
-        # Initial call
         total = len(iterable)
+        # Do not divide by zero
+        if total == 0:
+            total = 1
+        # Initial call
         print_progress_bar(0)
         # Update progress bar
         for i, item in enumerate(iterable):
@@ -61,6 +64,7 @@ def progress_bar(
         # Erase line upon completion
         sys.stdout.write("\033[K")
     else:
+        # Nothing to see here
         for i, item in enumerate(iterable):
             yield item
 
@@ -181,7 +185,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         tgo_cmd: str | None,
         tgo_prop: str | None,
         tango_port: int,
-        file_name: str | None,
+        output_file: str | None,
         fmt: str = "json",
     ):
         """
@@ -196,12 +200,12 @@ class TangoctlDevices(TangoctlDevicesBasic):
         :param tgo_cmd: filter command name
         :param tgo_prop: filter property name
         :param tango_port: device port
-        :param file_name: output file name
+        :param output_file: output file name
         :param fmt: output format
         :raises Exception: when database connect fails
         """
         self.logger = logger
-        self.file_name = file_name
+        self.output_file = output_file
         self.logger.info(
             "Devices %s : attribute %s command %s property %s",
             tgo_name,
@@ -239,7 +243,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
             self.logger.info("Read %d devices available", len(device_list))
 
             prog_bar: bool = True
-            if fmt == "md" and file_name is None:
+            if fmt == "md" and output_file is None:
                 prog_bar = False
             if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
                 prog_bar = False
@@ -318,8 +322,8 @@ class TangoctlDevices(TangoctlDevicesBasic):
     def print_txt_list(self) -> None:
         """Print list of devices."""
         self.logger.info("List %d devices", len(self.devices))
-        if self.file_name is not None:
-            with open(self.file_name, "w") as outf:
+        if self.output_file is not None:
+            with open(self.output_file, "w") as outf:
                 for device in self.devices:
                     outf.write(f"{device}\n")
         else:
@@ -336,11 +340,11 @@ class TangoctlDevices(TangoctlDevicesBasic):
             self.print_txt_list()
         elif disp_action == 3:
             devsdict = self.get_json()
-            json_reader = TangoJsonReader(self.logger, self.tgo_space, devsdict, self.file_name)
+            json_reader = TangoJsonReader(self.logger, self.tgo_space, devsdict, self.output_file)
             json_reader.print_txt_quick()
         else:
             devsdict = self.get_json()
-            json_reader = TangoJsonReader(self.logger, self.tgo_space, devsdict, self.file_name)
+            json_reader = TangoJsonReader(self.logger, self.tgo_space, devsdict, self.output_file)
             json_reader.print_txt_all()
 
     def print_json(self, disp_action: int) -> None:
@@ -350,8 +354,8 @@ class TangoctlDevices(TangoctlDevicesBasic):
         :param disp_action: display control flag
         """
         devsdict = self.get_json()
-        if self.file_name is not None:
-            with open(self.file_name, "w") as outf:
+        if self.output_file is not None:
+            with open(self.output_file, "w") as outf:
                 outf.write(json.dumps(devsdict, indent=4))
         else:
             print(json.dumps(devsdict, indent=4))
@@ -364,7 +368,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         """
         self.logger.info("Markdown")
         devsdict = self.get_json()
-        json_reader = TangoJsonReader(self.logger, self.tgo_space, devsdict, self.file_name)
+        json_reader = TangoJsonReader(self.logger, self.tgo_space, devsdict, self.output_file)
         json_reader.print_markdown_all()
 
     def print_yaml(self, disp_action: int) -> None:
@@ -375,8 +379,8 @@ class TangoctlDevices(TangoctlDevicesBasic):
         """
         self.logger.info("YAML")
         devsdict = self.get_json()
-        if self.file_name is not None:
-            with open(self.file_name, "w") as outf:
+        if self.output_file is not None:
+            with open(self.output_file, "w") as outf:
                 outf.write(yaml.dump(devsdict))
         else:
             print(yaml.dump(devsdict))
