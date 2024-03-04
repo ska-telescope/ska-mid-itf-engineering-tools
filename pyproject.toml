@@ -30,6 +30,7 @@ pyyaml = "^6.0.1"
 nbqa = "^1.7.1"
 nbsphinx = "^0.9.3"
 slack-sdk = "^3.27.1"
+semver = "^3.0.2"
 
 [tool.poetry.group.docs.dependencies]
 Sphinx = "^7.2.6"
