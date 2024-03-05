@@ -58,8 +58,8 @@ class TangoScript:
             if type(test_cfg) is list:
                 for thing in test_cfg:
                     if type(thing) is dict:
-                        for key in thing:
-                            print(f"{key:16} : {thing[key]}")
+                        # for key in thing:
+                        #     print(f"{key:16} : {thing[key]}")
                         if "attribute" in thing:
                             attr_thing = thing["attribute"]
                             if "read" in thing:
@@ -70,7 +70,14 @@ class TangoScript:
                                 attr_write = thing["write"]
                             else:
                                 attr_write = None
-                            self.read_write_attribute(self.dev_name, attr_thing, attr_read, attr_write)
+                            self.read_write_attribute(attr_thing, attr_read, attr_write)
+                        elif "command" in thing:
+                            cmd_thing = thing["command"]
+                            if "args" in thing:
+                                cmd_args = thing["args"]
+                            else:
+                                cmd_args = None
+                            self.run_command(cmd_thing, cmd_args)
                     else:
                         self.logger.info(f"Device {self.dev_name} {thing} ({type(thing)})")
             else:
@@ -79,18 +86,46 @@ class TangoScript:
 
     def read_write_attribute(
             self,
-            tgo_name: str | None,
             attr_thing: str | None,
             attr_read: int | float | str | None,
             attr_write: int | float | str | None,
     ):
-        dev = tango.DeviceProxy()
+        """
+        Read or write Tango attribute.
+
+        :param attr_thing: attribute name
+        :param attr_read: read value
+        :param attr_write: write value
+        :return: error condition
+        """
         if attr_read is not None:
-            self.logger.info(
-                "Read device %s attrbute %s : should be %s", tgo_name, attr_thing, str(attr_read)
-            )
+            self.logger.debug("Read attrbute %s : should be %s", attr_thing, str(attr_read))
+            attr_val = self.dev.read_attribute(attr_thing)
+            print("Attrbute %s : %s" % (attr_val.name, attr_val.value))
         if attr_write is not None:
-            self.logger.info(
-                "Write device %s attrbute %s value %s", tgo_name, attr_thing, str(attr_write)
-            )
+            self.logger.info("Write attrbute %s value %s", attr_thing, str(attr_write))
+            try:
+                self.dev.write_attribute(attr_thing, attr_write)
+            except tango.DevFailed as terr:
+                self.logger.error("Write failed : %s", terr.args[0].desc.strip())
+                return 1
+            print("Attrbute %s set to %s" % (attr_val.name, attr_val.value))
+        return 0
+
+    def run_command(self, cmd_thing: str, cmd_args: Any) -> int:
+        """
+        Run Tango command.
+
+        :param cmd_thing: command name
+        :param cmd_args: command arguments
+        :return: error condition
+        """
+        if cmd_args is None:
+            self.logger.info("Run command %s", cmd_thing)
+            cmd_val = self.dev.command_inout(cmd_thing)
+            print("Command %s : %s" % (cmd_thing, cmd_val))
+        else:
+            self.logger.info("Run command %s arguments %s", cmd_thing, cmd_args)
+            cmd_val = self.dev.command_inout(cmd_thing, cmd_args)
+            print("Command %s (%s) : %s" % (cmd_thing, cmd_args, cmd_val))
         return 0

@@ -14,7 +14,10 @@
     },
     {
       "command": "State",
-      "read": "ONLINE"
+      "return": "ONLINE"
+    },
+    {
+      "command": "Status"
     }
   ]
 }
