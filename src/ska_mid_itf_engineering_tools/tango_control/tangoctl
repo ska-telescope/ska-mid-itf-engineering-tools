@@ -220,7 +220,7 @@ def run_info(
         tgo_prop,
     )
 
-    if disp_action == 4:
+    if disp_action == 4 and tgo_attrib is None and tgo_cmd is None:
         _module_logger.info("List devices")
         try:
             devices = TangoctlDevicesBasic(_module_logger, evrythng, cfg_data, tgo_name, fmt)
@@ -276,9 +276,13 @@ def run_info(
         return 1
     devices.read_device_values()
 
-    _module_logger.info("Read devices")
+    _module_logger.info("Read devices (%d)", disp_action)
 
-    if fmt == "txt":
+    if fmt == "txt" and disp_action == 4 and tgo_attrib is not None:
+        devices.print_txt_list_attributes()
+    elif fmt == "txt" and disp_action == 4 and tgo_cmd is not None:
+        devices.print_txt_list_commands()
+    elif fmt == "txt":
         devices.print_txt(disp_action)
     elif fmt == "json":
         devices.print_json(disp_action)

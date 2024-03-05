@@ -29,6 +29,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
         :param device: device name
         """
         super().__init__(logger, device)
+        self.logger.info("Open device %s config", device)
 
         attribs = self.dev.get_attribute_list()
         for attrib in sorted(attribs):

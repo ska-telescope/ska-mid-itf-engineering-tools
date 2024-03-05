@@ -9,70 +9,18 @@ import tango
 import yaml
 
 from ska_mid_itf_engineering_tools.tango_control.read_tango_device import (
+    progress_bar,
     TangoctlDevice,
     TangoctlDeviceBasic,
 )
 from ska_mid_itf_engineering_tools.tango_control.tango_json import TangoJsonReader
 
 
-def progress_bar(
-    iterable: list | dict,
-    show: bool,
-    prefix: str = "",
-    suffix: str = "",
-    decimals: int = 1,
-    length: int = 100,
-    fill: str = "*",
-    print_end: str = "\r",
-) -> Any:
-    r"""
-    Call this in a loop to create a terminal progress bar.
-
-    :param iterable: Required - iterable object (Iterable)
-    :param show: print the actual thing
-    :param prefix: prefix string
-    :param suffix: suffix string
-    :param decimals: positive number of decimals in percent complete
-    :param length: character length of bar
-    :param fill: fill character for bar
-    :param print_end: end character (e.g. "\r", "\r\n")
-    :yields: the next one in line
-    """
-
-    def print_progress_bar(iteration: Any) -> None:
-        """
-        Progress bar printing function.
-
-        :param iteration: the thing
-        """
-        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-        filled_length = int(length * iteration // total)
-        bar = fill * filled_length + "-" * (length - filled_length)
-        print(f"\r{prefix} |{bar}| {percent}% {suffix}", end=print_end)
-
-    if show:
-        total = len(iterable)
-        # Do not divide by zero
-        if total == 0:
-            total = 1
-        # Initial call
-        print_progress_bar(0)
-        # Update progress bar
-        for i, item in enumerate(iterable):
-            yield item
-            print_progress_bar(i + 1)
-        # Erase line upon completion
-        sys.stdout.write("\033[K")
-    else:
-        # Nothing to see here
-        for i, item in enumerate(iterable):
-            yield item
-
-
 class TangoctlDevicesBasic:
     """Compile a dictionary of available Tango devices."""
 
     devices: dict = {}
+    prog_bar: bool = True
 
     def __init__(  # noqa: C901s
         self,
@@ -104,20 +52,20 @@ class TangoctlDevicesBasic:
 
         # Read devices
         device_list = sorted(database.get_device_exported("*").value_string)
-        self.logger.info(f"{len(device_list)} devices available")
+        self.logger.info("%d devices available", len(device_list))
 
         if tgo_name:
             tgo_name = tgo_name.lower()
+        self.logger.info("Open device %s", tgo_name)
 
         self.fmt = fmt
-        prog_bar: bool = True
         if self.fmt == "md":
-            prog_bar = False
+            self.prog_bar = False
         if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
-            prog_bar = False
+            self.prog_bar = False
         for device in progress_bar(
             device_list,
-            prog_bar,
+            self.prog_bar,
             prefix="Read exported devices :",
             suffix="complete",
             decimals=0,
@@ -281,7 +229,22 @@ class TangoctlDevices(TangoctlDevicesBasic):
                         self.logger.info("Device %s matched attributes %s", device, attribs_found)
                         self.devices[device] = new_dev
                     else:
-                        logger.debug("Skip device %s", device)
+                        logger.debug("Skip device %s (attribute %s not found)", device, tgo_attrib)
+                elif tgo_cmd:
+                    cmds_found = new_dev.check_for_command(tgo_cmd)
+                    if cmds_found:
+                        self.logger.info("Device %s matched commands %s", device, cmds_found)
+                        self.devices[device] = new_dev
+                    else:
+                        logger.debug("Skip device %s (command %s not found)", device, tgo_cmd)
+                elif tgo_prop:
+                    props_found = new_dev.check_for_property(tgo_prop)
+                    if props_found:
+                        self.logger.info("Device %s matched properties %s", device, props_found)
+                        self.devices[device] = new_dev
+                    else:
+                        logger.debug("Skip device %s (command %s not found)", device, tgo_cmd)
+
                 else:
                     self.logger.debug("Add device %s", device)
                     self.devices[device] = new_dev
@@ -289,12 +252,28 @@ class TangoctlDevices(TangoctlDevicesBasic):
 
     def read_attribute_values(self) -> None:
         """Read device data."""
-        for device in self.devices:
+        # for device in self.devices:
+        for device in progress_bar(
+            self.devices,
+            self.prog_bar,
+            prefix="Read attributes :",
+            suffix="complete",
+            decimals=0,
+            length=100,
+        ):
             self.devices[device].read_attribute_value()
 
     def read_command_values(self) -> None:
         """Read device data."""
-        for device in self.devices:
+        # for device in self.devices:
+        for device in progress_bar(
+            self.devices,
+            self.prog_bar,
+            prefix="Read commands :",
+            suffix="complete",
+            decimals=0,
+            length=100,
+        ):
             self.devices[device].read_command_value(self.run_commands, self.run_commands_name)
 
     def read_property_values(self) -> None:
@@ -318,6 +297,13 @@ class TangoctlDevices(TangoctlDevicesBasic):
         for device in self.devices:
             devsdict[device] = self.devices[device].get_json(self.delimiter)
         return devsdict
+
+    def print_txt_list_attrib(self) -> None:
+        """Print list of devices with attribute name."""
+        self.logger.info("Listing %d devices", len(self.devices))
+        for device in self.devices:
+            print(f"{device}")
+        return
 
     def print_txt_list(self) -> None:
         """Print list of devices."""
@@ -384,3 +370,19 @@ class TangoctlDevices(TangoctlDevicesBasic):
                 outf.write(yaml.dump(devsdict))
         else:
             print(yaml.dump(devsdict))
+
+    def print_txt_list_attributes(self) -> None:
+        """Print list of devices."""
+        self.logger.info("List %d devices", len(self.devices))
+        print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN':11} {'VERSION':8} {'CLASS':24} ATTRIBUTE")
+        for device in self.devices:
+            if self.devices[device].attributes:
+                self.devices[device].print_list_attribute()
+
+    def print_txt_list_commands(self) -> None:
+        """Print list of devices."""
+        self.logger.info("List %d devices", len(self.devices))
+        print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN':11} {'VERSION':8} {'CLASS':24} COMMAND")
+        for device in self.devices:
+            if self.devices[device].commands:
+                self.devices[device].print_list_command()

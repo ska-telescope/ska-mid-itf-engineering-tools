@@ -1,10 +1,65 @@
 """Read and display Tango stuff."""
 import json
 import logging
+import sys
 from typing import Any
 
 import numpy
 import tango
+
+
+def progress_bar(
+    iterable: list | dict,
+    show: bool,
+    prefix: str = "",
+    suffix: str = "",
+    decimals: int = 1,
+    length: int = 100,
+    fill: str = "*",
+    print_end: str = "\r",
+) -> Any:
+    r"""
+    Call this in a loop to create a terminal progress bar.
+
+    :param iterable: Required - iterable object (Iterable)
+    :param show: print the actual thing
+    :param prefix: prefix string
+    :param suffix: suffix string
+    :param decimals: positive number of decimals in percent complete
+    :param length: character length of bar
+    :param fill: fill character for bar
+    :param print_end: end character (e.g. "\r", "\r\n")
+    :yields: the next one in line
+    """
+
+    def print_progress_bar(iteration: Any) -> None:
+        """
+        Progress bar printing function.
+
+        :param iteration: the thing
+        """
+        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+        filled_length = int(length * iteration // total)
+        bar = fill * filled_length + "-" * (length - filled_length)
+        print(f"\r{prefix} |{bar}| {percent}% {suffix}", end=print_end)
+
+    if show:
+        total = len(iterable)
+        # Do not divide by zero
+        if total == 0:
+            total = 1
+        # Initial call
+        print_progress_bar(0)
+        # Update progress bar
+        for i, item in enumerate(iterable):
+            yield item
+            print_progress_bar(i + 1)
+        # Erase line upon completion
+        sys.stdout.write("\033[K")
+    else:
+        # Nothing to see here
+        for i, item in enumerate(iterable):
+            yield item
 
 
 class TangoctlDeviceBasic:
@@ -89,7 +144,10 @@ class TangoctlDevice(TangoctlDeviceBasic):
     properties: dict = {}
     command_config: Any
     attribs_found: list = []
+    props_found: list = []
+    cmds_found: list = []
     info: Any
+    prog_bar: bool = True
 
     def __init__(  # noqa: C901
         self,
@@ -109,6 +167,17 @@ class TangoctlDevice(TangoctlDeviceBasic):
         :param tgo_prop: property filter
         """
         super().__init__(logger, device)
+        self.logger.info(
+            "New device %s (attributes %s, commands %s, properties %s)",
+            device,
+            tgo_attrib,
+            tgo_cmd,
+            tgo_prop,
+        )
+        if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
+            self.prog_bar = False
+        if tgo_attrib:
+            tgo_attrib = tgo_attrib.lower()
         try:
             cmds = sorted(self.dev.get_command_list())
         except tango.DevFailed:
@@ -120,7 +189,8 @@ class TangoctlDevice(TangoctlDeviceBasic):
                     self.logger.debug("Add command %s", cmd)
                     self.commands[cmd] = {}
             elif tgo_attrib or tgo_prop:
-                self.logger.debug("Skip commands")
+                # self.logger.debug("Skip commands")
+                pass
             else:
                 self.logger.debug("Add command %s", cmd)
                 self.commands[cmd] = {}
@@ -134,10 +204,11 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 if tgo_attrib in attrib.lower():
                     self.logger.debug("Add attribute %s", attrib)
                     self.attributes[attrib] = {}
-                else:
-                    self.logger.debug("Skip attribute %s", attrib)
+                # else:
+                #     self.logger.debug("Skip attribute %s", attrib)
             elif tgo_cmd or tgo_prop:
-                self.logger.debug("Skip attributes")
+                # self.logger.debug("Skip attributes")
+                pass
             else:
                 self.logger.debug("Add attribute %s", attrib)
                 self.attributes[attrib] = {}
@@ -151,10 +222,11 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 if tgo_prop in prop.lower():
                     self.logger.debug("Add property %s", prop)
                     self.properties[prop] = {}
-                else:
-                    self.logger.debug("Skip property %s", prop)
+                # else:
+                #     self.logger.debug("Skip property %s", prop)
             elif tgo_attrib or tgo_cmd:
-                self.logger.debug("Skip property")
+                # self.logger.debug("Skip property")
+                pass
             else:
                 self.logger.debug("Add property %s", prop)
                 self.properties[prop] = {}
@@ -162,7 +234,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
         try:
             self.info = self.dev.info()
         except tango.DevFailed:
-            self.logger.info("Could not read info for %s", device)
+            self.logger.info("Could not read info from %s", device)
             self.info = None
         self.version: str
         try:
@@ -179,16 +251,16 @@ class TangoctlDevice(TangoctlDeviceBasic):
 
     def read_config(self) -> None:
         """Read attribute and command configuration."""
-        self.logger.info("Read config for device %s", self.dev_name)
+        self.logger.info("Read config from device %s", self.dev_name)
         for attrib in self.attributes:
-            self.logger.debug("Read attribute config for %s", attrib)
+            self.logger.debug("Read attribute config from %s", attrib)
             try:
                 self.attributes[attrib]["config"] = self.dev.get_attribute_config(attrib)
             except tango.DevFailed:
                 self.logger.info("Could not not read attribute config %s", attrib)
                 self.attributes[attrib]["config"] = None
         for cmd in self.commands:
-            self.logger.debug("Read command config for %s", cmd)
+            self.logger.debug("Read command config from %s", cmd)
             try:
                 self.commands[cmd]["config"] = self.dev.get_command_config(cmd)
             except tango.DevFailed:
@@ -202,13 +274,55 @@ class TangoctlDevice(TangoctlDeviceBasic):
         :param tgo_attrib: attribute name
         :return: list of device names matched
         """
-        self.attribs_found: list = []
+        self.logger.debug(
+            "Check %d attributes for %s : %s", len(self.attributes), tgo_attrib, self.attributes
+        )
+        self.attribs_found = []
         if not tgo_attrib:
             return self.attribs_found
+        chk_attrib = tgo_attrib.lower()
         for attrib in self.attributes:
-            if tgo_attrib in attrib.lower():
+            if chk_attrib in attrib.lower():
                 self.attribs_found.append(attrib)
         return self.attribs_found
+
+    def check_for_command(self, tgo_cmd: str | None) -> list:
+        """
+        Filter by command name.
+
+        :param tgo_cmd: command name
+        :return: list of device names matched
+        """
+        self.logger.debug(
+            "Check %d commands for %s : %s", len(self.commands), tgo_cmd, self.commands
+        )
+        self.cmds_found = []
+        if not tgo_cmd:
+            return self.attribs_found
+        chk_cmd = tgo_cmd.lower()
+        for cmd in self.commands:
+            if chk_cmd in cmd.lower():
+                self.cmds_found.append(cmd)
+        return self.cmds_found
+
+    def check_for_property(self, tgo_prop: str | None) -> list:
+        """
+        Filter by command name.
+
+        :param tgo_cmd: property name
+        :return: list of device names matched
+        """
+        self.logger.debug(
+            "Check %d props for %s : %s", len(self.commands), tgo_prop, self.commands
+        )
+        self.props_found = []
+        if not tgo_prop:
+            return self.props_found
+        chk_prop = tgo_prop.lower()
+        for cmd in self.properties:
+            if chk_prop in cmd.lower():
+                self.props_found.append(cmd)
+        return self.props_found
 
     def get_json(self, delimiter: str = ",") -> dict:  # noqa: C901
         """
@@ -374,18 +488,26 @@ class TangoctlDevice(TangoctlDeviceBasic):
 
     def read_attribute_value(self) -> None:
         """Read device attributes."""
+        # for attrib in progress_bar(
+        #     self.attributes,
+        #     self.prog_bar,
+        #     prefix="Read attributes :",
+        #     suffix="complete",
+        #     decimals=0,
+        #     length=100,
+        # ):
         for attrib in self.attributes:
             self.attributes[attrib]["data"] = {}
             try:
                 attrib_data = self.dev.read_attribute(attrib)
             except tango.DevFailed as terr:
                 err_msg = str(terr.args[-1].desc)
-                self.logger.info("Failed on attribute %s : %s", attrib, err_msg)
+                self.logger.debug("Failed on attribute %s : %s", attrib, err_msg)
                 self.attributes[attrib]["error"] = "<ERROR> " + err_msg
                 self.attributes[attrib]["data"]["type"] = "N/A"
                 self.attributes[attrib]["data"]["data_format"] = "N/A"
                 continue
-            self.logger.info("Read attribute %s : %s", attrib, attrib_data)
+            self.logger.debug("Read attribute %s : %s", attrib, attrib_data)
             self.attributes[attrib]["data"]["value"] = attrib_data.value
             self.attributes[attrib]["data"]["type"] = str(attrib_data.type)
             self.attributes[attrib]["data"]["data_format"] = str(attrib_data.data_format)
@@ -428,3 +550,46 @@ class TangoctlDevice(TangoctlDeviceBasic):
             self.properties[prop]["value"] = self.dev.get_property(prop)[prop]
             self.logger.debug("Read property %s : %s", prop, self.properties[prop]["value"])
         return
+
+    def print_list_attribute(self) -> None:
+        """Print data."""
+        print(
+            f"{self.dev_name:40} {self.dev_str:10} {self.adminModeStr:11} {self.version:8}"
+            f" {self.dev_class:24} ",
+            end="",
+        )
+        n = 0
+        for attrib in self.attributes.keys():
+            if n:
+                print(f"{' ':40} {' ':10} {' ':11} {' ':8} {' ':24} ", end="")
+            print(f"{attrib}")
+            n += 1
+
+    def print_list_command(self) -> None:
+        """Print data."""
+        print(
+            f"{self.dev_name:40} {self.dev_str:10} {self.adminModeStr:11} {self.version:8}"
+            f" {self.dev_class:24} ",
+            end="",
+        )
+        n = 0
+        for cmd in self.commands.keys():
+            if n:
+                print(f"{' ':40} {' ':10} {' ':11} {' ':8} {' ':24} ", end="")
+            print(f"{cmd}")
+            n += 1
+
+    def print_list_property(self) -> None:
+        """Print data."""
+        print(
+            f"{self.dev_name:40} {self.dev_str:10} {self.adminModeStr:11} {self.version:8}"
+            f" {self.dev_class:24} ",
+            end="",
+        )
+        n = 0
+        for prop in self.properties.keys():
+            if n:
+                print(f"{' ':40} {' ':10} {' ':11} {' ':8} {' ':24} ", end="")
+            print(f"{prop}")
+            n += 1
+

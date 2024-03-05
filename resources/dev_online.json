@@ -1,23 +1,24 @@
 {
-  "test_on": [
-    {
-      "attribute": "adminMode",
-       "read" : ""
-    },
-    {
-      "attribute": "adminMode",
-      "write": 0
-    },
-    {
-      "attribute": "adminMode",
-      "read": 0
-    },
-    {
-      "command": "State",
-      "return": "ONLINE"
-    },
-    {
-      "command": "Status"
-    }
-  ]
+	"description": "Turn admin mode off and check status",
+	"test_on": [
+		{
+			"attribute": "adminMode",
+			"read": ""
+		},
+		{
+			"attribute": "adminMode",
+			"write": 0
+		},
+		{
+			"attribute": "adminMode",
+			"read": 0
+		},
+		{
+			"command": "State",
+			"return": "ONLINE"
+		},
+		{
+			"command": "Status"
+		}
+	]
 }

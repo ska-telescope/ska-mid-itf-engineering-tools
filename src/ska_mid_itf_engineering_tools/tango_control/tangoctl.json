@@ -8,5 +8,9 @@
   "long_attributes": ["internalModel", "transformedInternalModel"],
   "ignore_device": ["sys", "dserver"],
   "min_str_len": 4,
-  "delimiter": ","
+  "delimiter": ",",
+  "list_items" : {
+    "attributes" : [["adminMode", "10"], ["version", "10"]],
+    "commands": [["State", "10"], ["Status", 30]]
+  }
 }
