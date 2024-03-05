@@ -76,11 +76,13 @@ class TangoctlDeviceBasic:
     dev_class: str = "N/A"
     dev_state: Any = None
     dev_str: str = "N/A"
+    list_values: list = []
 
     def __init__(  # noqa: C901
         self,
         logger: logging.Logger,
         device: str,
+        list_values: dict = {},
     ):
         """
         Iniltialise the thing.
@@ -101,6 +103,7 @@ class TangoctlDeviceBasic:
             self.logger.info("Could not read device %s", device)
             self.dev_name = "N/A"
             self.dev_ok = False
+        self.list_values = list_values
 
     def read_config(self) -> None:
         """Read additional data."""
@@ -118,14 +121,19 @@ class TangoctlDeviceBasic:
             self.version = "N/A"
         self.dev_state = self.dev.State()
         self.dev_str = f"{repr(self.dev_state).split('.')[3]}"
-        try:
-            self.adminMode = self.dev.adminMode
-        except AttributeError:
-            self.adminMode = "N/A"
-        try:
-            self.adminModeStr = str(self.adminMode).split(".")[1]
-        except IndexError:
-            self.adminModeStr = str(self.adminMode)
+        if "adminMode" in self.list_values["attributes"]:
+            try:
+                self.adminMode = self.dev.adminMode
+                # self.adminMode = self.dev.read_attribute("adminMode")
+                self.logger.debug("Admin mode: %s", self.adminMode)
+            except AttributeError:
+                self.adminMode = "N/A"
+            try:
+                self.adminModeStr = str(self.adminMode).split(".")[-1]
+            except IndexError:
+                self.adminModeStr = str(self.adminMode)
+        else:
+            self.adminMode = "---"
         self.dev_class = self.dev.info().dev_class
 
     def print_list(self) -> None:

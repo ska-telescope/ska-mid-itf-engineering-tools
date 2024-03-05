@@ -59,6 +59,7 @@ class TangoctlDevicesBasic:
         self.logger.info("Open device %s", tgo_name)
 
         self.fmt = fmt
+        list_values: dict = cfg_data["list_values"]
         if self.fmt == "md":
             self.prog_bar = False
         if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
@@ -86,7 +87,7 @@ class TangoctlDevicesBasic:
                 if tgo_name not in ichk:
                     self.logger.info("Ignore device %s", device)
                     continue
-            new_dev = TangoctlDeviceBasic(logger, device)
+            new_dev = TangoctlDeviceBasic(logger, device, list_values)
             self.devices[device] = new_dev
 
     def read_config(self) -> None:
@@ -386,3 +387,11 @@ class TangoctlDevices(TangoctlDevicesBasic):
         for device in self.devices:
             if self.devices[device].commands:
                 self.devices[device].print_list_command()
+
+    def print_txt_list_properties(self) -> None:
+        """Print list of properties."""
+        self.logger.info("List %d properties", len(self.devices))
+        print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN':11} {'VERSION':8} {'CLASS':24} PROPERTY")
+        for device in self.devices:
+            if self.devices[device].properties:
+                self.devices[device].print_list_property()
