@@ -74,10 +74,11 @@ class TangoctlDeviceBasic:
     status: str = "N/A"
     adminMode: Any = None
     adminModeStr: str = "N/A"
+    dev_name: str = "N/A"
     dev_class: str = "N/A"
     dev_state: Any = None
     dev_str: str = "N/A"
-    list_values: list = []
+    list_values: dict = {}
 
     def __init__(  # noqa: C901
         self,
@@ -342,74 +343,80 @@ class TangoctlDevice(TangoctlDeviceBasic):
         :return: dictionary
         """
 
-        def set_json_attribute() -> None:
-            """Add attributes to dictionary."""
-            self.logger.debug("Set attribute %s", attrib)
-            devdict["attributes"][attrib] = {}
-            devdict["attributes"][attrib]["data"] = {}
-            if "value" in self.attributes[attrib]["data"]:
-                data_val = self.attributes[attrib]["data"]["value"]
+        def set_json_attribute(attr_name: str) -> None:
+            """
+            Add attribute to dictionary.
+
+            :param attr_name: attribute name
+            """
+            self.logger.debug("Set attribute %s", attr_name)
+            devdict["attributes"][attr_name] = {}
+            devdict["attributes"][attr_name]["data"] = {}
+            if "value" in self.attributes[attr_name]["data"]:
+                data_val = self.attributes[attr_name]["data"]["value"]
                 self.logger.debug(
-                    "Attribute %s data type %s: %s", attrib, type(data_val), data_val
+                    "Attribute %s data type %s: %s", attr_name, type(data_val), data_val
                 )
                 if type(data_val) is dict:
-                    devdict["attributes"][attrib]["data"]["value"] = {}
+                    devdict["attributes"][attr_name]["data"]["value"] = {}
                     for key in data_val:
-                        devdict["attributes"][attrib]["data"]["value"][key] = data_val[key]
+                        devdict["attributes"][attr_name]["data"]["value"][key] = data_val[key]
                 elif type(data_val) is numpy.ndarray:
-                    devdict["attributes"][attrib]["data"]["value"] = data_val.tolist()
+                    devdict["attributes"][attr_name]["data"]["value"] = data_val.tolist()
                 elif type(data_val) is list:
-                    devdict["attributes"][attrib]["data"]["value"] = data_val
+                    devdict["attributes"][attr_name]["data"]["value"] = data_val
                 elif type(data_val) is tuple:
-                    devdict["attributes"][attrib]["data"]["value"] = list(data_val)
+                    devdict["attributes"][attr_name]["data"]["value"] = list(data_val)
                 elif type(data_val) is str:
                     if not data_val:
-                        devdict["attributes"][attrib]["data"]["value"] = ""
+                        devdict["attributes"][attr_name]["data"]["value"] = ""
                     elif data_val[0] == "{" and data_val[-1] == "}":
-                        devdict["attributes"][attrib]["data"]["value"] = json.loads(data_val)
+                        devdict["attributes"][attr_name]["data"]["value"] = json.loads(data_val)
                     else:
-                        devdict["attributes"][attrib]["data"]["value"] = data_val
+                        devdict["attributes"][attr_name]["data"]["value"] = data_val
                 else:
-                    devdict["attributes"][attrib]["data"]["value"] = str(data_val)
-            if "error" in self.attributes[attrib]:
-                devdict["attributes"][attrib]["error"] = str(self.attributes[attrib]["error"])
-            devdict["attributes"][attrib]["data"]["type"] = str(
-                self.attributes[attrib]["data"]["type"]
+                    devdict["attributes"][attr_name]["data"]["value"] = str(data_val)
+            if "error" in self.attributes[attr_name]:
+                devdict["attributes"][attr_name]["error"] = str(
+                    self.attributes[attr_name]["error"]
+                )
+            devdict["attributes"][attr_name]["data"]["type"] = str(
+                self.attributes[attr_name]["data"]["type"]
             )
-            devdict["attributes"][attrib]["data"]["data_format"] = str(
-                self.attributes[attrib]["data"]["data_format"]
+            devdict["attributes"][attr_name]["data"]["data_format"] = str(
+                self.attributes[attr_name]["data"]["data_format"]
             )
-            if self.attributes[attrib]["config"] is not None:
-                devdict["attributes"][attrib]["config"] = {}
-                devdict["attributes"][attrib]["config"]["description"] = self.attributes[attrib][
-                    "config"
-                ].description
-                devdict["attributes"][attrib]["config"]["root_attr_name"] = self.attributes[
-                    attrib
+            if self.attributes[attr_name]["config"] is not None:
+                devdict["attributes"][attr_name]["config"] = {}
+                devdict["attributes"][attr_name]["config"]["description"] = self.attributes[
+                    attr_name
+                ]["config"].description
+                devdict["attributes"][attr_name]["config"]["root_attr_name"] = self.attributes[
+                    attr_name
                 ]["config"].root_attr_name
-                devdict["attributes"][attrib]["config"]["format"] = self.attributes[attrib][
+                devdict["attributes"][attr_name]["config"]["format"] = self.attributes[attr_name][
                     "config"
                 ].format
-                devdict["attributes"][attrib]["config"]["data_format"] = str(
-                    self.attributes[attrib]["config"].data_format
+                devdict["attributes"][attr_name]["config"]["data_format"] = str(
+                    self.attributes[attr_name]["config"].data_format
                 )
-                devdict["attributes"][attrib]["config"]["disp_level"] = str(
-                    self.attributes[attrib]["config"].disp_level
+                devdict["attributes"][attr_name]["config"]["disp_level"] = str(
+                    self.attributes[attr_name]["config"].disp_level
                 )
-                devdict["attributes"][attrib]["config"]["data_type"] = str(
-                    self.attributes[attrib]["config"].data_type
+                devdict["attributes"][attr_name]["config"]["data_type"] = str(
+                    self.attributes[attr_name]["config"].data_type
                 )
-                devdict["attributes"][attrib]["config"]["display_unit"] = self.attributes[attrib][
-                    "config"
-                ].display_unit
-                devdict["attributes"][attrib]["config"]["standard_unit"] = self.attributes[attrib][
-                    "config"
-                ].standard_unit
-                devdict["attributes"][attrib]["config"]["writable"] = str(
-                    self.attributes[attrib]["config"].writable
+                devdict["attributes"][attr_name]["config"]["display_unit"] = self.attributes[
+                    attr_name
+                ]["config"].display_unit
+                devdict["attributes"][attr_name]["config"]["standard_unit"] = self.attributes[
+                    attr_name
+                ]["config"].standard_unit
+                devdict["attributes"][attr_name]["config"]["writable"] = str(
+                    self.attributes[attr_name]["config"].writable
                 )
-                devdict["attributes"][attrib]["config"]["writable_attr_name"] = self.attributes[
-                    attrib
+                devdict["attributes"][attr_name]["config"]["writable_attr_name"] = self.attributes[
+                    attr_name
                 ]["config"].writable_attr_name
 
         def set_json_command() -> None:
@@ -460,10 +467,10 @@ class TangoctlDevice(TangoctlDeviceBasic):
         devdict["attributes"] = {}
         if self.attribs_found:
             for attrib in self.attribs_found:
-                set_json_attribute()
+                set_json_attribute(attrib)
         else:
             for attrib in self.attributes:
-                set_json_attribute()
+                set_json_attribute(attrib)
         devdict["commands"] = {}
         for cmd in self.commands:
             self.logger.debug("Set command %s", cmd)

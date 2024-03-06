@@ -14,7 +14,7 @@ class TangoScript:
     def __init__(
         self,
         logger: logging.Logger,
-        input_file: str | None,
+        input_file: int | str | bytes | os.PathLike[str] | os.PathLike[bytes],
         device_name: str | None,
         dry_run: bool,
     ):
