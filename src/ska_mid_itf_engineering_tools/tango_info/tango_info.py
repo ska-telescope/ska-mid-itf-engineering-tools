@@ -1,5 +1,6 @@
 #!/usr/bin/python
 """Read all information about Tango devices."""
+
 import getopt
 import json
 import logging

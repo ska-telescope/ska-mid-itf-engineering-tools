@@ -1,4 +1,5 @@
 """Read and display Tango stuff."""
+
 import ast
 import json
 import logging
@@ -479,9 +480,12 @@ class TangoJsonReader:
                 if not i:
                     print(f" {attrib:40}", end="", file=self.outf)
                 else:
-                    print(f" {' ':20} {attrib:40}", end="", file=self.outf)
+                    print(f"{' ':20} {attrib:40}", end="", file=self.outf)
                 i += 1
-                print(f"{devdict['attributes'][attrib]['value']}", file=self.outf)
+                try:
+                    print(f"{devdict['attributes'][attrib]['data']['value']}", file=self.outf)
+                except KeyError:
+                    print("N/A", file=self.outf)
 
         for device in self.devices_dict:
             devdict = self.devices_dict[device]

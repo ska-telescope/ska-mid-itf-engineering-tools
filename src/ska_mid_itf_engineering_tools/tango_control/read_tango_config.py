@@ -1,4 +1,5 @@
 """Read and display Tango stuff."""
+
 import logging
 from typing import Any
 

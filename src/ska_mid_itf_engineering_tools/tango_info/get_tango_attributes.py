@@ -1,4 +1,5 @@
 """Read Tango attribute values."""
+
 import json
 import logging
 import os

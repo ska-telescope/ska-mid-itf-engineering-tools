@@ -1,4 +1,5 @@
 """Read and display Tango commands."""
+
 import logging
 import os
 from typing import Any

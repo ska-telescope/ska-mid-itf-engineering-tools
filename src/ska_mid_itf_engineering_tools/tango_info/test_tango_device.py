@@ -1,5 +1,6 @@
 #!/usr/bin/python
 """Test devices from Tango database."""
+
 import logging
 import os
 import time

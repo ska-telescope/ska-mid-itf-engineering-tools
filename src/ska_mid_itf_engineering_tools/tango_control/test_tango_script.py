@@ -1,4 +1,5 @@
 """Dance the Tango from a script."""
+
 import json
 import logging
 import os
@@ -35,7 +36,7 @@ class TangoScript:
             self.logger.info("Connect device %s", device_name)
             self.dev: tango.DeviceProxy = tango.DeviceProxy(device_name)
         except tango.ConnectionFailed as terr:
-            print(f"[FAILED] {device_name} connection failed")
+            print(f"[FAILED] {device_name} connection to {tango_host} failed")
             print(f"[FAILED] {terr.args[0].desc.strip()}")
             self.logger.debug(terr)
             self.dev = None
