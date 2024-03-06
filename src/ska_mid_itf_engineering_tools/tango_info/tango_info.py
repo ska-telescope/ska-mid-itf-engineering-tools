@@ -41,54 +41,55 @@ def usage(p_name: str, cfg_data: Any) -> None:
     :param p_name: executable name
     :param cfg_data: configuration in JSON format
     """
-    print("Display version number")
+    print("Read Tango devices.")
+    print("Display version number:")
     print(f"\t{p_name} --version")
     print("Display help")
     print(f"\t{p_name} --help")
     print(f"\t{p_name} -h")
-    print("Display Kubernetes namespaces")
+    print("Display Kubernetes namespaces:")
     print(f"\t{p_name} --show-ns")
     print(f"\t{p_name} -n")
-    print("Display Tango database address")
-    print(f"\t{p_name} --show-db [--namespace=<NAMESPACE>|--host=<HOST>]")
-    print(f"\t{p_name} -t [-N <NAMESPACE>|-H <HOST>]")
-    print("Display Tango device names")
-    print(f"\t{p_name} --show-dev [--namespace=<NAMESPACE>|--host=<HOST>]")
-    print(f"\t{p_name} -d [-N <NAMESPACE>|-H <HOST>]")
-    print("Display all devices")
+    print("Display Tango database address:")
+    print(f"\t{p_name} --show-db [--k8s-ns=<NAMESPACE>|--host=<HOST>]")
+    print(f"\t{p_name} -t [-K <NAMESPACE>|-H <HOST>]")
+    print("Display Tango device names:")
+    print(f"\t{p_name} --show-dev [--k8s-ns=<NAMESPACE>|--host=<HOST>]")
+    print(f"\t{p_name} -d [-K <NAMESPACE>|-H <HOST>]")
+    print("Display all devices:")
     print(
         f"\t{p_name} --full|--list|--quick|--short [--dry-run]"
-        f" [--namespace=<NAMESPACE>|--host=<HOST>]"
+        f" [--k8s-ns=<NAMESPACE>|--host=<HOST>]"
     )
-    print(f"\t{p_name} -f|-l|-q|-s [-N <NAMESPACE>|-H <HOST>]")
-    print("Filter on device name")
-    print(f"\t{p_name} --full|--list|--quick|--short -D <DEVICE> [-N <NAMESPACE>|-H <HOST>]")
-    print(f"\t{p_name} -f|-l|-q|-s --device=<DEVICE> [--namespace=<NAMESPACE>|--host=<HOST>]")
-    print("Filter on attribute name")
+    print(f"\t{p_name} -f|-l|-q|-s [-K <NAMESPACE>|-H <HOST>]")
+    print("Filter on device name:")
+    print(f"\t{p_name} --full|--list|--quick|--short -D <DEVICE> [-K <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} -f|-l|-q|-s --device=<DEVICE> [--k8s-ns=<NAMESPACE>|--host=<HOST>]")
+    print("Filter on attribute name:")
     print(
         f"\t{p_name} --full|--list|--quick|--short --attribute=<ATTRIBUTE>"
-        " [--namespace=<NAMESPACE>|--host=<HOST>]"
+        " [--k8s-ns=<NAMESPACE>|--host=<HOST>]"
     )
-    print(f"\t{p_name} -f|-l|-q|-s -A <ATTRIBUTE> [-N <NAMESPACE>|-H <HOST>]")
-    print("Filter on command name")
+    print(f"\t{p_name} -f|-l|-q|-s -A <ATTRIBUTE> [-K <NAMESPACE>|-H <HOST>]")
+    print("Filter on command name:")
     print(
         f"\t{p_name} --full|--list|--quick|--short --command=<COMMAND>"
-        " [--namespace=<NAMESPACE>|--host=<HOST>]"
+        " [--k8s-ns=<NAMESPACE>|--host=<HOST>]"
     )
-    print(f"\t{p_name} -f|-l|-q|-s -C <COMMAND> [-N <NAMESPACE>|-H <HOST>]")
-    print("Filter on property name")
+    print(f"\t{p_name} -f|-l|-q|-s -C <COMMAND> [-K <NAMESPACE>|-H <HOST>]")
+    print("Filter on property name:")
     print(
         f"\t{p_name} --full|--list|--quick|--short --property=<PROPERTY>"
-        " [--namespace=<NAMESPACE>|--host=<HOST>]"
+        " [--k8s-ns=<NAMESPACE>|--host=<HOST>]"
     )
-    print(f"\t{p_name} -f|-l|-q|-s -P <PROPERTY> [-N <NAMESPACE>|--host=<HOST>]")
-    print("Display known acronyms")
+    print(f"\t{p_name} -f|-l|-q|-s -P <PROPERTY> [-K <NAMESPACE>|--host=<HOST>]")
+    print("Display known acronyms:")
     print(f"\t{p_name} -j")
     print("where:")
-    print("\t-f|--full\t\t\t\tdisplay in full")
-    print("\t-l|--list\t\t\t\tdisplay device name and status on one line")
-    print("\t-q|--quick\t\t\t\tdisplay device name, status and query devices")
-    print("\t-s|--short\t\t\t\tdisplay device name and status only")
+    print("\t-f|--full\t\t\tdisplay in full")
+    print("\t-l|--list\t\t\tdisplay device name and status on one line")
+    print("\t-q|--quick\t\t\tdisplay device name, status and query devices")
+    print("\t-s|--short\t\t\tdisplay device name and status only")
     # print("\t-m\t\t\t\tdisplay in markdown format")
     print("\t-f\t\t\t\tget commands, attributes and properties regardless of state")
     print(
@@ -96,14 +97,14 @@ def usage(p_name: str, cfg_data: Any) -> None:
         " (not case sensitive, only a part is needed)"
     )
     print(
-        "\t--namespace=<NAMESPACE>\t\tKubernetes namespace for Tango database,"
+        "\t--k8s-ns=<NAMESPACE>\t\tKubernetes namespace for Tango database,"
         " e.g. 'integration'"
     )
     print("\t--host=<HOST>\t\t\tTango database host and port, e.g. 10.8.13.15:10000")
     print("\t--attribute=<ATTRIBUTE>\t\tattribute name, e.g. 'obsState' (not case sensitive)")
     print("\t--command=<COMMAND>\t\tcommand name, e.g. 'Status' (not case sensitive)")
     print("\t-D <DEVICE>\t\t\tdevice name, e.g. 'csp' (not case sensitive, only a part is needed)")
-    print("\t-N <NAMESPACE>\t\t\tKubernetes namespace for Tango database")
+    print("\t-K <NAMESPACE>\t\t\tKubernetes namespace for Tango database")
     print("\t-H <HOST>\t\t\tTango database host and port, e.g. 10.8.13.15:10000")
     print("\t-A <ATTRIBUTE>\t\t\tattribute name, e.g. 'obsState' (not case sensitive)")
     print("\t-C <COMMAND>\t\t\tcommand name, e.g. 'Status' (not case sensitive)")
@@ -144,7 +145,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
-            "efhjlmnqstvVA:C:H:D:N:P:T:",
+            "efhjlmkqstvVA:C:H:D:K:P:T:",
             [
                 "dry-run",
                 "everything",
@@ -164,7 +165,7 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "command=",
                 "device=",
                 "host=",
-                "namespace=",
+                "k8s-ns=",
                 "property=",
             ],
         )
@@ -199,7 +200,7 @@ def main(y_arg: list) -> int:  # noqa: C901
         elif opt in ("-T", "--input"):
             # Undocumented feature to search by input type
             tgo_in_type = arg.lower()
-        elif opt in ("-N", "--namespace"):
+        elif opt in ("-K", "--k8s-ns"):
             kube_namespace = arg
         elif opt in ("-P", "--property"):
             tgo_prop = arg
@@ -219,7 +220,7 @@ def main(y_arg: list) -> int:  # noqa: C901
         elif opt == "-m":
             # Undocumented feature to display in mark-down format
             fmt = "md"
-        elif opt in ("-n", "--show-ns"):
+        elif opt in ("-k", "--show-ns"):
             show_ns = True
         elif opt in ("-q", "--quick"):
             disp_action = 3
