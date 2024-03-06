@@ -17,14 +17,15 @@ class TangoScript:
         input_file: str | None,
         device_name: str | None,
         dry_run: bool,
-    ) -> int:
+    ):
         """
         Read actions from file.
 
+        :raises Exception: error condition
+        :param logger: logging handle
         :param input_file: input file
         :param device_name: device name
         :param dry_run: flag for dry run
-        :raise: error condition
         """
         self.logger = logger
         # Get Tango database host
@@ -56,16 +57,18 @@ class TangoScript:
         self.cfg_data: Any = json.load(cfg_file)
         cfg_file.close()
 
-    def run(self):
-        """Run the thing."""
+    def run(self) -> int:
+        """
+        Run the thing.
+
+        :return: error condition
+        """
         self.logger.info("Process : %s", self.cfg_data)
         for test in self.cfg_data:
             test_cfg = self.cfg_data[test]
             if type(test_cfg) is list:
                 for thing in test_cfg:
                     if type(thing) is dict:
-                        # for key in thing:
-                        #     print(f"{key:16} : {thing[key]}")
                         if "attribute" in thing:
                             attr_thing = thing["attribute"]
                             if "read" in thing:
@@ -95,7 +98,7 @@ class TangoScript:
         attr_thing: str | None,
         attr_read: int | float | str | None,
         attr_write: int | float | str | None,
-    ):
+    ) -> int:
         """
         Read or write Tango attribute.
 

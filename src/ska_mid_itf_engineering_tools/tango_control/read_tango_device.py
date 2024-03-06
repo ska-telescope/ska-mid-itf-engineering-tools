@@ -90,6 +90,7 @@ class TangoctlDeviceBasic:
 
         :param logger: logging handle
         :param device: device name
+        :param list_values: dictionary with values to process
         """
         self.logger = logger
         self.logger.debug("Open device %s", device)
@@ -106,7 +107,7 @@ class TangoctlDeviceBasic:
             self.dev_ok = False
         self.list_values = list_values
 
-    def read_config(self) -> None:
+    def read_config(self) -> None:  # noqa: C901
         """Read additional data."""
         try:
             self.info = self.dev.info()
@@ -318,7 +319,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
         """
         Filter by command name.
 
-        :param tgo_cmd: property name
+        :param tgo_prop: property name
         :return: list of device names matched
         """
         self.logger.debug(
