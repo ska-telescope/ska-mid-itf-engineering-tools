@@ -453,6 +453,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     disp_action: int = 0
     evrythng: bool = False
     input_file: str | None = None
+    json_dir: str | None = None
     output_file: str | None = None
     show_attrib: bool = False
     show_command: bool = False
@@ -482,7 +483,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
-            "acefhjklmnqtvyVA:C:H:D:I:K:p:O:P:T:W:",
+            "acefhjklmnqtvyVA:C:H:D:I:J:K:p:O:P:T:W:",
             [
                 "dry-run",
                 "everything",
@@ -507,6 +508,7 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "device=",
                 "host=",
                 "input=",
+                "json-dir=",
                 "k8s-ns=",
                 "output=",
                 "port=",
@@ -549,6 +551,8 @@ def main(y_arg: list) -> int:  # noqa: C901
             fmt = "json"
         elif opt in ("--list", "-l"):
             disp_action = 4
+        elif opt in ("--json-dir", "-J"):
+            json_dir = arg
         elif opt in ("--md", "-m"):
             fmt = "md"
         elif opt in ("--k8s-ns", "-K"):
@@ -604,6 +608,27 @@ def main(y_arg: list) -> int:  # noqa: C901
 
     if show_ns:
         show_namespaces()
+        return 0
+
+    if json_dir:
+        _module_logger.info("List JSON files in %s", json_dir)
+        relevant_path = json_dir
+        included_extensions = ['json', 'yaml']
+        file_names = [
+            fn for fn in os.listdir(relevant_path)
+            if any(fn.endswith(ext) for ext in included_extensions)
+        ]
+        for file_name in file_names:
+            file_name = os.path.join(json_dir, file_name)
+            with open(file_name) as cfg_file:
+                try:
+                    cfg_data = json.load(cfg_file)
+                    try:
+                        print(f"{file_name:40} {cfg_data['description']}")
+                    except KeyError:
+                        _module_logger.info("File %s is not a tangoctl input file", file_name)
+                except json.decoder.JSONDecodeError:
+                    _module_logger.info("File %s is not a JSON file", file_name)
         return 0
 
     if kube_namespace is None and tango_host is None:
