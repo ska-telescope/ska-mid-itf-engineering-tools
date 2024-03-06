@@ -7,11 +7,11 @@
 		},
 		{
 			"attribute": "adminMode",
-			"write": 0
+			"write": "${ADMIN_MODE}"
 		},
 		{
 			"attribute": "adminMode",
-			"read": 0
+			"read": "${ADMIN_MODE}"
 		},
 		{
 			"command": "State",

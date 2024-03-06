@@ -56,6 +56,9 @@ class TangoScript:
         cfg_file: TextIO = open(input_file)
         self.cfg_data: Any = json.load(cfg_file)
         cfg_file.close()
+        self.attributes = sorted(self.dev.get_attribute_list())
+        self.commands = sorted(self.dev.get_command_list())
+        self.properties = sorted(self.dev.get_property_list("*"))
 
     def run(self) -> int:
         """
@@ -107,18 +110,34 @@ class TangoScript:
         :param attr_write: write value
         :return: error condition
         """
+        if attr_thing not in self.attributes:
+            self.logger.error("Device does not have a '%s' attribute", attr_thing)
+            return 1
         if attr_read is not None:
-            self.logger.debug("Read attrbute %s : should be %s", attr_thing, str(attr_read))
-            attr_val = self.dev.read_attribute(attr_thing)
-            print("Attrbute %s : %s" % (attr_val.name, attr_val.value))
+            self.logger.debug("Read attribute %s : should be '%s'", attr_thing, str(attr_read))
+            attrib_data = self.dev.read_attribute(attr_thing)
+            print("Attribute %s : %s" % (attrib_data.name, attrib_data.value))
         if attr_write is not None:
+            attrib_data = self.dev.read_attribute(attr_thing)
+            attr_type = str(attrib_data.type)
+            if type(attr_write) is str:
+                if "${" in attr_write and "}" in attr_write:
+                    env_name = attr_write.split("{")[1].split("}")[0]
+                    attr_write = os.getenv(env_name)
+                    self.logger.info("Read environment variable %s : %s", env_name, attr_write)
             self.logger.info("Write attrbute %s value %s", attr_thing, str(attr_write))
+            write_val: Any
+            if attr_type == "DevEnum":
+                write_val = int(attr_write)  # type: ignore[arg-type]
+            else:
+                write_val = str(attr_write)
             try:
-                self.dev.write_attribute(attr_thing, attr_write)
+                self.dev.write_attribute(attr_thing, write_val)
             except tango.DevFailed as terr:
                 self.logger.error("Write failed : %s", terr.args[0].desc.strip())
                 return 1
-            print("Attrbute %s set to %s" % (attr_val.name, attr_val.value))
+            attrib_data = self.dev.read_attribute(attr_thing)
+            print("Attrbute %s set to %s" % (attrib_data.name, attrib_data.value))
         return 0
 
     def run_command(self, cmd_thing: str, cmd_args: Any) -> int:
@@ -129,6 +148,9 @@ class TangoScript:
         :param cmd_args: command arguments
         :return: error condition
         """
+        if cmd_thing not in self.commands:
+            self.logger.error("Device does not have a '%s' command", cmd_thing)
+            return 1
         if cmd_args is None:
             self.logger.info("Run command %s", cmd_thing)
             cmd_val = self.dev.command_inout(cmd_thing)

@@ -505,6 +505,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
 
     def read_attribute_value(self) -> None:
         """Read device attributes."""
+        # TODO this progress bar might be useful
         # for attrib in progress_bar(
         #     self.attributes,
         #     self.prog_bar,
