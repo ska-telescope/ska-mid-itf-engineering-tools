@@ -96,10 +96,7 @@ def usage(p_name: str, cfg_data: Any) -> None:
         "\t--device=<DEVICE>\t\tdevice name, e.g. 'csp'"
         " (not case sensitive, only a part is needed)"
     )
-    print(
-        "\t--k8s-ns=<NAMESPACE>\t\tKubernetes namespace for Tango database,"
-        " e.g. 'integration'"
-    )
+    print("\t--k8s-ns=<NAMESPACE>\t\tKubernetes namespace for Tango database, e.g. 'integration'")
     print("\t--host=<HOST>\t\t\tTango database host and port, e.g. 10.8.13.15:10000")
     print("\t--attribute=<ATTRIBUTE>\t\tattribute name, e.g. 'obsState' (not case sensitive)")
     print("\t--command=<COMMAND>\t\tcommand name, e.g. 'Status' (not case sensitive)")
