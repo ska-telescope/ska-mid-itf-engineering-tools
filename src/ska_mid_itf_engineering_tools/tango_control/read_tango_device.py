@@ -600,4 +600,3 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 print(f"{' ':40} {' ':10} {' ':11} {' ':8} {' ':24} ", end="")
             print(f"{prop}")
             n += 1
-

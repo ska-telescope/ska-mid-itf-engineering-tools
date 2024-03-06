@@ -2,15 +2,20 @@
 import json
 import logging
 import os
+from typing import Any, TextIO
+
 import tango
-from typing import TextIO, Any
 
 
 class TangoScript:
     """The classy Tango."""
 
     def __init__(
-        self, logger: logging.Logger, input_file: str | None, device_name: str | None, dry_run: bool
+        self,
+        logger: logging.Logger,
+        input_file: str | None,
+        device_name: str | None,
+        dry_run: bool,
     ) -> int:
         """
         Read actions from file.
@@ -85,10 +90,10 @@ class TangoScript:
         return 0
 
     def read_write_attribute(
-            self,
-            attr_thing: str | None,
-            attr_read: int | float | str | None,
-            attr_write: int | float | str | None,
+        self,
+        attr_thing: str | None,
+        attr_read: int | float | str | None,
+        attr_write: int | float | str | None,
     ):
         """
         Read or write Tango attribute.

@@ -9,9 +9,9 @@ import tango
 import yaml
 
 from ska_mid_itf_engineering_tools.tango_control.read_tango_device import (
-    progress_bar,
     TangoctlDevice,
     TangoctlDeviceBasic,
+    progress_bar,
 )
 from ska_mid_itf_engineering_tools.tango_control.tango_json import TangoJsonReader
 
