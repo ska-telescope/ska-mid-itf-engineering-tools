@@ -1,5 +1,6 @@
 """Out-of-date dependency collector for Helm."""
 
+import os
 import subprocess
 from pathlib import Path
 from typing import Dict, List
@@ -22,6 +23,15 @@ class HelmDependencyCollector(DependencyCollector):
         """
         super().__init__()
         self.__charts_dir: Path = Path(charts_dir)
+
+    def valid_for_project(self) -> bool:
+        """
+        Determine whether the DependencyCollector can be executed for the current project.
+
+        :return: True if it can be executed, False otherwise.
+        :rtype: bool
+        """
+        return os.path.isdir(self.__charts_dir)
 
     def collect_stale_dependencies(self) -> List[DependencyGroup]:
         """
@@ -79,7 +89,7 @@ class HelmDependencyCollector(DependencyCollector):
         dependencies = []
         lines = helm_dependencies.splitlines()
         for line in lines:
-            if line.startswith("NAME"):
+            if line.startswith("NAME") or line.startswith("WARNING"):
                 continue
             words = line.split()
             if len(words) < 2:
@@ -121,7 +131,14 @@ class HelmDependencyCollector(DependencyCollector):
         done = False
         while not done:
             for item in items:
-                if item.get("name", "") != chart.name:
+                item_name = item.get("name", "")
+                if item_name != chart.name:
+                    continue
+                raw_version = item.get("version", "0.0.0")
+                if not semver.Version.is_valid(raw_version):
+                    self.logger.warn(
+                        "Invalid version found in nexus search: %s -- %s", item_name, raw_version
+                    )
                     continue
                 item_version = semver.Version.parse(item.get("version", "0.0.0"))
                 if latest.compare(item_version) < 0 and (
@@ -138,7 +155,6 @@ class HelmDependencyCollector(DependencyCollector):
                 )
             else:
                 done = True
-        print(latest, chart.project_version)
         return latest
 
     def name(self) -> str:

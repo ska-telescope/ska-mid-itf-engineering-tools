@@ -57,6 +57,11 @@ class DependencyChecker:
         project_info = self.get_project_info()
         dependency_map: OrderedDict[str : List[DependencyGroup]] = OrderedDict()
         for dc in self.__collectors:
+            if not dc.valid_for_project():
+                self.logger.info(
+                    "skipping %s dependency collector: not valid for this project", dc.name()
+                )
+                continue
             self.logger.info("running %s dependency collector", dc.name())
             deps = dc.collect_stale_dependencies()
             dependency_map[dc.name()] = deps
@@ -231,11 +236,14 @@ class DependencyChecker:
         for dg in dependency_groups:
             if len(dg.dependencies) == 0:
                 continue
+            outdated_text = (
+                f"*{dg.group_name}: {len(dg.dependencies)} outdated dependencies found!*"
+            )
             outdated_msg.append(
                 {
                     "type": "section",
                     "text": {
-                        "text": f"*{dg.group_name}: {len(dg.dependencies)} outdated dependencies found!*",  # flake8: noqa
+                        "text": outdated_text,
                         "type": "mrkdwn",
                     },
                 }

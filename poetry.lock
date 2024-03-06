@@ -2712,6 +2712,20 @@ pytest = ">=4.6"
 testing = ["fields", "hunter", "process-tests", "pytest-xdist", "six", "virtualenv"]
 
 [[package]]
+name = "pytest-datadir"
+version = "1.5.0"
+description = "pytest plugin for test data directories and files"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pytest-datadir-1.5.0.tar.gz", hash = "sha256:1617ed92f9afda0c877e4eac91904b5f779d24ba8f5e438752e3ae39d8d2ee3f"},
+    {file = "pytest_datadir-1.5.0-py3-none-any.whl", hash = "sha256:34adf361bcc7b37961bbc1dfa8d25a4829e778bab461703c38a5c50ca9c36dc8"},
+]
+
+[package.dependencies]
+pytest = ">=5.0"
+
+[[package]]
 name = "pytest-json-report"
 version = "1.5.0"
 description = "A pytest plugin to report test results as JSON files"
@@ -4205,4 +4219,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.11"
-content-hash = "71c529939761ac07533a0b926d463914402b174694028788a544b36a00788813"
+content-hash = "041375d12611c14bae2846d35cf7987e86119aea821e67d5f938eca2402be315"

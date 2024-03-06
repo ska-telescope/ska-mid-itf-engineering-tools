@@ -1,5 +1,6 @@
 """A dependency collector for poetry."""
 
+import os
 import subprocess
 from typing import List
 
@@ -8,6 +9,15 @@ from .types import Dependency, DependencyCollector, DependencyGroup
 
 class PoetryDependencyCollector(DependencyCollector):
     """A dependency collector for poetry."""
+
+    def valid_for_project(self) -> bool:
+        """
+        Determine whether the DependencyCollector can be executed for the current project.
+
+        :return: True if it can be executed, False otherwise.
+        :rtype: bool
+        """
+        return os.path.isfile("pyproject.toml")
 
     def collect_stale_dependencies(self) -> List[DependencyGroup]:
         """
