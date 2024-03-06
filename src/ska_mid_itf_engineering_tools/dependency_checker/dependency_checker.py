@@ -6,7 +6,7 @@ import subprocess
 from dataclasses import dataclass
 from typing import Dict, List
 
-from ska_ser_logging import configure_logging
+from ska_ser_logging import configure_logging  # type: ignore[import]
 from slack_sdk.webhook import WebhookClient
 
 
@@ -77,7 +77,7 @@ class DependencyChecker:
         self.__slack_webhook_url = slack_webhook_url
         self.logger = logging.getLogger(__name__)
 
-    def run(self):
+    def run(self) -> None:
         """Run the dependency checker."""
         project_info = self.get_project_info()
         deps = self.get_stale_poetry_dependencies()
@@ -192,7 +192,7 @@ class DependencyChecker:
 
         return msg_blocks
 
-    def send_slack_message(self, msg_blocks: List[Dict]):
+    def send_slack_message(self, msg_blocks: List[Dict]) -> None:
         """
         Send a Slack notification to the configured webhook URL.
 
@@ -212,7 +212,7 @@ class DependencyChecker:
         self.logger.info("Alert sent to slack")
 
 
-def main():
+def main() -> None:
     """Run the dependency checker."""
     configure_logging(level=logging.DEBUG)
     slack_webhook_url = os.environ["DEPENDENCY_CHECKER_WEBHOOK_URL"]
