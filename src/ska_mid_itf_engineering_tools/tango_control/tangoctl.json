@@ -14,7 +14,7 @@
     "commands": [["State", "10"], ["Status", 30]]
   },
   "list_values" : {
-    "attributes": ["adminMode"],
-    "commands": ["Status"]
+    "attributes": ["adminMode", "versionId"],
+    "commands": ["Status", "State"]
   }
 }

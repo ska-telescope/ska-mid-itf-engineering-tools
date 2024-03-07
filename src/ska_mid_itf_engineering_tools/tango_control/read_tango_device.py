@@ -69,16 +69,17 @@ class TangoctlDeviceBasic:
     logger: logging.Logger
     dev: tango.DeviceProxy
     dev_ok: bool
-    info: str = "N/A"
-    version: str = "N/A"
-    status: str = "N/A"
+    info: str = "---"
+    version: str = "---"
+    status: str = "---"
     adminMode: Any = None
-    adminModeStr: str = "N/A"
-    dev_name: str = "N/A"
-    dev_class: str = "N/A"
+    adminModeStr: str = "---"
+    dev_name: str = "---"
+    dev_class: str = "---"
     dev_state: Any = None
-    dev_str: str = "N/A"
+    dev_str: str = "---"
     list_values: dict = {}
+    green_mode: Any = None
 
     def __init__(  # noqa: C901
         self,
@@ -102,14 +103,19 @@ class TangoctlDeviceBasic:
             self.dev_name = device
         try:
             self.dev_ok = True
-        except tango.ConnectionFailed:
+        except tango.ConnectionFailed as terr:
             self.logger.info("Could not read device %s", device)
-            self.dev_name = "N/A"
+            self.dev_name = f"<ERROR> {terr.args[0].desc}"
             self.dev_ok = False
         self.list_values = list_values
+        self.green_mode = str(self.dev.get_green_mode())
 
     def read_config(self) -> None:  # noqa: C901
-        """Read additional data."""
+        """
+        Read additional data.
+
+        State, adminMode and versionId are specific to devices
+        """
         try:
             self.info = self.dev.info()
         except tango.DevFailed:
@@ -118,11 +124,20 @@ class TangoctlDeviceBasic:
         except tango.ConnectionFailed:
             self.logger.info("Could not read device %s", self.dev_name)
             return
-        try:
-            self.version = self.dev.versionId
-        except AttributeError:
-            self.version = "N/A"
-        self.dev_state = self.dev.State()
+        if "versionId" in self.list_values["attributes"]:
+            try:
+                self.version = self.dev.versionId
+            except AttributeError:
+                self.version = "N/A"
+        else:
+            self.version = "---"
+        if "State" in self.list_values["commands"]:
+            try:
+                self.dev_state = self.dev.State()
+            except TypeError:
+                self.dev_state = "N/A"
+        else:
+            self.dev_state = "---"
         self.dev_str = f"{repr(self.dev_state).split('.')[3]}"
         if "adminMode" in self.list_values["attributes"]:
             try:
@@ -335,7 +350,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 self.props_found.append(cmd)
         return self.props_found
 
-    def get_json(self, delimiter: str = ",") -> dict:  # noqa: C901
+    def make_json(self, delimiter: str = ",") -> dict:  # noqa: C901
         """
         Convert internal values to JSON.
 
@@ -350,6 +365,10 @@ class TangoctlDevice(TangoctlDeviceBasic):
             :param attr_name: attribute name
             """
             self.logger.debug("Set attribute %s", attr_name)
+            try:
+                devdict["aliases"] = self.dev.get_device_alias_list()
+            except AttributeError:
+                devdict["aliases"] = "N/A"
             devdict["attributes"][attr_name] = {}
             devdict["attributes"][attr_name]["data"] = {}
             if "value" in self.attributes[attr_name]["data"]:
@@ -431,6 +450,8 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 devdict["commands"][cmd]["out_type_desc"] = self.commands[cmd][
                     "config"
                 ].out_type_desc
+                if "value" in self.commands[cmd]:
+                    devdict["commands"][cmd]["value"] = self.commands[cmd]["value"]
 
         def set_json_property() -> None:
             """Add properties to dictionary."""
@@ -447,6 +468,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
 
         devdict: dict = {}
         devdict["name"] = self.dev_name
+        devdict["green_mode"] = self.green_mode
         devdict["version"] = self.version
         try:
             devdict["versioninfo"] = self.dev.getversioninfo()
@@ -462,8 +484,11 @@ class TangoctlDevice(TangoctlDeviceBasic):
         if self.info is not None:
             devdict["info"] = {}
             devdict["info"]["dev_class"] = self.info.dev_class
+            devdict["info"]["dev_type"] = self.info.dev_type
+            devdict["info"]["doc_url"] = self.info.doc_url
             devdict["info"]["server_host"] = self.info.server_host
             devdict["info"]["server_id"] = self.info.server_id
+            devdict["info"]["server_version"] = self.info.server_version
         devdict["attributes"] = {}
         if self.attribs_found:
             for attrib in self.attribs_found:
@@ -542,7 +567,12 @@ class TangoctlDevice(TangoctlDeviceBasic):
         """
         for cmd in self.commands:
             if cmd in run_commands:
-                self.commands[cmd]["value"] = self.dev.command_inout(cmd)
+                try:
+                    self.commands[cmd]["value"] = self.dev.command_inout(cmd)
+                except tango.ConnectionFailed as terr:
+                    self.commands[cmd]["value"] = f"<ERROR> {terr.args[0].desc.strip()}"
+                except tango.DevFailed as terr:
+                    self.commands[cmd]["value"] = f"<ERROR> {terr.args[0].desc.strip()}"
                 self.logger.debug(
                     "Read command %s (%s) : %s",
                     cmd,

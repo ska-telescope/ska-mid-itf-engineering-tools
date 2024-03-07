@@ -5,7 +5,10 @@ from typing import Any
 
 import tango
 
-from ska_mid_itf_engineering_tools.tango_control.read_tango_device import TangoctlDeviceBasic
+from ska_mid_itf_engineering_tools.tango_control.read_tango_device import (
+    TangoctlDeviceBasic,
+    progress_bar,
+)
 
 
 class TangoctlDeviceConfig(TangoctlDeviceBasic):
@@ -17,6 +20,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
     commands: dict = {}
     properties: dict = {}
     dev_name: str
+    green_mode: Any = None
 
     def __init__(
         self,
@@ -56,6 +60,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
             self.logger.debug("Read property %s", prop)
             self.properties[prop] = {}
         self.info: Any = self.dev.info()
+        self.green_mode = self.dev.get_green_mode()
 
     def get_json(self, delimiter: str = ",") -> dict:  # noqa: C901
         """
@@ -198,10 +203,25 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
             devdict["adminMode"] = str(self.dev.adminMode)
         devdict["info"] = {}
         devdict["info"]["dev_class"] = self.info.dev_class
+        devdict["info"]["dev_type"] = self.info.dev_type
+        devdict["info"]["doc_url"] = self.info.doc_url
         devdict["info"]["server_host"] = self.info.server_host
         devdict["info"]["server_id"] = self.info.server_id
+        devdict["info"]["server_version"] = self.info.server_version
         devdict["attributes"] = {}
-        for attrib in self.attributes:
+        self.logger.info("Set attributes...")
+        prog_bar = True
+        if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
+            prog_bar = False
+        # for attrib in self.attributes:
+        for attrib in progress_bar(
+            self.attributes,
+            prog_bar,
+            prefix=f"Set {len(self.attributes)} attributes :",
+            suffix="complete",
+            decimals=0,
+            length=100,
+        ):
             devdict["attributes"][attrib] = {}
             self.logger.debug("Set attribute %s", attrib)
             set_attribute()

@@ -6,7 +6,7 @@ import logging
 import os
 import re
 import sys
-from typing import TextIO
+from typing import Any, TextIO
 
 
 def md_format(inp: str) -> str:
@@ -31,6 +31,20 @@ def md_print(inp: str, end: str = "\n", file: TextIO = sys.stdout) -> None:
     :param file: output file pointer
     """
     print(inp.replace("_", "\\_").replace("-", "\\-"), end=end, file=file)
+
+
+class BooleanEncoder(json.JSONEncoder):
+    """Using a custom encoder"""
+    def default(self, o: Any) -> Any:
+        """
+        This is the default handler.
+
+        :param o: object
+        :return: the thing
+        """
+        if isinstance(o, bool):
+            return str(o).lower()
+        return super().default(o)
 
 
 class TangoJsonReader:
@@ -80,8 +94,27 @@ class TangoJsonReader:
             """
             dstr = re.sub(" +", " ", dstr)
             md_print(f"| {item:30} ", end="", file=self.outf)
-            if dstr[0] == "{" and dstr[-1] == "}":
-                ddict = json.loads(dstr)
+            if not dstr:
+                print(f"| {' ':143} ||", file=self.outf)
+            elif dstr[0] == "{" and dstr[-1] == "}":
+                if "'" in dstr:
+                    dstr = dstr.replace("'", "\"")
+                try:
+                    # ddict = json.loads(dstr, cls=BooleanEncoder)
+                    ddict = json.loads(dstr)
+                except json.decoder.JSONDecodeError as jerr:
+                    # TODO this string breaks it
+                    # {
+                    # "state": "DevState.ON", "healthState": "HealthState.OK", "ping": "545",
+                    # "last_event_arrived": "1709799240.7604482", "unresponsive": "False",
+                    # "exception": "", "isSubarrayAvailable": True, "resources": [],
+                    # "device_id ": -1, "obsState": "ObsState.EMPTY"
+                    # }
+                    self.logger.info("Error : %s", str(jerr))
+                    self.logger.Info("Could not read : %s", dstr)
+                    # print(f"| <ERROR> {str(jerr):134} ||")
+                    print(f"| {dstr:143} ||", file=self.outf)
+                    return
                 self.logger.debug("Print JSON :\n%s", json.dumps(ddict, indent=4))
                 n = 0
                 for ditem in ddict:
@@ -169,7 +202,11 @@ class TangoJsonReader:
             :param dc2: column 2 width
             :param dc3: column 2 width
             """
-            if "\n" in dstr:
+            if not dstr:
+                md_print(f"| {' ':{dc3}} |", file=self.outf)
+            elif type(dstr) is not str:
+                md_print(f"| {str(dstr):{dc3}} |", file=self.outf)
+            elif "\n" in dstr:
                 self.logger.debug("Print '%s'", dstr)
                 n = 0
                 for line in dstr.split("\n"):
@@ -190,7 +227,7 @@ class TangoJsonReader:
                     md_print(f"| {line:{dc3}} |", file=self.outf)
                     n += 1
             else:
-                md_print(f"| {dstr:{dc3}} |", file=self.outf)
+                md_print(f"| {str(dstr):{dc3}} |", file=self.outf)
 
         def print_md_attributes() -> None:
             """Print attributes."""
@@ -225,9 +262,10 @@ class TangoJsonReader:
                         self.logger.warning(
                             "Data type for %s (%s) not supported", item, type(data)
                         )
-                for item in devdict["attributes"][attrib]["config"]:
-                    config = devdict["attributes"][attrib]["config"][item]
-                    print_attribute_data(item, config)
+                if "config" in devdict["attributes"][attrib]:
+                    for item in devdict["attributes"][attrib]["config"]:
+                        config = devdict["attributes"][attrib]["config"][item]
+                        print_attribute_data(item, config)
                 print("", file=self.outf)
             print("\n", file=self.outf)
 
@@ -245,12 +283,15 @@ class TangoJsonReader:
                 m = 0
                 cmd_items = devdict["commands"][cmd]
                 self.logger.debug("Print command %s : %s", cmd, cmd_items)
-                for item in cmd_items:
-                    if m:
-                        print(f"| {' ':{cc1}} ", end="", file=self.outf)
-                    md_print(f"| {item:{cc2}} ", end="", file=self.outf)
-                    print_data(devdict["commands"][cmd][item], cc1, cc2, cc3)
-                    m += 1
+                if cmd_items:
+                    for item in cmd_items:
+                        if m:
+                            print(f"| {' ':{cc1}} ", end="", file=self.outf)
+                        md_print(f"| {item:{cc2}} ", end="", file=self.outf)
+                        print_data(devdict["commands"][cmd][item], cc1, cc2, cc3)
+                        m += 1
+                else:
+                    md_print(f"| {' ':{cc2}} | {' ':{cc3}} |", file=self.outf)
                 n += 1
             print("\n", file=self.outf)
 
@@ -434,7 +475,9 @@ class TangoJsonReader:
                                 print(f"{' ':102} {keyval}", file=self.outf)
                         else:
                             keyvals2 = []
-                            if len(devkeyval) > 70:
+                            if type(devkeyval) is list:
+                                keyvals2 = devkeyval
+                            elif len(devkeyval) > 70:
                                 lsp = devkeyval[0:70].rfind(" ")
                                 keyvals2.append(devkeyval[0:lsp])
                                 keyvals2.append(devkeyval[lsp + 1 :])
@@ -449,21 +492,23 @@ class TangoJsonReader:
             devdict = self.devices_dict[device]
             print(f"{'name':20} {devdict['name']}", file=self.outf)
             print(f"{'version':20} {devdict['version']}", file=self.outf)
-            print(f"{'versioninfo':20} {devdict['versioninfo'][0]}", file=self.outf)
-            print(f"{'adminMode':20} {devdict['adminMode']}", file=self.outf)
+            print(f"{'green mode':20} {devdict['green_mode']}", file=self.outf)
+            # print(f"{'versioninfo':20} {devdict['versioninfo'][0]}", file=self.outf)
+            # print(f"{'adminMode':20} {devdict['adminMode']}", file=self.outf)
             if "info" in devdict:
-                print(
-                    f"{' ':20} {'info':40} {'dev_class':40} {devdict['info']['dev_class']}",
-                    file=self.outf,
-                )
-                print(
-                    f"{' ':20} {' ':40} {'server_host':40} {devdict['info']['server_host']}",
-                    file=self.outf,
-                )
-                print(
-                    f"{' ':20} {' ':40} {'server_id':40} {devdict['info']['server_id']}",
-                    file=self.outf,
-                )
+                i = 0
+                for info_key in devdict["info"]:
+                    if not i:
+                        print(
+                            f"{'info':20} {info_key:40} {devdict['info'][info_key]}",
+                            file=self.outf,
+                        )
+                    else:
+                        print(
+                            f"{' ':20} {info_key:40} {devdict['info'][info_key]}",
+                            file=self.outf,
+                        )
+                    i += 1
             print_txt("attributes")
             print_txt("commands")
             print_txt("properties")
@@ -487,11 +532,26 @@ class TangoJsonReader:
                 except KeyError:
                     print("N/A", file=self.outf)
 
+        def print_commands() -> None:
+            """Print commands with values."""
+            self.logger.info("Print commands : %s", devdict["commands"])
+            print(f"{'commands':20}", end="", file=self.outf)
+            i = 0
+            for cmd in devdict["commands"]:
+                if "value" in devdict["commands"][cmd]:
+                    if not i:
+                        print(f" {cmd:40}", end="", file=self.outf)
+                    else:
+                        print(f"{' ':20} {cmd:40}", end="", file=self.outf)
+                    i += 1
+                    print(f"{devdict['commands'][cmd]['value']}", file=self.outf)
+
         for device in self.devices_dict:
             devdict = self.devices_dict[device]
             print(f"{'name':20} {devdict['name']}", file=self.outf)
             print(f"{'version':20} {devdict['version']}", file=self.outf)
             print(f"{'versioninfo':20} {devdict['versioninfo'][0]}", file=self.outf)
-            print(f"{'adminMode':20} {devdict['adminMode']}", file=self.outf)
+            # print(f"{'adminMode':20} {devdict['adminMode']}", file=self.outf)
             print_attributes()
+            print_commands()
             print(file=self.outf)
