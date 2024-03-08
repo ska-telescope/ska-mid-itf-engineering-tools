@@ -178,6 +178,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
     def __init__(  # noqa: C901
         self,
         logger: logging.Logger,
+        quiet_mode: bool,
         device: str,
         tgo_attrib: str | None,
         tgo_cmd: str | None,
@@ -187,6 +188,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
         Iniltialise the thing.
 
         :param logger: logging handle
+        :param quiet_mode: flag for displaying progress bars
         :param device: device name
         :param tgo_attrib: attribute filter
         :param tgo_cmd: command filter
@@ -200,6 +202,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
             tgo_cmd,
             tgo_prop,
         )
+        self.prog_bar = not quiet_mode
         if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
             self.prog_bar = False
         if tgo_attrib:

@@ -53,10 +53,12 @@ class TangoJsonReader:
 
     outf: TextIO
     tgo_space: str
+    prog_bar: bool = True
 
     def __init__(
         self,
         logger: logging.Logger,
+        quiet_mode: bool,
         kube_namespace: str | None,
         devsdict: dict,
         file_name: str | None = None,
@@ -82,7 +84,7 @@ class TangoJsonReader:
             self.tgo_space = f"namespace {kube_namespace}"
         else:
             self.tgo_space = f"host {tango_host}"
-        self.prog_bar: bool = True
+        self.prog_bar = not quiet_mode
         if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
             self.prog_bar = False
 

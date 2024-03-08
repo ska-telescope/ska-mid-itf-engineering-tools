@@ -188,6 +188,7 @@ def run_info(
     file_name: str | None,
     fmt: str,
     evrythng: bool,
+    quiet_mode: bool,
     disp_action: int,
     cfg_data: Any,
     tgo_name: str | None,
@@ -203,6 +204,7 @@ def run_info(
     :param file_name: output file name
     :param fmt: output format
     :param evrythng: get commands and attributes regadrless of state
+    :param quiet_mode: flag for displaying progress bars
     :param disp_action: flag for output format
     :param cfg_data: configuration data in JSON format
     :param tgo_name: device name
@@ -227,34 +229,15 @@ def run_info(
     ):
         _module_logger.info("List devices")
         try:
-            devices = TangoctlDevicesBasic(_module_logger, evrythng, cfg_data, tgo_name, fmt)
+            devices = TangoctlDevicesBasic(
+                _module_logger, quiet_mode, evrythng, cfg_data, tgo_name, fmt
+            )
         except tango.ConnectionFailed:
             _module_logger.error("Tango connection failed")
             return 1
         devices.read_config()
         devices.print_txt_list()
         return 0
-
-    # if tgo_name and fmt == "json" and disp_action == 1:
-    #     _module_logger.info("Print device %s", tgo_name)
-    #     if tango_port:
-    #         tgo_name = f"tango://127.0.0.1:{tango_port}/{tgo_name}#dbase=no"
-    #     try:
-    #         device = TangoctlDeviceConfig(_module_logger, tgo_name)
-    #     except tango.ConnectionFailed:
-    #         _module_logger.error("Tango connection failed")
-    #         return 1
-    #     devsdict = device.get_json()
-    #     try:
-    #         json_out = json.dumps(devsdict, indent=4)
-    #     except TypeError:
-    #         json_out = devsdict
-    #     if file_name:
-    #         with open(file_name, "w") as outf:
-    #             outf.write(json_out)
-    #     else:
-    #         print(json_out)
-    #     return 0
 
     if file_name is not None:
         if os.path.splitext(file_name)[-1] != f".{fmt}":
@@ -264,6 +247,7 @@ def run_info(
     try:
         devices = TangoctlDevices(
             _module_logger,
+            quiet_mode,
             kube_namespace,
             evrythng,
             cfg_data,
@@ -329,28 +313,28 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print(f"\t{p_name} -d [-K <NAMESPACE>|-H <HOST>]")
     print("\nDisplay all devices")
     print(
-        f"\t{p_name} --full|--list|--quickf [--dry-run]"
+        f"\t{p_name} --full|--list|--shortf [--dry-run]"
         f" [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
     print(f"\t{p_name} -f|-l|-q|-s [-K <NAMESPACE>|-H <HOST>]")
     print("\nFilter on device name")
-    print(f"\t{p_name} --full|--list|--quick -D <DEVICE> [-K <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} --full|--list|--short -D <DEVICE> [-K <NAMESPACE>|-H <HOST>]")
     print(f"\t{p_name} -f|-l|-q|-s --device=<DEVICE> [--k8s-ns=<NAMESPACE>|--host=<HOST>]")
     print("\nFilter on attribute name")
     print(
-        f"\t{p_name} --full|--list|--quick --attribute=<ATTRIBUTE>"
+        f"\t{p_name} --full|--list|--short --attribute=<ATTRIBUTE>"
         " [--k8s-ns=<NAMESPACE>|--host=<HOST>]"
     )
     print(f"\t{p_name} -f|-l|-q|-s -A <ATTRIBUTE> [-K <NAMESPACE>|-H <HOST>]")
     print("\nFilter on command name")
     print(
-        f"\t{p_name} --full|--list|--quick --command=<COMMAND>"
+        f"\t{p_name} --full|--list|--short --command=<COMMAND>"
         " [--k8s-ns=<NAMESPACE>|--host=<HOST>]"
     )
     print(f"\t{p_name} -f|-l|-q|-s -C <COMMAND> [-N <NAMESPACE>|-H <HOST>]")
     print("\nFilter on property name")
     print(
-        f"\t{p_name} --full|--list|--quick --property=<PROPERTY>"
+        f"\t{p_name} --full|--list|--short --property=<PROPERTY>"
         " [--k8s-ns=<NAMESPACE>|--host=<HOST>]"
     )
     print(f"\t{p_name} -f|-l|-q|-s -P <PROPERTY> [-N <NAMESPACE>|--host=<HOST>]")
@@ -381,7 +365,7 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print("\t--admin=<0|1>\t\t\tset admin mode off or on")
     print("\t-f|--full\t\t\tdisplay in full")
     print("\t-l|--list\t\t\tdisplay device name and status on one line")
-    print("\t-q|--quick\t\t\tdisplay device name, status and query devices")
+    print("\t-s|--short\t\t\tdisplay device name, status and query devices")
     print("\t-m\t\t\t\tdisplay in markdown format")
     print("\t-f\t\t\t\tget commands, attributes and properties regardless of state")
     print("\t--json-dir=<HOST>\t\tDirectory with JSON input file, e.g. 'resources'")
@@ -461,6 +445,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     input_file: str | None = None
     json_dir: str | None = None
     output_file: str | None = None
+    quiet_mode: bool = False
     show_attrib: bool = False
     show_command: bool = False
     show_jargon: bool = False
@@ -489,7 +474,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
-            "acefhjklmnqtvyVA:C:H:D:I:J:K:p:O:P:T:W:",
+            "acefhjklmnqstvyVA:C:H:D:I:J:K:p:O:P:T:W:",
             [
                 "dry-run",
                 "everything",
@@ -499,9 +484,10 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "md",
                 "off",
                 "on",
+                "quiet",
                 "standby",
                 "status",
-                "quick",
+                "short",
                 "show-acronym",
                 "show-db",
                 "show-dev",
@@ -573,7 +559,9 @@ def main(y_arg: list) -> int:  # noqa: C901
             output_file = arg
         elif opt in ("--port", "-p"):
             tango_port = int(arg)
-        elif opt in ("--quick", "-q"):
+        elif opt in ("--quiet", "-q"):
+            quiet_mode = True
+        elif opt in ("--short", "-s"):
             disp_action = 3
         elif opt in ("--show-db", "-t"):
             show_tango = True
@@ -698,6 +686,7 @@ def main(y_arg: list) -> int:  # noqa: C901
         output_file,
         fmt,
         evrythng,
+        quiet_mode,
         disp_action,
         cfg_data,
         tgo_name,

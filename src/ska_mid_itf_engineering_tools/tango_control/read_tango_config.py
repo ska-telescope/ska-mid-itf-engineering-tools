@@ -15,6 +15,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
     """Read all the configuration on offer."""
 
     logger: logging.Logger
+    prog_bar: bool = True
     dev: tango.DeviceProxy
     attributes: dict = {}
     commands: dict = {}
@@ -25,6 +26,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
     def __init__(
         self,
         logger: logging.Logger,
+        quiet_mode: bool,
         device: str,
     ):
         """
@@ -61,6 +63,9 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
             self.properties[prop] = {}
         self.info: Any = self.dev.info()
         self.green_mode = self.dev.get_green_mode()
+        self.prog_bar = not quiet_mode
+        if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
+            self.prog_bar = False
 
     def get_json(self, delimiter: str = ",") -> dict:  # noqa: C901
         """
@@ -210,13 +215,10 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
         devdict["info"]["server_version"] = self.info.server_version
         devdict["attributes"] = {}
         self.logger.info("Set attributes...")
-        prog_bar = True
-        if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
-            prog_bar = False
         # Run "for attrib in self.attributes:"
         for attrib in progress_bar(
             self.attributes,
-            prog_bar,
+            self.prog_bar,
             prefix=f"Set {len(self.attributes)} attributes :",
             suffix="complete",
             decimals=0,

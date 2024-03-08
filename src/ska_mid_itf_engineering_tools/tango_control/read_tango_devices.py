@@ -25,6 +25,7 @@ class TangoctlDevicesBasic:
     def __init__(  # noqa: C901s
         self,
         logger: logging.Logger,
+        quiet_mode: bool,
         evrythng: bool,
         cfg_data: Any,
         tgo_name: str | None,
@@ -34,6 +35,7 @@ class TangoctlDevicesBasic:
         Read list of Tango devices.
 
         :param logger: logging handle
+        :param quiet_mode: flag for displaying progress bar
         :param evrythng: read and display the whole thing
         :param cfg_data: configuration data
         :param fmt: output format
@@ -61,7 +63,7 @@ class TangoctlDevicesBasic:
         self.logger.info("Read %d devices...", len(device_list))
         self.fmt = fmt
         list_values: dict = cfg_data["list_values"]
-        self.prog_bar: bool = True
+        self.prog_bar = not quiet_mode
         if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
             self.prog_bar = False
         # Run "for device in device_list:"
@@ -94,15 +96,10 @@ class TangoctlDevicesBasic:
     def read_config(self) -> None:
         """Read additional data."""
         self.logger.info("Read %d device configs...", len(self.devices))
-        prog_bar: bool = True
-        if self.fmt == "md":
-            prog_bar = False
-        if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
-            prog_bar = False
         # Run "device in self.devices:"
         for device in progress_bar(
             self.devices,
-            prog_bar,
+            self.prog_bar,
             prefix=f"Read {len(self.devices)} device configs :",
             suffix="complete",
             decimals=0,
@@ -124,10 +121,12 @@ class TangoctlDevices(TangoctlDevicesBasic):
     devices: dict = {}
     attribs_found: list = []
     tgo_space: str
+    prog_bar: bool = True
 
     def __init__(  # noqa: C901s
-        self,
+        self,s
         logger: logging.Logger,
+        quiet_mode: bool,
         kube_namespace: str | None,
         evrythng: bool,
         cfg_data: dict,
@@ -145,6 +144,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         :param logger: logging handle
         :param kube_namespace: Kubernetes namespace
         :param cfg_data: configuration data in JSON format
+        :param quiet_mode: flag for displaying progress bars
         :param evrythng: get commands and attributes regadrless of state
         :param tgo_name: filter device name
         :param tgo_attrib: filter attribute name
@@ -179,7 +179,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
 
         if tango_port:
             trl = f"tango://127.0.0.1:{tango_port}/{tgo_name}#dbase=no"
-            new_dev = TangoctlDevice(logger, trl, tgo_attrib, tgo_cmd, tgo_prop)
+            new_dev = TangoctlDevice(logger, not self.prog_bar, trl, tgo_attrib, tgo_cmd, tgo_prop)
             self.devices[tgo_name] = new_dev
         else:
             # Connect to database
@@ -193,15 +193,13 @@ class TangoctlDevices(TangoctlDevicesBasic):
             device_list = sorted(database.get_device_exported("*").value_string)
             self.logger.info("Read %d devices available...", len(device_list))
 
-            prog_bar: bool = True
+            self.prog_bar = not quiet_mode
             if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
-                prog_bar = False
-            if fmt == "md" and output_file is None:
-                prog_bar = False
+                self.prog_bar = False
             # Run "device in device_list"
             for device in progress_bar(
                 device_list,
-                prog_bar,
+                self.prog_bar,
                 prefix=f"Read {len(device_list)} exported devices :",
                 suffix="Complete",
                 length=100,
@@ -223,7 +221,9 @@ class TangoctlDevices(TangoctlDevicesBasic):
                         self.logger.info("Ignore device %s", device)
                         continue
                 try:
-                    new_dev = TangoctlDevice(logger, device, tgo_attrib, tgo_cmd, tgo_prop)
+                    new_dev = TangoctlDevice(
+                        logger, not self.prog_bar, device, tgo_attrib, tgo_cmd, tgo_prop
+                    )
                 except tango.ConnectionFailed:
                     logger.info("Could not read device %s", device)
                     continue
@@ -353,11 +353,15 @@ class TangoctlDevices(TangoctlDevicesBasic):
             self.print_txt_list()
         elif disp_action == 3:
             devsdict = self.get_json()
-            json_reader = TangoJsonReader(self.logger, self.tgo_space, devsdict, self.output_file)
+            json_reader = TangoJsonReader(
+                self.logger, not self.prog_bar, self.tgo_space, devsdict, self.output_file
+            )
             json_reader.print_txt_quick()
         else:
             devsdict = self.get_json()
-            json_reader = TangoJsonReader(self.logger, self.tgo_space, devsdict, self.output_file)
+            json_reader = TangoJsonReader(
+                self.logger, not self.prog_bar, self.tgo_space, devsdict, self.output_file
+            )
             json_reader.print_txt_all()
 
     def print_json(self, disp_action: int) -> None:
