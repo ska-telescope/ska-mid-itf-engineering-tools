@@ -1,4 +1,4 @@
-"""Out-of-date dependency collector for Helm."""
+"""Out-of-date dependency checker for Helm."""
 
 import os
 import subprocess
@@ -8,15 +8,15 @@ from typing import Dict, List
 import requests
 import semver
 
-from .types import Dependency, DependencyCollector, DependencyGroup
+from .types import Dependency, DependencyChecker, DependencyGroup
 
 
-class HelmDependencyCollector(DependencyCollector):
-    """Out-of-date dependency collector for Helm."""
+class HelmDependencyChecker(DependencyChecker):
+    """Out-of-date dependency checker for Helm."""
 
     def __init__(self, charts_dir: str = "charts") -> None:
         """
-        Initialise the HelmDependencyCollector.
+        Initialise the HelmDependencyChecker.
 
         :param charts_dir: The location of the charts, defaults to "charts"
         :type charts_dir: str
@@ -26,7 +26,7 @@ class HelmDependencyCollector(DependencyCollector):
 
     def valid_for_project(self) -> bool:
         """
-        Determine whether the DependencyCollector can be executed for the current project.
+        Determine whether the dependency checker can be executed for the current project.
 
         :return: True if it can be executed, False otherwise.
         :rtype: bool
@@ -159,7 +159,7 @@ class HelmDependencyCollector(DependencyCollector):
 
     def name(self) -> str:
         """
-        Retrieve the name of the dependency collector.
+        Retrieve the name of the dependency checker.
 
         :return: The name.
         :rtype: str

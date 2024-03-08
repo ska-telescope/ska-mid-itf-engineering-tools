@@ -1,6 +1,7 @@
 """Types for the dependency checker."""
 
 import logging
+from collections import OrderedDict
 from typing import Any, Dict, List
 
 import semver
@@ -99,15 +100,15 @@ class DependencyGroup:
     dependencies: List[Dependency] = []
 
 
-class DependencyCollector:
-    """Base class for dependency collectors."""
+class DependencyChecker:
+    """Base class for dependency checkers."""
 
     def __init__(self) -> None:
-        """Initialise the DependencyCollector."""
+        """Initialise the DependencyChecker."""
         self.logger = logging.getLogger(__name__)
 
     def valid_for_project(self) -> bool:
-        """Determine whether the DependencyCollector can be executed for the current project."""
+        """Determine whether the DependencyChecker can be executed for the current project."""
         pass
 
     def collect_stale_dependencies(self) -> List[DependencyGroup]:
@@ -115,5 +116,34 @@ class DependencyCollector:
         pass
 
     def name(self) -> str:
-        """Retrieve the name of the dependency collector."""
+        """Retrieve the name of the dependency checker."""
+        pass
+
+
+@dataclass
+class ProjectInfo:
+    """ProjectInfo is store information about the current project."""
+
+    name: str
+    version: str
+
+
+class DependencyNotifier:
+    """DependencyNotifier sends notifications for a project's stale dependencies."""
+
+    def __init__(self):
+        """Initialise the dependency checker."""
+        self.logger = logging.getLogger(__name__)
+
+    def send_notification(
+        self, project_info: ProjectInfo, dependency_map: OrderedDict[str : List[DependencyGroup]]
+    ):
+        """
+        Send notifications for a project's stale dependencies.
+
+        :param project_info: The project name and version.
+        :type project_info: ProjectInfo
+        :param dependency_map: The stale project dependencies.
+        :type dependency_map: _type_
+        """
         pass

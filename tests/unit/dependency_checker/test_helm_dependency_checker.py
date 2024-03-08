@@ -1,10 +1,10 @@
-"""Tests for the Helm dependency collector."""
+"""Tests for the Helm dependency checker."""
 
 from typing import List
 
 import pytest
 
-from ska_mid_itf_engineering_tools.dependency_checker import helm_dependency_collector
+from ska_mid_itf_engineering_tools.dependency_checker import helm_dependency_checker
 from ska_mid_itf_engineering_tools.dependency_checker.types import Dependency
 
 
@@ -85,14 +85,14 @@ def test_parse_helm_valid(helm_output_valid: str, helm_dependencies_valid: List[
     :param helm_dependencies_valid: The expected results
     :type helm_dependencies_valid: List[Dependency]
     """
-    dc = helm_dependency_collector.HelmDependencyCollector()
+    dc = helm_dependency_checker.HelmDependencyChecker()
     result = dc.parse_helm_dependencies(helm_output_valid)
     assert result == helm_dependencies_valid
 
 
 def test_parse_helm_empty():
     """Tests that valid helm output is parsed correctly."""
-    dc = helm_dependency_collector.HelmDependencyCollector()
+    dc = helm_dependency_checker.HelmDependencyChecker()
     result = dc.parse_helm_dependencies("")
     assert result == []
 
@@ -105,5 +105,5 @@ def test_parse_helm_invalid(helm_output_invalid: str):
     :type helm_output_invalid: str
     """
     with pytest.raises(ValueError):
-        dc = helm_dependency_collector.HelmDependencyCollector()
+        dc = helm_dependency_checker.HelmDependencyChecker()
         dc.parse_helm_dependencies(helm_output_invalid)

@@ -4,7 +4,7 @@ from typing import List
 
 import pytest
 
-from ska_mid_itf_engineering_tools.dependency_checker import poetry_dependency_collector
+from ska_mid_itf_engineering_tools.dependency_checker import poetry_dependency_checker
 from ska_mid_itf_engineering_tools.dependency_checker.types import Dependency
 
 
@@ -60,14 +60,14 @@ def test_parse_poetry_valid(poetry_output_valid: str, dependencies_valid: List[D
     :param dependencies_valid: The expected results
     :type dependencies_valid: List[Dependency]
     """
-    dc = poetry_dependency_collector.PoetryDependencyCollector()
+    dc = poetry_dependency_checker.PoetryDependencyChecker()
     result = dc.parse_poetry_dependencies(poetry_output_valid)
     assert result == dependencies_valid
 
 
 def test_parse_poetry_empty():
     """Tests that empty poetry output is handled correctly."""
-    dc = poetry_dependency_collector.PoetryDependencyCollector()
+    dc = poetry_dependency_checker.PoetryDependencyChecker()
     result = dc.parse_poetry_dependencies("")
     assert len(result) == 0
 
@@ -79,6 +79,6 @@ def test_parse_poetry_invalid(poetry_output_invalid: str):
     :param poetry_output_invalid: Invalid poetry output string.
     :type poetry_output_invalid: str
     """
-    dc = poetry_dependency_collector.PoetryDependencyCollector()
+    dc = poetry_dependency_checker.PoetryDependencyChecker()
     with pytest.raises(ValueError):
         dc.parse_poetry_dependencies(poetry_output_invalid)

@@ -1,18 +1,18 @@
-"""A dependency collector for poetry."""
+"""A dependency checker for poetry."""
 
 import os
 import subprocess
 from typing import List
 
-from .types import Dependency, DependencyCollector, DependencyGroup
+from .types import Dependency, DependencyChecker, DependencyGroup
 
 
-class PoetryDependencyCollector(DependencyCollector):
-    """A dependency collector for poetry."""
+class PoetryDependencyChecker(DependencyChecker):
+    """A dependency checker for poetry."""
 
     def valid_for_project(self) -> bool:
         """
-        Determine whether the DependencyCollector can be executed for the current project.
+        Determine whether the PoetryDependencyChecker can be executed for the current project.
 
         :return: True if it can be executed, False otherwise.
         :rtype: bool
@@ -59,7 +59,7 @@ class PoetryDependencyCollector(DependencyCollector):
 
     def name(self) -> str:
         """
-        Retrieve the name of the dependency collector.
+        Retrieve the name of the dependency checker.
 
         :return: The name.
         :rtype: str
