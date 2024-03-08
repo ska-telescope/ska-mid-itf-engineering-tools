@@ -90,7 +90,7 @@ def test_dish_fqnds() -> None:
     the_domain = "svc.miditf.internal.skao.int"
     the_dish_ids = [
         f"tango://tango-databaseds.dish-lmc-ska001.{the_domain}:"
-        "10000/mid-dish/dish-manager/SKA001"),
+        "10000/mid-dish/dish-manager/SKA001",
         f"tango://tango-databaseds.dish-lmc-ska036.{the_domain}:"
         "10000/mid-dish/dish-manager/SKA036",
         f"tango://tango-databaseds.dish-lmc-ska063.{the_domain}:"
