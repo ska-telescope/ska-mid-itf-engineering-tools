@@ -103,7 +103,7 @@ def dish_fqdns(
     ) -> str:
         id = single_dish_id_uppercase(id=dish_id)
         cluster_domain = set_cluster_domain(dish_id=id, domain_postfix=cluster_domain_postfix)
-        return f"tango://{hostname}.{namespace_prefix}{id}{namespace_postfix}.svc.{cluster_domain}:10000/mid-dish/dish-manager{id}"  # noqa E501
+        return f"tango://{hostname}.{namespace_prefix}{id}{namespace_postfix}.svc.{cluster_domain}:10000/mid-dish/dish-manager/{id}"  # noqa E501
 
     fqdns = [
         single_dish_fqdn(
