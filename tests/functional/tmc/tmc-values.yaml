@@ -4,10 +4,10 @@ tmc:
     namespace_dish:
       dish_name:
         [
-          "tango://tango-databaseds.dish-lmc-ska001.svc.miditf.internal.skao.int:10000/mid-dish/dish-manager/SKA001",
-          "tango://tango-databaseds.dish-lmc-ska036.svc.miditf.internal.skao.int:10000/mid-dish/dish-manager/SKA036",
-          "tango://tango-databaseds.dish-lmc-ska063.svc.miditf.internal.skao.int:10000/mid-dish/dish-manager/SKA063",
-          "tango://tango-databaseds.dish-lmc-ska100.svc.miditf.internal.skao.int:10000/mid-dish/dish-manager/SKA100",
+          "tango://tango-databaseds.dish-lmc-SKA001.svc.miditf.internal.skao.int:10000/mid-dish/dish-manager/SKA001",
+          "tango://tango-databaseds.dish-lmc-SKA036.svc.miditf.internal.skao.int:10000/mid-dish/dish-manager/SKA036",
+          "tango://tango-databaseds.dish-lmc-SKA063.svc.miditf.internal.skao.int:10000/mid-dish/dish-manager/SKA063",
+          "tango://tango-databaseds.dish-lmc-SKA100.svc.miditf.internal.skao.int:10000/mid-dish/dish-manager/SKA100",
         ]
   deviceServers:
     centralnode:

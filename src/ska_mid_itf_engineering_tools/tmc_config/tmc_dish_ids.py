@@ -33,10 +33,10 @@ def instances(ids: str = "SKA000") -> list[str]:
 
 def single_dish_id_uppercase(id: str = "SKA000") -> str:
     """
-    Set DishID to lowercase for Tango device name.
+    Set DishID to uppercase for Tango device name.
 
     :param id: string representing DishID, defaults to "SKA000"
-    :return: lowercase dishID
+    :return: uppercase dishID
     """
     return id.upper()
 
@@ -52,14 +52,14 @@ def dish_ids_array_from_str(ids: str = "SKA000") -> list[str]:
 
 
 def set_cluster_domain(
-    dish_id: str = "ska000",
+    dish_id: str = "SKA000",
     domain_postfix: str = "miditf.internal.skao.int",
     domain_prefix: str = "",
 ) -> str:
     """
     Make wild assumptions about the future of Kubernetes clusters in SKAO.
 
-    :param dish_id: Lowercase DishID, defaults to "ska000"
+    :param dish_id: Upper case DishID, defaults to "SKA000"
     :param domain_postfix: Cluster Domain where this dish is deployed, defaults to
         "miditf.internal.skao.int"
     :param domain_prefix: Prefix of Cluster Domain where this dish is deployed,
