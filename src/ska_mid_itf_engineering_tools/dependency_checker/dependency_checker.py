@@ -343,7 +343,6 @@ def main():
     slack_webhook_url = ""
     if not args.dry_run:
         slack_webhook_url = os.environ["DEPENDENCY_CHECKER_WEBHOOK_URL"]
-    print(args.dry_run)
     DependencyChecker(
         slack_webhook_url=slack_webhook_url,
         dependency_collectors=dependency_checkers,
