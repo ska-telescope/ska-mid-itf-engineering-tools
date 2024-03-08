@@ -7,6 +7,7 @@ import os
 import re
 import sys
 from typing import Any, TextIO
+from ska_mid_itf_engineering_tools.tango_control.read_tango_device import progress_bar
 
 
 def md_format(inp: str) -> str:
@@ -81,6 +82,9 @@ class TangoJsonReader:
             self.tgo_space = f"namespace {kube_namespace}"
         else:
             self.tgo_space = f"host {tango_host}"
+        self.prog_bar: bool = True
+        if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
+            self.prog_bar = False
 
     def print_markdown_all(self) -> None:  # noqa: C901
         """Print the whole thing."""
@@ -111,7 +115,7 @@ class TangoJsonReader:
                     # "device_id ": -1, "obsState": "ObsState.EMPTY"
                     # }
                     self.logger.info("Error : %s", str(jerr))
-                    self.logger.Info("Could not read : %s", dstr)
+                    self.logger.info("Could not read : %s", dstr)
                     # print(f"| <ERROR> {str(jerr):134} ||")
                     print(f"| {dstr:143} ||", file=self.outf)
                     return
@@ -266,7 +270,7 @@ class TangoJsonReader:
                     for item in devdict["attributes"][attrib]["config"]:
                         config = devdict["attributes"][attrib]["config"][item]
                         print_attribute_data(item, config)
-                print("", file=self.outf)
+                print("\n*******\n", file=self.outf)
             print("\n", file=self.outf)
 
         def print_md_commands() -> None:
@@ -293,7 +297,7 @@ class TangoJsonReader:
                 else:
                     md_print(f"| {' ':{cc2}} | {' ':{cc3}} |", file=self.outf)
                 n += 1
-            print("\n", file=self.outf)
+            print("\n*******\n", file=self.outf)
 
         def print_md_properties() -> None:
             """Print properties."""
@@ -308,23 +312,33 @@ class TangoJsonReader:
                 )
                 md_print(f"| {prop:{pc1}} ", end="", file=self.outf)
                 print_data(devdict["properties"][prop]["value"], pc1, 0, pc2)
-            print("\n", file=self.outf)
+            print("\n*******\n", file=self.outf)
 
         print(f"# Tango devices in {self.tgo_space}\n", file=self.outf)
-        for device in self.devices_dict:
+        # Run "for device in self.devices_dict:"
+        for device in progress_bar(
+            self.devices_dict,
+            self.prog_bar,
+            prefix=f"Read {len(self.devices_dict)} JSON devices :",
+            suffix="complete",
+            decimals=0,
+            length=100,
+        ):
             self.logger.info("Print device %s", device)
             devdict = self.devices_dict[device]
             md_print(f"## Device {devdict['name']}\n", file=self.outf)
             print("| FIELD | VALUE |", file=self.outf)
             print("|:------|:------|", file=self.outf)
             print(f"| version | {devdict['version']} |", file=self.outf)
-            print(f"| Version info | {devdict['versioninfo'][0]} |", file=self.outf)
-            print(f"| Admin mode | {devdict['adminMode']} |", file=self.outf)
+            if "versioninfo" in devdict:
+                md_print(f"| Version info | {devdict['versioninfo'][0]} |", file=self.outf)
+            if "adminMode" in devdict:
+                print(f"| Admin mode | {devdict['adminMode']} |", file=self.outf)
             if "info" in devdict:
-                print(f"| Device class | {devdict['info']['dev_class']} |", file=self.outf)
-                print(f"| Server host | {devdict['info']['server_host']} |", file=self.outf)
+                md_print(f"| Device class | {devdict['info']['dev_class']} |", file=self.outf)
+                md_print(f"| Server host | {devdict['info']['server_host']} |", file=self.outf)
                 md_print(f"| Server ID | {devdict['info']['server_id']} |", file=self.outf)
-            print("\n", file=self.outf)
+            print("\n*******\n", file=self.outf)
             print_md_attributes()
             print_md_commands()
             print_md_properties()

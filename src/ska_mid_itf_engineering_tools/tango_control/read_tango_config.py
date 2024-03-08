@@ -213,7 +213,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
         prog_bar = True
         if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
             prog_bar = False
-        # for attrib in self.attributes:
+        # Run "for attrib in self.attributes:"
         for attrib in progress_bar(
             self.attributes,
             prog_bar,

@@ -491,17 +491,49 @@ class TangoctlDevice(TangoctlDeviceBasic):
             devdict["info"]["server_version"] = self.info.server_version
         devdict["attributes"] = {}
         if self.attribs_found:
-            for attrib in self.attribs_found:
+            # for attrib in self.attribs_found:
+            for attrib in progress_bar(
+                self.attribs_found,
+                self.prog_bar,
+                prefix=f"Read {len(self.attribs_found)} JSON attributes :",
+                suffix="complete",
+                decimals=0,
+                length=100,
+            ):
                 set_json_attribute(attrib)
         else:
-            for attrib in self.attributes:
+            # for attrib in self.attributes:
+            for attrib in progress_bar(
+                self.attribs_found,
+                self.prog_bar,
+                prefix=f"Read {len(self.attribs_found)} JSON attributes :",
+                suffix="complete",
+                decimals=0,
+                length=100,
+            ):
                 set_json_attribute(attrib)
         devdict["commands"] = {}
-        for cmd in self.commands:
+        # for cmd in self.commands:
+        for cmd in progress_bar(
+            self.commands,
+            self.prog_bar,
+            prefix=f"Read {len(self.commands)} JSON commands :",
+            suffix="complete",
+            decimals=0,
+            length=100,
+        ):
             self.logger.debug("Set command %s", cmd)
             set_json_command()
         devdict["properties"] = {}
-        for prop in self.properties:
+        # Run "for prop in self.properties:"
+        for prop in progress_bar(
+            self.properties,
+            self.prog_bar,
+            prefix=f"Read {len(self.properties)} JSON commands :",
+            suffix="complete",
+            decimals=0,
+            length=100,
+        ):
             self.logger.debug("Set property %s", prop)
             set_json_property()
         self.logger.info("INFO: %s", devdict)

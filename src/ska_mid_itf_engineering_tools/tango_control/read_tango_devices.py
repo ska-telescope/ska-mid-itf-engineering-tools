@@ -61,10 +61,10 @@ class TangoctlDevicesBasic:
         self.logger.info("Read %d devices...", len(device_list))
         self.fmt = fmt
         list_values: dict = cfg_data["list_values"]
-        if self.fmt == "md":
-            self.prog_bar = False
+        self.prog_bar: bool = True
         if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
             self.prog_bar = False
+        # Run "for device in device_list:"
         for device in progress_bar(
             device_list,
             self.prog_bar,
@@ -99,6 +99,7 @@ class TangoctlDevicesBasic:
             prog_bar = False
         if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
             prog_bar = False
+        # Run "device in self.devices:"
         for device in progress_bar(
             self.devices,
             prog_bar,
@@ -197,6 +198,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
                 prog_bar = False
             if fmt == "md" and output_file is None:
                 prog_bar = False
+            # Run "device in device_list"
             for device in progress_bar(
                 device_list,
                 prog_bar,
@@ -254,8 +256,9 @@ class TangoctlDevices(TangoctlDevicesBasic):
 
     def read_attribute_values(self) -> None:
         """Read device data."""
-        # for device in self.devices:
+        # Run "for device in self.devices:"
         self.logger.info("Read %d attributes...", len(self.devices))
+        # Run "for device in self.devices:"
         for device in progress_bar(
             self.devices,
             self.prog_bar,
@@ -269,7 +272,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
     def read_command_values(self) -> None:
         """Read device data."""
         self.logger.info("Read %d device cmmands...", len(self.devices))
-        # for device in self.devices:
+        # Run "for device in self.devices:"
         for device in progress_bar(
             self.devices,
             self.prog_bar,
@@ -283,7 +286,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
     def read_property_values(self) -> None:
         """Read device data."""
         self.logger.info("Read %d device properties...", len(self.devices))
-        # for device in self.devices:
+        # Run "for device in self.devices:"
         for device in progress_bar(
             self.devices,
             self.prog_bar,
@@ -309,15 +312,16 @@ class TangoctlDevices(TangoctlDevicesBasic):
         """
         devsdict = {}
         self.logger.info("Read %d JSON devices...", len(self.devices))
-        # for device in self.devices:
-        for device in progress_bar(
-            self.devices,
-            self.prog_bar,
-            prefix=f"Read {len(self.devices)} JSON records :",
-            suffix="complete",
-            decimals=0,
-            length=100,
-        ):
+        # TODO use this to implement a progress bar
+        # for device in progress_bar(
+        #     self.devices,
+        #     self.prog_bar,
+        #     prefix=f"Read {len(self.devices)} JSON records :",
+        #     suffix="complete",
+        #     decimals=0,
+        #     length=100,
+        # ):
+        for device in self.devices:
             devsdict[device] = self.devices[device].make_json(self.delimiter)
         return devsdict
 
