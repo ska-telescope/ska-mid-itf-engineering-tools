@@ -332,6 +332,7 @@ class TangoJsonReader:
             print("| FIELD | VALUE |", file=self.outf)
             print("|:------|:------|", file=self.outf)
             print(f"| version | {devdict['version']} |", file=self.outf)
+            print(f"| device access| {devdict['device_access']} |", file=self.outf)
             if "versioninfo" in devdict:
                 md_print(f"| Version info | {devdict['versioninfo'][0]} |", file=self.outf)
             if "adminMode" in devdict:
@@ -467,41 +468,45 @@ class TangoJsonReader:
                         j += 1
                         if not devkeyval:
                             print(file=self.outf)
-                        elif "\n" in devkeyval:
-                            keyvals = devkeyval.split("\n")
-                            # Remove empty lines
-                            keyvals2 = []
-                            for keyval in keyvals:
-                                keyval2 = keyval.strip()
-                                if keyval2:
-                                    if len(keyval2) > 70:
-                                        lsp = keyval2[0:70].rfind(" ")
-                                        keyvals2.append(keyval2[0:lsp])
-                                        keyvals2.append(keyval2[lsp + 1 :])
-                                    else:
-                                        keyvals2.append(" ".join(keyval2.split()))
-                            print(f"{keyvals2[0]}", file=self.outf)
-                            for keyval2 in keyvals2[1:]:
-                                print(f"{' ':102} {keyval2}", file=self.outf)
-                        elif "," in devkeyval:
-                            keyvals = devkeyval.split(",")
-                            keyval = keyvals[0]
-                            print(f"{keyval}", file=self.outf)
-                            for keyval in keyvals[1:]:
-                                print(f"{' ':102} {keyval}", file=self.outf)
-                        else:
-                            keyvals2 = []
-                            if type(devkeyval) is list:
-                                keyvals2 = devkeyval
+                        elif type(devkeyval) is str:
+                            if "\n" in devkeyval:
+                                keyvals = devkeyval.split("\n")
+                                # Remove empty lines
+                                keyvals2 = []
+                                for keyval in keyvals:
+                                    keyval2 = keyval.strip()
+                                    if keyval2:
+                                        if len(keyval2) > 70:
+                                            lsp = keyval2[0:70].rfind(" ")
+                                            keyvals2.append(keyval2[0:lsp])
+                                            keyvals2.append(keyval2[lsp + 1 :])
+                                        else:
+                                            keyvals2.append(" ".join(keyval2.split()))
+                                print(f"{keyvals2[0]}", file=self.outf)
+                                for keyval2 in keyvals2[1:]:
+                                    print(f"{' ':102} {keyval2}", file=self.outf)
+                            elif "," in devkeyval:
+                                keyvals = devkeyval.split(",")
+                                keyval = keyvals[0]
+                                print(f"{keyval.strip()}", file=self.outf)
+                                for keyval in keyvals[1:]:
+                                    print(f"{' ':102} {keyval.strip()}", file=self.outf)
                             elif len(devkeyval) > 70:
+                                keyvals2 = []
                                 lsp = devkeyval[0:70].rfind(" ")
                                 keyvals2.append(devkeyval[0:lsp])
                                 keyvals2.append(devkeyval[lsp + 1 :])
+                                print(f"{keyvals2[0]}", file=self.outf)
+                                for keyval2 in keyvals2[1:]:
+                                    print(f"{' ':102} {keyval2}", file=self.outf)
                             else:
-                                keyvals2.append(" ".join(devkeyval.split()))
-                            print(f"{keyvals2[0]}", file=self.outf)
-                            for keyval2 in keyvals2[1:]:
+                                print(f"{devkeyval}", file=self.outf)
+                        elif type(devkeyval) is list:
+                            print(f"{devkeyval[0]}", file=self.outf)
+                            for keyval2 in devkeyval[1:]:
                                 print(f"{' ':102} {keyval2}", file=self.outf)
+                        else:
+                            print(f"{devkeyval}", file=self.outf)
 
         for device in self.devices_dict:
             self.logger.info("Print device %s", device)
@@ -509,6 +514,29 @@ class TangoJsonReader:
             print(f"{'name':20} {devdict['name']}", file=self.outf)
             print(f"{'version':20} {devdict['version']}", file=self.outf)
             print(f"{'green mode':20} {devdict['green_mode']}", file=self.outf)
+            print(f"{'device access':20} {devdict['device_access']}", file=self.outf)
+            if devdict["errors"]:
+                print(f"{'errors':20}", file=self.outf, end="")
+                i = 0
+                for err_msg in devdict['errors']:
+                    if "\n" in err_msg:
+                        j = 0
+                        for emsg in err_msg.split("\n"):
+                            if not i and not j:
+                                pass
+                            if i and not j:
+                                print(f"{' ':20}", file=self.outf, end="")
+                            elif j:
+                                print(f"{' ':20} ...", file=self.outf, end="")
+                            else:
+                                pass
+                            print(f" {emsg}", file=self.outf)
+                            j += 1
+                    else:
+                        if i:
+                            print(f"{' ':20}", file=self.outf, end="")
+                        print(f" {err_msg}", file=self.outf)
+                    i += 1
             # print(f"{'versioninfo':20} {devdict['versioninfo'][0]}", file=self.outf)
             # print(f"{'adminMode':20} {devdict['adminMode']}", file=self.outf)
             if "info" in devdict:

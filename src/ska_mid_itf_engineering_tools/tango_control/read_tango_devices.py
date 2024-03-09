@@ -124,7 +124,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
     prog_bar: bool = True
 
     def __init__(  # noqa: C901s
-        self,s
+        self,
         logger: logging.Logger,
         quiet_mode: bool,
         kube_namespace: str | None,
@@ -257,7 +257,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
     def read_attribute_values(self) -> None:
         """Read device data."""
         # Run "for device in self.devices:"
-        self.logger.info("Read %d attributes...", len(self.devices))
+        self.logger.info("Read attributes of %d devices...", len(self.devices))
         # Run "for device in self.devices:"
         for device in progress_bar(
             self.devices,
@@ -271,7 +271,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
 
     def read_command_values(self) -> None:
         """Read device data."""
-        self.logger.info("Read %d device cmmands...", len(self.devices))
+        self.logger.info("Read commands of %d devices...", len(self.devices))
         # Run "for device in self.devices:"
         for device in progress_bar(
             self.devices,
@@ -285,7 +285,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
 
     def read_property_values(self) -> None:
         """Read device data."""
-        self.logger.info("Read %d device properties...", len(self.devices))
+        self.logger.info("Read properties of %d devices...", len(self.devices))
         # Run "for device in self.devices:"
         for device in progress_bar(
             self.devices,

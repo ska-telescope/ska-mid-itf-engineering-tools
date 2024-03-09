@@ -38,8 +38,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
         super().__init__(logger, device)
         self.logger.info("Open device %s config", device)
 
-        attribs = self.dev.get_attribute_list()
-        for attrib in sorted(attribs):
+        for attrib in self.attribs:
             self.logger.debug("Read attribute config %s", attrib)
             self.attributes[attrib] = {}
             try:
@@ -197,6 +196,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
 
         devdict: dict = {}
         devdict["name"] = self.dev_name
+        devdict["errors"] = self.dev_errors
         devdict["version"] = self.version
         try:
             devdict["versioninfo"] = self.dev.getversioninfo()

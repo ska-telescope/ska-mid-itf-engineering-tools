@@ -44,7 +44,7 @@ class TestTangoDevice:
                 self.adminMode = None
                 self.logger.debug(terr)
             self.dev_name = self.dev.name()
-            self.attribs = self.dev.get_attribute_list()
+            self.attribs = sorted(self.dev.get_attribute_list())
             self.cmds = self.dev.get_command_list()
         self.dev_status: str | None = None
         self.dev_state: int | None = None
@@ -131,7 +131,7 @@ class TestTangoDevice:
         """
         print(f"[  OK  ] {self.dev_name} has {len(self.attribs)} attributes")
         if show:
-            for attrib in sorted(self.attribs):
+            for attrib in self.attribs:
                 print(f"\t{attrib}")
 
     def read_device_attributes(self) -> None:
