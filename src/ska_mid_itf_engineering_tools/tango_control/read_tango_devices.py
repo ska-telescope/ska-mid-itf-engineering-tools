@@ -385,7 +385,9 @@ class TangoctlDevices(TangoctlDevicesBasic):
         """
         self.logger.info("Markdown")
         devsdict = self.get_json()
-        json_reader = TangoJsonReader(self.logger, self.tgo_space, devsdict, self.output_file)
+        json_reader = TangoJsonReader(
+            self.logger, not self.prog_bar, self.tgo_space, devsdict, self.output_file
+        )
         json_reader.print_markdown_all()
 
     def print_yaml(self, disp_action: int) -> None:

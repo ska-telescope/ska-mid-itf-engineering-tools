@@ -7,6 +7,7 @@ import os
 import re
 import sys
 from typing import Any, TextIO
+
 from ska_mid_itf_engineering_tools.tango_control.read_tango_device import progress_bar
 
 
@@ -36,6 +37,7 @@ def md_print(inp: str, end: str = "\n", file: TextIO = sys.stdout) -> None:
 
 class BooleanEncoder(json.JSONEncoder):
     """Using a custom encoder"""
+
     def default(self, o: Any) -> Any:
         """
         This is the default handler.
@@ -104,7 +106,7 @@ class TangoJsonReader:
                 print(f"| {' ':143} ||", file=self.outf)
             elif dstr[0] == "{" and dstr[-1] == "}":
                 if "'" in dstr:
-                    dstr = dstr.replace("'", "\"")
+                    dstr = dstr.replace("'", '"')
                 try:
                     # ddict = json.loads(dstr, cls=BooleanEncoder)
                     ddict = json.loads(dstr)
@@ -518,7 +520,7 @@ class TangoJsonReader:
             if devdict["errors"]:
                 print(f"{'errors':20}", file=self.outf, end="")
                 i = 0
-                for err_msg in devdict['errors']:
+                for err_msg in devdict["errors"]:
                     if "\n" in err_msg:
                         j = 0
                         for emsg in err_msg.split("\n"):
@@ -537,8 +539,6 @@ class TangoJsonReader:
                             print(f"{' ':20}", file=self.outf, end="")
                         print(f" {err_msg}", file=self.outf)
                     i += 1
-            # print(f"{'versioninfo':20} {devdict['versioninfo'][0]}", file=self.outf)
-            # print(f"{'adminMode':20} {devdict['adminMode']}", file=self.outf)
             if "info" in devdict:
                 i = 0
                 for info_key in devdict["info"]:
@@ -558,7 +558,7 @@ class TangoJsonReader:
             print_txt("properties")
             print(file=self.outf)
 
-    def print_txt_quick(self) -> None:
+    def print_txt_quick(self) -> None:  # noqa: C901
         """Print text in short form."""
 
         def print_attributes() -> None:
