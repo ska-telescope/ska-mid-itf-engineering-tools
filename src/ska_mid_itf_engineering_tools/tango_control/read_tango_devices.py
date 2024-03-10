@@ -125,10 +125,6 @@ class TangoctlDevicesBasic:
             if dev_class != "---" and dev_class not in dev_classes:
                 dev_classes.append(dev_class)
                 self.devices[device].print_list()
-        # print(
-        #     f"{self.dev_name:40} {self.dev_str:10} {self.adminModeStr:11} {self.version:8}"
-        #     f" {self.dev_class}"
-        # )
 
     def get_classes(self) -> OrderedDict[Any, Any]:
         """
@@ -289,7 +285,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
 
     def read_attribute_values(self) -> None:
         """Read device data."""
-        # Run "for device in self.devices:"
         self.logger.info("Read attributes of %d devices...", len(self.devices))
         # Run "for device in self.devices:"
         for device in progress_bar(
@@ -345,7 +340,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
         """
         devsdict = {}
         self.logger.debug("Read %d JSON devices...", len(self.devices))
-        # TODO use this to implement a progress bar
         # Run "for device in self.devices:"
         for device in progress_bar(
             self.devices,

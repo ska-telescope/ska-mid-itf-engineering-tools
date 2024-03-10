@@ -977,8 +977,6 @@ class TangoDeviceInfo:
             self.on_dev_count += self._show_device_list(fmt)
         elif disp_action == 3:
             self.on_dev_count += self._show_device_query(fmt)
-        # elif disp_action == 2:
-        #     self.on_dev_count += self.show_device_markdown()
         elif disp_action == 1:
             self.on_dev_count += self._show_device_full(dry_run, fmt)
         else:

@@ -318,8 +318,6 @@ class TangoJsonReader:
             print("|:------|:------|", file=self.outf)
             print(f"| version | {devdict['version']} |", file=self.outf)
             print(f"| device access| {devdict['device_access']} |", file=self.outf)
-            # if "versioninfo" in devdict:
-            #     md_print(f"| Version info | {devdict['versioninfo'][0]} |", file=self.outf)
             if "adminMode" in devdict:
                 print(f"| Admin mode | {devdict['adminMode']} |", file=self.outf)
             if "info" in devdict:
@@ -646,7 +644,6 @@ class TangoJsonReader:
             print(f"{'name':20} {devdict['name']}", file=self.outf)
             print(f"{'version':20} {devdict['version']}", file=self.outf)
             print(f"{'versioninfo':20} {devdict['versioninfo'][0]}", file=self.outf)
-            # print(f"{'adminMode':20} {devdict['adminMode']}", file=self.outf)
             print_attributes()
             print_commands()
             print(file=self.outf)

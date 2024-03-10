@@ -199,7 +199,6 @@ class TangoctlDeviceBasic:
         elif "adminMode" in self.list_values["attributes"]:
             try:
                 self.adminMode = self.dev.adminMode
-                # self.adminMode = self.dev.read_attribute("adminMode")
                 self.logger.debug("Admin mode: %s", self.adminMode)
             except tango.CommunicationFailed as terr:
                 err_msg = terr.args[0].desc.strip()
@@ -275,7 +274,6 @@ class TangoctlDevice(TangoctlDeviceBasic):
                     self.logger.debug("Add command %s", cmd)
                     self.commands[cmd] = {}
             elif tgo_attrib or tgo_prop:
-                # self.logger.debug("Skip commands")
                 pass
             else:
                 self.logger.debug("Add command %s", cmd)
@@ -285,10 +283,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 if tgo_attrib in attrib.lower():
                     self.logger.debug("Add attribute %s", attrib)
                     self.attributes[attrib] = {}
-                # else:
-                #     self.logger.debug("Skip attribute %s", attrib)
             elif tgo_cmd or tgo_prop:
-                # self.logger.debug("Skip attributes")
                 pass
             else:
                 self.logger.debug("Add attribute %s", attrib)
@@ -298,10 +293,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 if tgo_prop in prop.lower():
                     self.logger.debug("Add property %s", prop)
                     self.properties[prop] = {}
-                # else:
-                #     self.logger.debug("Skip property %s", prop)
             elif tgo_attrib or tgo_cmd:
-                # self.logger.debug("Skip property")
                 pass
             else:
                 self.logger.debug("Add property %s", prop)
@@ -553,7 +545,6 @@ class TangoctlDevice(TangoctlDeviceBasic):
         devdict["green_mode"] = self.green_mode
         devdict["version"] = self.version
         devdict["device_access"] = self.dev_access
-        # devdict["adminMode"] = self.adminModeStr
         if self.info is not None:
             devdict["info"] = {}
             devdict["info"]["dev_class"] = self.info.dev_class
@@ -564,15 +555,6 @@ class TangoctlDevice(TangoctlDeviceBasic):
             devdict["info"]["server_version"] = self.info.server_version
         devdict["attributes"] = {}
         if self.attribs_found:
-            # Run "for attrib in self.attribs_found:"
-            # for attrib in progress_bar(
-            #     self.attribs_found,
-            #     self.prog_bar,
-            #     prefix=f"Read {len(self.attribs_found)} JSON attributes :",
-            #     suffix="complete",
-            #     decimals=0,
-            #     length=100,
-            # ):
             for attrib in self.attribs_found:
                 set_json_attribute(attrib)
         else:
@@ -587,30 +569,12 @@ class TangoctlDevice(TangoctlDeviceBasic):
             ):
                 set_json_attribute(attrib)
         devdict["commands"] = {}
-        # Run "for cmd in self.commands:"
         if self.commands:
-            # for cmd in progress_bar(
-            #     self.commands,
-            #     self.prog_bar,
-            #     prefix=f"Read {len(self.commands)} JSON commands :",
-            #     suffix="complete",
-            #     decimals=0,
-            #     length=100,
-            # ):
             for cmd in self.commands:
                 self.logger.debug("Set command %s", cmd)
                 set_json_command(cmd)
         devdict["properties"] = {}
-        # Run "for prop in self.properties:"
         if self.properties:
-            # for prop in progress_bar(
-            #     self.properties,
-            #     self.prog_bar,
-            #     prefix=f"Read {len(self.properties)} JSON commands :",
-            #     suffix="complete",
-            #     decimals=0,
-            #     length=100,
-            # ):
             for prop in self.properties:
                 self.logger.debug("Set property %s", prop)
                 set_json_property(prop)
@@ -640,15 +604,6 @@ class TangoctlDevice(TangoctlDeviceBasic):
 
     def read_attribute_value(self) -> None:
         """Read device attributes."""
-        # TODO this progress bar might be useful
-        # for attrib in progress_bar(
-        #     self.attributes,
-        #     self.prog_bar,
-        #     prefix="Read attributes :",
-        #     suffix="complete",
-        #     decimals=0,
-        #     length=100,
-        # ):
         for attrib in self.attributes:
             self.attributes[attrib]["data"] = {}
             try:

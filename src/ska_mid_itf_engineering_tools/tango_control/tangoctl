@@ -611,7 +611,7 @@ def main(y_arg: list) -> int:  # noqa: C901
         elif opt == "--test":
             dev_test = True
         elif opt in ("--type", "-T"):
-            # Undocumented feature to search by input type
+            # TODO Undocumented feature to search by input type
             tgo_in_type = arg.lower()
         elif opt == "-v":
             _module_logger.setLevel(logging.INFO)
