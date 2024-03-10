@@ -44,7 +44,8 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
             try:
                 self.attributes[attrib]["data"] = self.dev.read_attribute(attrib)
             except tango.DevFailed as terr:
-                self.logger.debug("Could not read %s : %s", attrib, terr)
+                err_msg = terr.args[0].desc.strip()
+                self.logger.debug("Could not read %s : %s", attrib, err_msg)
                 self.attributes[attrib]["data"] = None
             self.attributes[attrib]["config"] = self.dev.get_attribute_config(attrib)
         cmds = self.dev.get_command_list()

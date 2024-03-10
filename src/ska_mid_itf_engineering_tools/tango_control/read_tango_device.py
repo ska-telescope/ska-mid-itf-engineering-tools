@@ -321,7 +321,8 @@ class TangoctlDevice(TangoctlDeviceBasic):
             self.logger.info("Could not read device %s version ID : %s", self.dev_name, str(oerr))
             self.version = "N/A"
         except tango.CommunicationFailed as terr:
-            self.logger.info("Could not read device %s version ID : %s", self.dev_name, str(terr))
+            err_msg = terr.args[0].desc.strip()
+            self.logger.info("Could not read device %s version ID : %s", self.dev_name, err_msg)
             self.version = "N/A"
         self.logger.info(
             "Add device %s with %d attributes, %d commands and %d properties",
@@ -430,7 +431,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
             try:
                 devdict["aliases"] = self.dev.get_device_alias_list()
             except AttributeError as oerr:
-                self.logger.info("Could not read device %s alias : %s", self.dev_name, str(oerr))
+                self.logger.debug("Could not read device %s alias : %s", self.dev_name, str(oerr))
                 devdict["aliases"] = "N/A"
             devdict["attributes"][attr_name] = {}
             devdict["attributes"][attr_name]["data"] = {}
@@ -601,7 +602,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
             for prop in self.properties:
                 self.logger.debug("Set property %s", prop)
                 set_json_property()
-        self.logger.info("INFO: %s", devdict)
+        self.logger.debug("Read device : %s", devdict)
         return devdict
 
     def write_attribute_value(self, attrib: str, value: str) -> int:
@@ -676,7 +677,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
                     self.logger.info("Could not run command %s : %s", cmd, err_msg)
                     self.commands[cmd]["value"] = "N/A"
                     self.commands[cmd]["error"] = err_msg
-                self.logger.debug(
+                self.logger.info(
                     "Read command %s (%s) : %s",
                     cmd,
                     type(self.commands[cmd]["value"]),
@@ -684,7 +685,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 )
             elif cmd in run_commands_name:
                 self.commands[cmd]["value"] = self.dev.command_inout(cmd, self.dev_name)
-                self.logger.debug(
+                self.logger.info(
                     "Read command %s (%s) with arg %s : %s",
                     cmd,
                     type(self.commands[cmd]["value"]),
@@ -699,7 +700,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
         """Read device properties."""
         for prop in self.properties:
             self.properties[prop]["value"] = self.dev.get_property(prop)[prop]
-            self.logger.debug("Read property %s : %s", prop, self.properties[prop]["value"])
+            self.logger.info("Read property %s : %s", prop, self.properties[prop]["value"])
         return
 
     def print_list_attribute(self) -> None:

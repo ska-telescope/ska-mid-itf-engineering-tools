@@ -239,6 +239,36 @@ def run_info(
         devices.print_txt_list()
         return 0
 
+    if disp_action == 5 and fmt == "json":
+        _module_logger.info("Get device classesm")
+        try:
+            devices = TangoctlDevicesBasic(
+                _module_logger, quiet_mode, evrythng, cfg_data, tgo_name, fmt
+            )
+        except tango.ConnectionFailed:
+            _module_logger.error("Tango connection failed")
+            return 1
+        devices.read_config()
+        dev_classes = devices.get_classes()
+        print(json.dumps(dev_classes, indent=4))
+        return 0
+
+    if (
+            disp_action == 5 and tgo_attrib is None and tgo_cmd is None and tgo_cmd is None and
+            tgo_prop is None
+    ):
+        _module_logger.info("List device classesm")
+        try:
+            devices = TangoctlDevicesBasic(
+                _module_logger, quiet_mode, evrythng, cfg_data, tgo_name, fmt
+            )
+        except tango.ConnectionFailed:
+            _module_logger.error("Tango connection failed")
+            return 1
+        devices.read_config()
+        devices.print_txt_classes()
+        return 0
+
     if file_name is not None:
         if os.path.splitext(file_name)[-1] != f".{fmt}":
             file_name = f"{file_name}.{fmt}"
@@ -264,7 +294,7 @@ def run_info(
         return 1
     devices.read_device_values()
 
-    _module_logger.info("Read devices (%d)", disp_action)
+    _module_logger.debug("Read devices (action %d)", disp_action)
 
     if fmt == "txt" and disp_action == 4 and tgo_attrib is not None:
         devices.print_txt_list_attributes()
@@ -474,12 +504,15 @@ def main(y_arg: list) -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
-            "acefhjklmnqstvyVA:C:H:D:I:J:K:p:O:P:T:W:",
+            "acdefhjklmnqstvyVA:C:H:D:I:J:K:p:O:P:T:W:",
             [
+                "class",
+                "cmd",
                 "dry-run",
                 "everything",
                 "full",
                 "help",
+                "json",
                 "list",
                 "md",
                 "off",
@@ -522,7 +555,9 @@ def main(y_arg: list) -> int:  # noqa: C901
             show_attrib = True
         elif opt in ("--attribute", "-A"):
             tgo_attrib = arg
-        elif opt == "-c":
+        elif opt in ("--class", "-d"):
+            disp_action = 5
+        elif opt in ("--cmd", "-c"):
             show_command = True
         elif opt in ("--command", "-C"):
             tgo_cmd = arg.lower()
@@ -539,7 +574,7 @@ def main(y_arg: list) -> int:  # noqa: C901
             tango_host = arg
         elif opt in ("--input", "-I"):
             input_file = arg
-        elif opt == "-j":
+        elif opt in ("--json", "-j"):
             fmt = "json"
         elif opt in ("--list", "-l"):
             disp_action = 4
