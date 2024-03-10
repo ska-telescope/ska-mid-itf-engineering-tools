@@ -428,8 +428,13 @@ class TangoJsonReader:
                                         m = 0
                                         for item2 in devkeyval2[keyval]:
                                             if m:
-                                                print(f"{' ':102} {' ':24} ", end="", file=self.outf)
-                                            print(f"{item2} {devkeyval2[keyval][item2]}", file=self.outf)
+                                                print(
+                                                    f"{' ':102} {' ':24} ", end="", file=self.outf
+                                                )
+                                            print(
+                                                f"{item2} {devkeyval2[keyval][item2]}",
+                                                file=self.outf,
+                                            )
                                             m += 1
                                     elif type(devkeyval2[keyval]) is list:
                                         m = 0
@@ -455,9 +460,7 @@ class TangoJsonReader:
                                         print(f"{keyval:24} ", end="", file=self.outf)
                                         print(f"{devkeyval2[keyval]}", file=self.outf)
                                     else:
-                                        print(
-                                            f"{keyval:24} {devkeyval2[keyval]}", file=self.outf
-                                        )
+                                        print(f"{keyval:24} {devkeyval2[keyval]}", file=self.outf)
                                     n += 1
                             elif "\n" in devkeyval2:
                                 self.logger.debug("Print paragraph in dict : %s", devkeyval2)
@@ -636,7 +639,7 @@ class TangoJsonReader:
                 try:
                     print(f"{devdict['attributes'][attrib]['data']['value']}", file=self.outf)
                 except KeyError as oerr:
-                    self.logger.info("Could not read attribute %s", attrib)
+                    self.logger.info("Could not read attribute %s : %s", attrib, oerr)
                     print("N/A", file=self.outf)
 
         def print_commands() -> None:

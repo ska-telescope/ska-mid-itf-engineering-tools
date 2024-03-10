@@ -1,9 +1,9 @@
 """Read and display Tango stuff."""
 
-from collections import OrderedDict
 import json
 import logging
 import os
+from collections import OrderedDict
 from typing import Any
 
 import tango
@@ -130,14 +130,14 @@ class TangoctlDevicesBasic:
         #     f" {self.dev_class}"
         # )
 
-    def get_classes(self) -> list:
+    def get_classes(self) -> OrderedDict[Any, Any]:
         """
         Get list of classes.
 
         :return: list of classes
         """
         self.logger.info("Get classes in %d devices", len(self.devices))
-        dev_classes = {}
+        dev_classes: dict = {}
         for device in self.devices:
             dev_class = self.devices[device].dev_class
             if dev_class == "---":
@@ -209,6 +209,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         self.logger.info("Run commands %s", self.run_commands)
         self.run_commands_name = cfg_data["run_commands_name"]
         self.logger.info("Run commands with name %s", self.run_commands_name)
+        self.prog_bar: bool = not quiet_mode
 
         if tango_port:
             trl = f"tango://127.0.0.1:{tango_port}/{tgo_name}#dbase=no"
@@ -226,7 +227,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
             device_list = sorted(database.get_device_exported("*").value_string)
             self.logger.info("Read %d devices available...", len(device_list))
 
-            self.prog_bar = not quiet_mode
             if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
                 self.prog_bar = False
             # Run "device in device_list"
