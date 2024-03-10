@@ -83,7 +83,7 @@ class TestTangoDevice:
         except AttributeError as terr:
             print("[FAILED] could not read simulation mode")
             self.logger.debug(terr)
-            self.simMode = None
+            self.simMode = "N/A"
         return self.simMode
 
     def set_simulation_mode(self, dev_sim: int | None) -> int | None:

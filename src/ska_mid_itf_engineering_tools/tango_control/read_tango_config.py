@@ -198,14 +198,14 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
         devdict["name"] = self.dev_name
         devdict["errors"] = self.dev_errors
         devdict["version"] = self.version
-        try:
-            devdict["versioninfo"] = self.dev.getversioninfo()
-        except AttributeError:
-            devdict["versioninfo"] = "N/A"
-        try:
-            devdict["adminMode"] = str(self.dev.adminMode).split(".")[1]
-        except IndexError:
-            devdict["adminMode"] = str(self.dev.adminMode)
+        # try:
+        #     devdict["versioninfo"] = self.dev.getversioninfo()
+        # except AttributeError:
+        #     devdict["versioninfo"] = "N/A"
+        # try:
+        #     devdict["adminMode"] = str(self.dev.adminMode).split(".")[1]
+        # except IndexError:
+        #     devdict["adminMode"] = str(self.dev.adminMode)
         devdict["info"] = {}
         devdict["info"]["dev_class"] = self.info.dev_class
         devdict["info"]["dev_type"] = self.info.dev_type

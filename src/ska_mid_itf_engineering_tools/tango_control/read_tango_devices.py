@@ -20,7 +20,7 @@ class TangoctlDevicesBasic:
     """Compile a dictionary of available Tango devices."""
 
     devices: dict = {}
-    prog_bar: bool = True
+    quiet_mode: bool = True
 
     def __init__(  # noqa: C901s
         self,
@@ -63,13 +63,13 @@ class TangoctlDevicesBasic:
         self.logger.info("Read %d devices...", len(device_list))
         self.fmt = fmt
         list_values: dict = cfg_data["list_values"]
-        self.prog_bar = not quiet_mode
+        self.quiet_mode = quiet_mode
         if self.logger.getEffectiveLevel() in (logging.DEBUG, logging.INFO):
-            self.prog_bar = False
+            self.quiet_mode = True
         # Run "for device in device_list:"
         for device in progress_bar(
             device_list,
-            self.prog_bar,
+            not self.quiet_mode,
             prefix=f"Read {len(device_list)} exported devices :",
             suffix="complete",
             decimals=0,
@@ -99,7 +99,7 @@ class TangoctlDevicesBasic:
         # Run "device in self.devices:"
         for device in progress_bar(
             self.devices,
-            self.prog_bar,
+            not self.quiet_mode,
             prefix=f"Read {len(self.devices)} device configs :",
             suffix="complete",
             decimals=0,
@@ -121,7 +121,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
     devices: dict = {}
     attribs_found: list = []
     tgo_space: str
-    prog_bar: bool = True
+    quiet_mode: bool = True
 
     def __init__(  # noqa: C901s
         self,
@@ -313,15 +313,15 @@ class TangoctlDevices(TangoctlDevicesBasic):
         devsdict = {}
         self.logger.info("Read %d JSON devices...", len(self.devices))
         # TODO use this to implement a progress bar
-        # for device in progress_bar(
-        #     self.devices,
-        #     self.prog_bar,
-        #     prefix=f"Read {len(self.devices)} JSON records :",
-        #     suffix="complete",
-        #     decimals=0,
-        #     length=100,
-        # ):
-        for device in self.devices:
+        # Run "for device in self.devices:"
+        for device in progress_bar(
+            self.devices,
+            self.prog_bar,
+            prefix=f"Read {len(self.devices)} JSON records :",
+            suffix="complete",
+            decimals=0,
+            length=100,
+        ):
             devsdict[device] = self.devices[device].make_json(self.delimiter)
         return devsdict
 

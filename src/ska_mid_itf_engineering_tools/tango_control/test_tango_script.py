@@ -37,13 +37,13 @@ class TangoScript:
             self.logger.info("Connect device %s", device_name)
             self.dev: tango.DeviceProxy = tango.DeviceProxy(device_name)
         except tango.ConnectionFailed as terr:
-            print(f"[FAILED] {device_name} connection to {tango_host} failed")
-            print(f"[FAILED] {terr.args[0].desc.strip()}")
+            err_msg = terr.args[0].desc.strip()
+            print(f"[FAILED] {device_name} connection to {tango_host} failed : {err_msg}")
             self.logger.debug(terr)
             self.dev = None
         except tango.DevFailed as terr:
-            print(f"[FAILED] {device_name} device failed")
-            print(f"[FAILED] {terr.args[0].desc.strip()}")
+            err_msg = terr.args[0].desc.strip()
+            print(f"[FAILED] {device_name} device failed : {err_msg}")
             self.logger.debug(terr)
             self.dev = None
         try:
@@ -134,7 +134,8 @@ class TangoScript:
             try:
                 self.dev.write_attribute(attr_thing, write_val)
             except tango.DevFailed as terr:
-                self.logger.error("Write failed : %s", terr.args[0].desc.strip())
+                err_msg = terr.args[0].desc.strip()
+                self.logger.error("Write failed : %s", err_msg)
                 return 1
             attrib_data = self.dev.read_attribute(attr_thing)
             print("Attrbute %s set to %s" % (attrib_data.name, attrib_data.value))
