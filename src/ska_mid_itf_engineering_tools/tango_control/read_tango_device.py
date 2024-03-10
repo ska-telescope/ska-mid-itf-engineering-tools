@@ -504,33 +504,37 @@ class TangoctlDevice(TangoctlDeviceBasic):
                     attr_name
                 ]["config"].writable_attr_name
 
-        def set_json_command() -> None:
+        def set_json_command(cmd_name: str) -> None:
             """Add commands to dictionary."""
-            devdict["commands"][cmd] = {}
-            if "error" in self.commands[cmd]:
-                devdict["commands"][cmd]["error"] = self.commands[cmd]["error"]
-            if self.commands[cmd]["config"] is not None:
-                devdict["commands"][cmd]["in_type"] = repr(self.commands[cmd]["config"].in_type)
-                devdict["commands"][cmd]["in_type_desc"] = self.commands[cmd][
+            devdict["commands"][cmd_name] = {}
+            if "error" in self.commands[cmd_name]:
+                devdict["commands"][cmd_name]["error"] = self.commands[cmd_name]["error"]
+            if self.commands[cmd_name]["config"] is not None:
+                devdict["commands"][cmd_name]["in_type"] = repr(
+                    self.commands[cmd_name]["config"].in_type
+                )
+                devdict["commands"][cmd_name]["in_type_desc"] = self.commands[cmd_name][
                     "config"
                 ].in_type_desc
-                devdict["commands"][cmd]["out_type"] = repr(self.commands[cmd]["config"].out_type)
-                devdict["commands"][cmd]["out_type_desc"] = self.commands[cmd][
+                devdict["commands"][cmd_name]["out_type"] = repr(
+                    self.commands[cmd_name]["config"].out_type
+                )
+                devdict["commands"][cmd_name]["out_type_desc"] = self.commands[cmd_name][
                     "config"
                 ].out_type_desc
-                if "value" in self.commands[cmd]:
-                    devdict["commands"][cmd]["value"] = self.commands[cmd]["value"]
+                if "value" in self.commands[cmd_name]:
+                    devdict["commands"][cmd_name]["value"] = self.commands[cmd_name]["value"]
 
-        def set_json_property() -> None:
+        def set_json_property(prop_name: str) -> None:
             """Add properties to dictionary."""
-            if "value" in self.properties[prop]:
-                prop_val = self.properties[prop]["value"]
-                devdict["properties"][prop] = {}
+            if "value" in self.properties[prop_name]:
+                prop_val = self.properties[prop_name]["value"]
+                devdict["properties"][prop_name] = {}
                 # pylint: disable-next=c-extension-no-member
                 if type(prop_val) is tango._tango.StdStringVector:
-                    devdict["properties"][prop]["value"] = delimiter.join(prop_val)
+                    devdict["properties"][prop_name]["value"] = delimiter.join(prop_val)
                 else:
-                    devdict["properties"][prop]["value"] = prop_val
+                    devdict["properties"][prop_name]["value"] = prop_val
 
         self.read_config()
 
@@ -587,7 +591,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
             # ):
             for cmd in self.commands:
                 self.logger.debug("Set command %s", cmd)
-                set_json_command()
+                set_json_command(cmd)
         devdict["properties"] = {}
         # Run "for prop in self.properties:"
         if self.properties:
@@ -601,7 +605,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
             # ):
             for prop in self.properties:
                 self.logger.debug("Set property %s", prop)
-                set_json_property()
+                set_json_property(prop)
         self.logger.debug("Read device : %s", devdict)
         return devdict
 
