@@ -6,7 +6,7 @@ import logging
 import os
 import re
 import sys
-from typing import Any, TextIO
+from typing import TextIO
 
 from ska_mid_itf_engineering_tools.tango_control.read_tango_device import progress_bar
 
@@ -35,21 +35,6 @@ def md_print(inp: str, end: str = "\n", file: TextIO = sys.stdout) -> None:
     print(inp.replace("_", "\\_").replace("-", "\\-"), end=end, file=file)
 
 
-class BooleanEncoder(json.JSONEncoder):
-    """Using a custom encoder"""
-
-    def default(self, o: Any) -> Any:
-        """
-        This is the default handler.
-
-        :param o: object
-        :return: the thing
-        """
-        if isinstance(o, bool):
-            return str(o).lower()
-        return super().default(o)
-
-
 class TangoJsonReader:
     """Read JSON and print as markdown or text."""
 
@@ -69,6 +54,7 @@ class TangoJsonReader:
         Rock and roll.
 
         :param logger: logging handle
+        :param quiet_mode: flag for displaying progress bar
         :param kube_namespace: Kubernetes namespace
         :param devsdict: dictionary with device data
         :param file_name: output file name
@@ -108,7 +94,6 @@ class TangoJsonReader:
                 if "'" in dstr:
                     dstr = dstr.replace("'", '"')
                 try:
-                    # ddict = json.loads(dstr, cls=BooleanEncoder)
                     ddict = json.loads(dstr)
                 except json.decoder.JSONDecodeError as jerr:
                     # TODO this string breaks it

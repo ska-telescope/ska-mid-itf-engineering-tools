@@ -33,6 +33,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
         Get it on.
 
         :param logger: logging handle
+        :param quiet_mode: do not display progress bar
         :param device: device name
         """
         super().__init__(logger, device)
