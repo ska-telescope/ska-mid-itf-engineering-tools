@@ -505,7 +505,11 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 ]["config"].writable_attr_name
 
         def set_json_command(cmd_name: str) -> None:
-            """Add commands to dictionary."""
+            """
+            Add commands to dictionary.
+
+            :param cmd_name: command name
+            """
             devdict["commands"][cmd_name] = {}
             if "error" in self.commands[cmd_name]:
                 devdict["commands"][cmd_name]["error"] = self.commands[cmd_name]["error"]
@@ -526,7 +530,11 @@ class TangoctlDevice(TangoctlDeviceBasic):
                     devdict["commands"][cmd_name]["value"] = self.commands[cmd_name]["value"]
 
         def set_json_property(prop_name: str) -> None:
-            """Add properties to dictionary."""
+            """
+            Add properties to dictionary.
+
+            :param prop_name: property name
+            """
             if "value" in self.properties[prop_name]:
                 prop_val = self.properties[prop_name]["value"]
                 devdict["properties"][prop_name] = {}
