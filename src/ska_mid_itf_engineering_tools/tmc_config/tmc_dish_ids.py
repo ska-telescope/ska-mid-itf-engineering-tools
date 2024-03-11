@@ -40,6 +40,7 @@ def single_dish_id_uppercase(id: str = "SKA000") -> str:
     """
     return id.upper()
 
+
 def single_dish_id_lowercase(id: str = "SKA000") -> str:
     """
     Set DishID to lowercase for namespace device name.
