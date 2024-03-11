@@ -8,6 +8,8 @@ from typing import Any
 import numpy
 import tango
 
+from ska_mid_itf_engineering_tools.tango_control.ska_jargon import find_jargon
+
 
 def progress_bar(
     iterable: list | dict,
@@ -323,6 +325,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
             len(self.commands),
             len(self.properties),
         )
+        self.jargon = find_jargon(self.dev_name)
 
     def read_config(self) -> None:
         """Read attribute and command configuration."""
@@ -545,6 +548,8 @@ class TangoctlDevice(TangoctlDeviceBasic):
         devdict["green_mode"] = self.green_mode
         devdict["version"] = self.version
         devdict["device_access"] = self.dev_access
+        if self.jargon:
+            devdict["acronyms"] = self.jargon
         if self.info is not None:
             devdict["info"] = {}
             devdict["info"]["dev_class"] = self.info.dev_class
