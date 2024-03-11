@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.5.1
+
 * [AT-1940] - Fix Helm chart search.
 
 ## 0.5.0
