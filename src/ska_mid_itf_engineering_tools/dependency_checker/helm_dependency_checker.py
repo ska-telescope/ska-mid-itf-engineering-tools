@@ -109,16 +109,55 @@ class HelmDependencyChecker(DependencyChecker):
 
         :param chart: The chart to lookup.
         :type chart: Dependency
-        :raises RuntimeError: If the request to Nexus fails.
         :return: The latest available version.
         :rtype: semver.Version
         """
+        latest = chart.available_version
+        done = False
+        results, continuation_token = self.search_charts(chart.name, "")
+        while not done:
+            for result in results:
+                result_name = result.get("name", "")
+                if result_name != chart.name:
+                    continue
+                raw_version = result.get("version", "0.0.0")
+                if not semver.Version.is_valid(raw_version):
+                    self.logger.warn(
+                        "Invalid version found in nexus search: %s -- %s", result_name, raw_version
+                    )
+                    continue
+                result_version = semver.Version.parse(result.get("version", "0.0.0"))
+                if latest.compare(result_version) < 0 and (
+                    result_version.prerelease is None or len(result_version.prerelease) == 0
+                ):
+                    latest = result_version
+            print(continuation_token)
+            if continuation_token is not None and continuation_token != "":
+                results, continuation_token = self.search_charts(chart.name, continuation_token)
+            else:
+                done = True
+        return latest
+
+    def search_charts(self, chart_name: str, continuation_token: str) -> tuple[List[Dict], str]:
+        """
+        Search Nexus for the specified chart.
+
+        :param chart_name: Name of the chart to search for.
+        :type chart_name: str
+        :param continuation_token: The token to use if a previous search is being continued.
+        :type continuation_token: str
+        :raises RuntimeError: If the requests finishes with a non-200 status code.
+        :return: A tuple consisting of the search results and the new continuation token (if any).
+        :rtype: tuple[List[Dict], str]
+        """
         url = "https://artefact.skao.int/service/rest/v1/search"
         params = {
-            "name": chart.name,
+            "name": chart_name,
             "repository": "helm-internal",
         }
-        response: requests.Response = requests.get(
+        if continuation_token is not None and continuation_token != "":
+            params["continuationToken"] = continuation_token
+        response: Dict[List[Dict]] = requests.get(
             url=url,
             timeout=60,
             params=params,
@@ -126,36 +165,9 @@ class HelmDependencyChecker(DependencyChecker):
         if response.status_code != 200:
             raise RuntimeError(f"Request failed({response.status_code}): {response.text}")
         body = response.json()
-        items: List[Dict] = body["items"]
-        latest = chart.available_version
-        done = False
-        while not done:
-            for item in items:
-                item_name = item.get("name", "")
-                if item_name != chart.name:
-                    continue
-                raw_version = item.get("version", "0.0.0")
-                if not semver.Version.is_valid(raw_version):
-                    self.logger.warn(
-                        "Invalid version found in nexus search: %s -- %s", item_name, raw_version
-                    )
-                    continue
-                item_version = semver.Version.parse(item.get("version", "0.0.0"))
-                if latest.compare(item_version) < 0 and (
-                    item_version.prerelease is None or len(item_version.prerelease) == 0
-                ):
-                    latest = item_version
-            token = body.get("continuationToken", None)
-            if token is not None:
-                params["continuationToken"] = token
-                response: Dict[List[Dict]] = requests.get(
-                    url=url,
-                    timeout=60,
-                    params=params,
-                )
-            else:
-                done = True
-        return latest
+        results = body.get("items", [])
+        next_continuation_token = body.get("continuationToken", "")
+        return (results, next_continuation_token)
 
     def name(self) -> str:
         """

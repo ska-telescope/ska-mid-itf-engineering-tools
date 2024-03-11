@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* [AT-1940] - Fix Helm chart search.
+
 ## 0.5.0
 
 * [AT-1940] - Add Helm support to dependency checker.
