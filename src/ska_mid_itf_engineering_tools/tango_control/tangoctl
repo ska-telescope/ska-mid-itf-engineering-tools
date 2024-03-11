@@ -7,10 +7,10 @@ import logging
 import os
 import socket
 import sys
-import yaml
 from typing import Any, TextIO
 
 import tango
+import yaml
 
 from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl

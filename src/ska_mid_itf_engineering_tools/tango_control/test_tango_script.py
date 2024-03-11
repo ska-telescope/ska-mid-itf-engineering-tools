@@ -96,7 +96,7 @@ class TangoScript:
                 self.logger.info(f"{test} : {test_cfg}")
         return 0
 
-    def read_write_attribute(
+    def read_write_attribute(  # noqa: C901
         self,
         attr_thing: str | None,
         attr_read: int | float | str | None,
@@ -114,10 +114,11 @@ class TangoScript:
             self.logger.error("Device does not have a '%s' attribute", attr_thing)
             return 1
         if attr_read is not None:
-            if "${" in attr_read and "}" in attr_read:
-                env_name = attr_read.split("{")[1].split("}")[0]
-                attr_read = os.getenv(env_name)
-                self.logger.info("Read environment variable %s : %s", env_name, attr_read)
+            if type(attr_read) is str:
+                if "${" in attr_read and "}" in attr_read:
+                    env_name = attr_read.split("{")[1].split("}")[0]
+                    attr_read = os.getenv(env_name)
+                    self.logger.info("Read environment variable %s : %s", env_name, attr_read)
             self.logger.debug("Read attribute %s : should be '%s'", attr_thing, str(attr_read))
             attrib_data = self.dev.read_attribute(attr_thing)
             print("Attribute %s : %s" % (attrib_data.name, attrib_data.value))
