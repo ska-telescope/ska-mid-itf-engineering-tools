@@ -71,7 +71,7 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
 ## Dependency Checker
 
-The dependency checker is a tool which looks at a project's dependencies and reports any stale dependencies to a Slack channel. Currently it only looks at Poetry dependencies.
+The dependency checker is a tool which looks at a project's dependencies and reports any stale dependencies to a Slack channel. It checks both Poetry dependencies and dependencies present in Helm charts.
 
 ### Configuration
 
@@ -79,7 +79,7 @@ The only configuration needed is to set the environment variable `DEPENDENCY_CHE
 
 ### Execution
 
-The dependency checker Gitlab job, *check-dependencies*, is run as part of a scheduled pipeline on a weekly basis. It can also be executed manually from any pipeline. It reports stale dependencies to the [#atlas-dependencies](https://skao.slack.com/archives/C06MR162K24) channel.
+The dependency checker Gitlab job, *check-dependencies*, is run as part of a scheduled pipeline on a weekly basis. It can also be executed manually from any pipeline. For this project, it reports stale dependencies to the [#atlas-dependencies](https://skao.slack.com/archives/C06MR162K24) channel.
 
 ## Tango information utility
 
