@@ -272,11 +272,6 @@ def main(y_arg: list) -> int:  # noqa: C901
             return 1
         dut.test_all(show_attrib)
     else:
-        # List available devices
-        # devices = get_devices()
-        # print(f"[  OK  ] Devices: {len(devices)}")
-        # for device in devices:
-        #     print(f"\t{device}")
         print("Nothing to do!")
 
     return 0
