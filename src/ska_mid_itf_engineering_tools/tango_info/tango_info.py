@@ -236,7 +236,7 @@ def main(y_arg: list) -> int:  # noqa: C901
 
     if show_version:
         print(f"{os.path.basename(y_arg[0])} version {__version__}")
-        return 1
+        return 0
 
     if show_jargon:
         print_jargon()
