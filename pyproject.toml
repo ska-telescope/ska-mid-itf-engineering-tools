@@ -1,7 +1,7 @@
 [tool.poetry]
 include = ["MANIFEST.skao.int"]
 name = "ska-mid-itf-engineering-tools"
-version = "0.4.0"
+version = "0.5.2"
 description = "SKA MID ITF Engineering tools"
 authors = ["Matteo Di Carlo", "ATLAS"]
 license = "BSD 3-Clause"
@@ -30,6 +30,8 @@ pyyaml = "^6.0.1"
 nbqa = "^1.7.1"
 nbsphinx = "^0.9.3"
 slack-sdk = "^3.27.1"
+semver = "^3.0.2"
+requests-mock = "^1.11.0"
 
 [tool.poetry.group.docs.dependencies]
 Sphinx = "^7.2.6"

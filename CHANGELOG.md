@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+## 0.5.2
+
+* [AT-1967] - Updated tmc_dish_ids and tmc tests to fix fqdn bug
+* [AT-1940] - Update the dependency checker job to install Helm
+
+## 0.5.1
+
+* [AT-1940] - Fix Helm chart search.
+
+## 0.5.0
+
+* [AT-1940] - Add Helm support to dependency checker.
+* [AT-1956] - TMC values file generation: FQDNs for the dish to comply with ADR-9.
+
 ## 0.4.0
 
 * [AT-1940] - Dependency checker for stale python dependencies.
