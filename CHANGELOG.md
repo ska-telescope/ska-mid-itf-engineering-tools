@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.5.2
+
+* [AT-1967] - Updated tmc_dish_ids and tmc tests to fix fqdn bug
+* [AT-1940] - Update the dependency checker job to install Helm
+
 ## 0.5.1
 
 * [AT-1940] - Fix Helm chart search.
