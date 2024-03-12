@@ -504,16 +504,18 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print("\nCheck events for attribute of a Tango device")
     print(f"\t{p_name} [-K <NAMESPACE>] -D <DEVICE> -A <ATTRIBUTE>")
     print("\nParameters:")
-    print("\t-a\t\t\t\tflag for reading attributes")
-    print("\t-c\t\t\t\tflag for reading command and attribute names")
+    print("\t-a\t\t\t\tflag for reading attributes during tests")
+    print("\t-c|--cmd\t\t\tflag for running commands during tests")
     print("\t--simul=<0|1>\t\t\tset simulation mode off or on")
     print("\t--admin=<0|1>\t\t\tset admin mode off or on")
     print("\t-f|--full\t\t\tdisplay in full")
     print("\t-l|--list\t\t\tdisplay device name and status on one line")
     print("\t-s|--short\t\t\tdisplay device name, status and query devices")
-    print("\t-m\t\t\t\tdisplay in markdown format")
-    print("\t-f\t\t\t\tget commands, attributes and properties regardless of state")
-    print("\t--json-dir=<PATH>\t\tDirectory with JSON input file, e.g. 'resources'")
+    print("\t-q|--quiet\t\t\tdo not display progress bars")
+    print("\t-j|--json\t\t\toutput in JSON format")
+    print("\t-m|--md\t\t\t\toutput in markdown format")
+    print("\t-y|--yaml\t\t\toutput in YAML format")
+    print("\t--json-dir=<PATH>\t\tdirectory with JSON input file, e.g. 'resources'")
     print("\t-J <PATH>")
     print(
         "\t--device=<DEVICE>\t\tdevice name, e.g. 'csp'"
@@ -570,6 +572,10 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print(
         f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
         " -D mid-sdp/control/0 --on"
+    )
+    print(
+        f"\tADMIN_MODE=1 {p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
+        f" -D mid_csp_cbf/talon_board/001 -f --in resources/dev_online.json -V"
     )
 
 
