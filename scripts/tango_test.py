@@ -10,10 +10,7 @@ import sys
 from typing import Any, TextIO
 
 from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl
-from ska_mid_itf_engineering_tools.tango_info.test_tango_device import (
-    TestTangoDevice,
-    get_devices,
-)
+from ska_mid_itf_engineering_tools.tango_info.test_tango_device import TestTangoDevice
 
 logging.basicConfig(level=logging.WARNING)
 _module_logger = logging.getLogger(__name__)
@@ -114,6 +111,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     dev_admin: int | None = None
     dev_sim: int | None = None
     dev_nodb: bool = False
+    run_test: bool = False
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
@@ -125,6 +123,7 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "on",
                 "standby",
                 "status",
+                "test",
                 "host=",
                 "admin=",
                 "device=",
@@ -273,11 +272,7 @@ def main(y_arg: list) -> int:  # noqa: C901
             return 1
         dut.test_all(show_attrib)
     else:
-        # List available devices
-        devices = get_devices()
-        print(f"[  OK  ] Devices: {len(devices)}")
-        for device in devices:
-            print(f"\t{device}")
+        print("Nothing to do!")
 
     return 0
 

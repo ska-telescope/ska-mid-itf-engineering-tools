@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import time
+from typing import Any
 
 from ska_ser_logging import configure_logging  # type: ignore
 from tango import DeviceProxy, DevState
@@ -18,18 +19,25 @@ logger = logging.getLogger(__name__)
 
 
 def wait_for_devices(
-    CBF, CSP, CSPSubarray1, CSPSubarray2, CSPSubarray3, CBFSubarray1, CBFSubarray2, CBFSubarray3
-):
+    cbf: Any,
+    csp: Any,
+    csp_subarray1: Any,
+    csp_subarray2: Any,
+    csp_subarray3: Any,
+    cbf_subarray1: Any,
+    cbf_subarray2: Any,
+    cbf_subarray3: Any,
+) -> None:
     """Wait for Tango Deviceproxies to change states.
 
-    :param CBF : tango.DeviceProxy CBF Controller DeviceProxy
-    :param CSP : tango.DeviceProxy CSP Controller DeviceProxy
-    :param CSPSubarray1 : tango.DeviceProxy Subarray DeviceProxy
-    :param CSPSubarray2 : tango.DeviceProxy Subarray DeviceProxy
-    :param CSPSubarray3 : tango.DeviceProxy Subarray DeviceProxy
-    :param CBFSubarray1 : tango.DeviceProxy Subarray DeviceProxy
-    :param CBFSubarray2 : tango.DeviceProxy Subarray DeviceProxy
-    :param CBFSubarray3 : tango.DeviceProxy Subarray DeviceProxy
+    :param cbf : tango.DeviceProxy CBF Controller DeviceProxy
+    :param csp : tango.DeviceProxy CSP Controller DeviceProxy
+    :param csp_subarray1 : tango.DeviceProxy Subarray DeviceProxy
+    :param csp_subarray2 : tango.DeviceProxy Subarray DeviceProxy
+    :param csp_subarray3 : tango.DeviceProxy Subarray DeviceProxy
+    :param cbf_subarray1 : tango.DeviceProxy Subarray DeviceProxy
+    :param cbf_subarray2 : tango.DeviceProxy Subarray DeviceProxy
+    :param cbf_subarray3 : tango.DeviceProxy Subarray DeviceProxy
     """
     READY = False
     timer = 0
@@ -39,14 +47,14 @@ def wait_for_devices(
         if timer == 30:
             break
         device_proxies = [
-            CSP,
-            CBF,
-            CBFSubarray1,
-            CBFSubarray2,
-            CBFSubarray3,
-            CSPSubarray1,
-            CSPSubarray2,
-            CSPSubarray3,
+            csp,
+            cbf,
+            cbf_subarray1,
+            cbf_subarray2,
+            cbf_subarray3,
+            csp_subarray1,
+            csp_subarray2,
+            csp_subarray3,
         ]
 
         for dp in device_proxies:
@@ -76,32 +84,32 @@ def main() -> None:  # noqa C901
     logger.debug(f"Path of hw_config.yaml is {src_pth}")
     logger.debug(f"Destination Path of hw_config.yaml is {dest_pth}")
 
-    CBF = DeviceProxy("mid_csp_cbf/sub_elt/controller")
-    CSP = DeviceProxy("mid-csp/control/0")
-    CSPSubarray1 = DeviceProxy("mid-csp/subarray/01")
-    CSPSubarray2 = DeviceProxy("mid-csp/subarray/02")
-    CSPSubarray3 = DeviceProxy("mid-csp/subarray/03")
-    CBFSubarray1 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_01")
-    CBFSubarray2 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_02")
-    CBFSubarray3 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_03")
+    cbf = DeviceProxy("mid_csp_cbf/sub_elt/controller")
+    csp = DeviceProxy("mid-csp/control/0")
+    csp_subarray1 = DeviceProxy("mid-csp/subarray/01")
+    csp_subarray2 = DeviceProxy("mid-csp/subarray/02")
+    csp_subarray3 = DeviceProxy("mid-csp/subarray/03")
+    cbf_subarray1 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_01")
+    cbf_subarray2 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_02")
+    cbf_subarray3 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_03")
 
     # Exit if CSP is already ON
-    if CSP.State() == DevState.ON and CSP.adminmode == 0:
+    if csp.State() == DevState.ON and csp.adminmode == 0:
         logger.info("CSP is already ON")
         return
 
-    if CSP.adminmode != 0:
+    if csp.adminmode != 0:
         logger.info("Setting CSP adminmode to ONLINE")
-        CSP.adminmode = 0
+        csp.adminmode = 0
         wait_for_devices(
-            CBF,
-            CSP,
-            CSPSubarray1,
-            CSPSubarray2,
-            CSPSubarray3,
-            CBFSubarray1,
-            CBFSubarray2,
-            CBFSubarray3,
+            cbf,
+            csp,
+            csp_subarray1,
+            csp_subarray2,
+            csp_subarray3,
+            cbf_subarray1,
+            cbf_subarray2,
+            cbf_subarray3,
         )
 
     dish_config = {
@@ -114,35 +122,35 @@ def main() -> None:  # noqa C901
         },
     }
 
-    CSP.loaddishcfg(json.dumps(dish_config))
-    vcc_config = CSP.dishVccConfig
+    csp.loaddishcfg(json.dumps(dish_config))
+    vcc_config = csp.dishVccConfig
     logger.debug(f"CSP Controller dishVccConfig is now {vcc_config}")
 
     # Next set simulation to false - hardware use!
-    CBF.simulationMode = False
-    cbf_sim_mode = CBF.simulationMode
+    cbf.simulationMode = False
+    cbf_sim_mode = cbf.simulationMode
     while cbf_sim_mode != 0:
         logger.info("Waiting for CBF to change simulationMode to False")
         time.sleep(1)
-        cbf_sim_mode = CBF.simulationMode
+        cbf_sim_mode = cbf.simulationMode
     logger.info("CBF simulationMode is now False")
 
     # Timeout for long-running command
-    CSP.commandTimeout = TIMEOUT
+    csp.commandTimeout = TIMEOUT
     logger.debug(f"commandTimeout simply set to {TIMEOUT * 1000}")
 
-    CSP.set_timeout_millis(TIMEOUT * 1000)
+    csp.set_timeout_millis(TIMEOUT * 1000)
     logger.debug(f"Sent set_timeout_millis({TIMEOUT * 1000}) command")
 
     logger.info("Turning CSP ON - this may take a while...")
-    CSP.on([])
+    csp.on([])
     k = 0
     while k < 10:
         logger.warning(f"Sleeping for {TIMEOUT-k*10} seconds while CBF is turning on.")
         time.sleep(10)
         k += 1
     k = 1
-    while CBF.State() != DevState.ON:
+    while cbf.State() != DevState.ON:
         if k == 5:
             logger.error("Could not turn the CBF Controller on. Exiting.")
             sys.exit(1)
@@ -151,7 +159,7 @@ def main() -> None:  # noqa C901
             return n if n <= 1 else fib(n - 1) + fib(n - 2)
 
         logger.info(
-            f"Waiting for CBF to change state from {CBF.State()} to ON "
+            f"Waiting for CBF to change state from {cbf.State()} to ON "
             "for another {fib(k)} seconds"
         )
         time.sleep(fib(k))

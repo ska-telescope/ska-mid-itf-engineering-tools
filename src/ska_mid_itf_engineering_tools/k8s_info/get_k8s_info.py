@@ -1,12 +1,13 @@
 """
 A class for doing all sorts of Kubernetes stuff.
 
-Calling 'kubectl' in a subprocess is not Pythonic.
+Avoids calling 'kubectl' in a subprocess, which is not Pythonic.
 """
 
 import logging
 from typing import Any, Tuple
 
+import websocket  # type: ignore[import]
 from kubernetes import client, config  # type: ignore[import]
 from kubernetes.client.rest import ApiException  # type: ignore[import]
 from kubernetes.stream import stream  # type: ignore[import]
@@ -35,24 +36,28 @@ class KubernetesControl:
 
         :return: list of namespaces
         """
-        namespaces: list = self.v1.list_namespace()  # type: ignore[union-attr]
-        ns_list = []
+        ns_list: list = []
+        try:
+            namespaces: list = self.v1.list_namespace()  # type: ignore[union-attr]
+        except client.exceptions.ApiException:
+            self.logger.error("Could not read Kubernetes namespaces")
+            return ns_list
         for namespace in namespaces.items:  # type: ignore[attr-defined]
             self.logger.debug("Namespace: %s", namespace)
             ns_name = namespace.metadata.name
             ns_list.append(ns_name)
         return ns_list
 
-    def exec_command(self, ns_name: str, pod_name: str, exec_command: list) -> int:
+    def exec_command(self, ns_name: str, pod_name: str, exec_command: list) -> str:
         """
         Execute command in pod.
 
         :param ns_name: namespace name
         :param pod_name: pod name
         :param exec_command: list making up command string
-        :return: error condition
+        :return: output
         """
-        print(f"Run command : {' '.join(exec_command)}")
+        self.logger.debug(f"Run command : {' '.join(exec_command)}")
         resp = None
         try:
             resp = self.v1.read_namespaced_pod(  # type: ignore[union-attr]
@@ -65,62 +70,28 @@ class KubernetesControl:
 
         if not resp:
             print(f"Pod {pod_name} does not exist")
-            return 1
+            return ""
 
-        # Calling exec and waiting for response
-        # exec_command = [
-        #     '/bin/sh',
-        #     '-c',
-        #     'echo This message goes to stderr; echo This message goes to stdout']
-        # When calling a pod with multiple containers running the target container
-        # has to be specified with a keyword argument container=<name>.
-        resp = stream(
-            self.v1.connect_get_namespaced_pod_exec,  # type: ignore[union-attr]
-            pod_name,
-            ns_name,
-            command=exec_command,
-            stderr=True,
-            stdin=False,
-            stdout=True,
-            tty=False,
-        )
-        print("Response: " + resp)
-
-        # Calling exec interactively
-        # exec_command = ['/bin/sh']
-        # resp = stream(self.v1.connect_get_namespaced_pod_exec,
-        #               pod_name,
-        #               ns_name,
-        #               command=exec_command,
-        #               stderr=True, stdin=True,
-        #               stdout=True, tty=False,
-        #               _preload_content=False)
-        # commands = [
-        #     "echo This message goes to stdout",
-        #     "echo \"This message goes to stderr\" >&2",
-        # ]
-        #
-        # while resp.is_open():
-        #     resp.update(timeout=1)
-        #     if resp.peek_stdout():
-        #         print(f"STDOUT: {resp.read_stdout()}")
-        #     if resp.peek_stderr():
-        #         print(f"STDERR: {resp.read_stderr()}")
-        #     if commands:
-        #         c = commands.pop(0)
-        #         print(f"Running command... {c}\n")
-        #         resp.write_stdin(c + "\n")
-        #     else:
-        #         break
-        #
-        # resp.write_stdin("date\n")
-        # sdate = resp.readline_stdout(timeout=3)
-        # print(f"Server date command returns: {sdate}")
-        # resp.write_stdin("whoami\n")
-        # user = resp.readline_stdout(timeout=3)
-        # print(f"Server user is: {user}")
-        # resp.close()
-        return 0
+        # Call exec and wait for response
+        try:
+            resp = stream(
+                self.v1.connect_get_namespaced_pod_exec,  # type: ignore[union-attr]
+                pod_name,
+                ns_name,
+                command=exec_command,
+                stderr=True,
+                stdin=False,
+                stdout=True,
+                tty=False,
+            )
+        except client.exceptions.ApiException as kerr:
+            self.logger.info("Could not run command %s : %s", exec_command, str(kerr))
+            resp = f"ERROR {str(kerr)}"
+        except websocket._exceptions.WebSocketBadStatusException as kerr:
+            self.logger.info("Could not run command %s : %s", exec_command, str(kerr))
+            resp = f"ERROR {str(kerr)}"
+        self.logger.debug("Response:\n%s", resp)
+        return resp
 
     def get_pod(
         self, ipod: Any, ns_name: str | None, pod_name: str | None
@@ -161,7 +132,7 @@ class KubernetesControl:
         self.logger.info("Listing pods with their IPs for namespace %s", ns_name)
         ipods = {}
         if pod_name:
-            self.logger.info("Reod pod %s", pod_name)
+            self.logger.info("Read pod %s", pod_name)
         else:
             self.logger.info("Read pods")
         if ns_name:

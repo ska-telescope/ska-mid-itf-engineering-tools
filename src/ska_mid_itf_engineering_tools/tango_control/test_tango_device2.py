@@ -12,7 +12,7 @@ import tango
 class TestTangoDevice:
     """Test a Tango device."""
 
-    def __init__(self, logger: logging.Logger, device_name: str):
+    def __init__(self, logger: logging.Logger, device_name: str):  # noqa: C901
         """
         Get going.
 
@@ -27,13 +27,13 @@ class TestTangoDevice:
         try:
             self.dev: tango.DeviceProxy = tango.DeviceProxy(device_name)
         except tango.ConnectionFailed as terr:
-            print(f"[FAILED] {device_name} connection failed")
-            print(f"[FAILED] {terr.args[0].desc.strip()}")
+            err_msg = terr.args[0].desc.strip()
+            print(f"[FAILED] {device_name} connection failed : {err_msg}")
             self.logger.debug(terr)
             self.dev = None
         except tango.DevFailed as terr:
-            print(f"[FAILED] {device_name} device failed")
-            print(f"[FAILED] {terr.args[0].desc.strip()}")
+            err_msg = terr.args[0].desc.strip()
+            print(f"[FAILED] {device_name} device failed : {err_msg}")
             self.logger.debug(terr)
             self.dev = None
         if self.dev is not None:
@@ -43,9 +43,18 @@ class TestTangoDevice:
             except AttributeError as terr:
                 self.adminMode = None
                 self.logger.debug(terr)
-            self.dev_name = self.dev.name()
-            self.attribs = sorted(self.dev.get_attribute_list())
-            self.cmds = self.dev.get_command_list()
+            try:
+                self.dev_name = self.dev.name()
+            except tango.DevFailed:
+                self.dev_name = device_name + " (N/A)"
+            try:
+                self.attribs = self.dev.get_attribute_list()
+            except tango.DevFailed:
+                self.attribs = []
+            try:
+                self.cmds = self.dev.get_command_list()
+            except tango.DevFailed:
+                self.cmds = []
         self.dev_status: str | None = None
         self.dev_state: int | None = None
         self.simMode: int | None = None
@@ -56,7 +65,7 @@ class TestTangoDevice:
 
         :return: attribute value
         """
-        if "adminMode" not in self.attribs:
+        if "  " not in self.attribs:
             print(f"[ WARN ] {self.dev_name} does not have an adminMode attribute")
             self.adminMode = None
             return None
@@ -83,7 +92,7 @@ class TestTangoDevice:
         except AttributeError as terr:
             print("[FAILED] could not read simulation mode")
             self.logger.debug(terr)
-            self.simMode = "N/A"
+            self.simMode = None
         return self.simMode
 
     def set_simulation_mode(self, dev_sim: int | None) -> int | None:
@@ -117,9 +126,9 @@ class TestTangoDevice:
         try:
             self.dev.ping()
             print(f"[  OK  ] {self.dev_name} is online")
-        except Exception as terr:
+        except tango.DevFailed as terr:
             print(f"[FAILED] {self.dev_name} is not online")
-            self.logger.debug(terr)
+            self.logger.debug(terr.args[-1].desc)
             return False
         return True
 
@@ -131,7 +140,7 @@ class TestTangoDevice:
         """
         print(f"[  OK  ] {self.dev_name} has {len(self.attribs)} attributes")
         if show:
-            for attrib in self.attribs:
+            for attrib in sorted(self.attribs):
                 print(f"\t{attrib}")
 
     def read_device_attributes(self) -> None:
@@ -144,8 +153,8 @@ class TestTangoDevice:
                 attrib_value = self.dev.read_attribute(attrib).value
                 print(f"[  OK  ] {self.dev_name} attribute {attrib} : {attrib_value}")
             except tango.DevFailed as terr:
-                print(f"[FAILED] {self.dev_name} attribute {attrib} could not be read")
-                print(f"[FAILED] {terr.args[0].desc.strip()}")
+                err_msg = terr.args[0].desc.strip()
+                print(f"[FAILED] {self.dev_name} attribute {attrib} could not be read : {err_msg}")
                 self.logger.debug(terr)
 
     def show_device_commands(self, show: bool = False) -> None:
@@ -169,8 +178,8 @@ class TestTangoDevice:
                 self.dev.adminMode = 0
                 self.adminMode = self.dev.adminMode
             except tango.DevFailed as terr:
-                print(f"[FAILED] {self.dev_name} admin mode could not be turned off")
-                print(f"[FAILED] {terr.args[0].desc.strip()}")
+                err_msg = terr.args[0].desc.strip()
+                print(f"[FAILED] {self.dev_name} admin mode could not be turned off : {err_msg}")
                 self.logger.debug(terr)
                 return
             self.adminMode = self.dev.adminMode
@@ -210,8 +219,8 @@ class TestTangoDevice:
                 print(f"[  OK  ] {self.dev_name} turned on, now {dev_on}")
                 return 1
             except tango.DevFailed as terr:
-                print(f"[FAILED] {self.dev_name} could not be turned on")
-                print(f"[FAILED] {terr.args[0].desc.strip()}")
+                err_msg = terr.args[0].desc.strip()
+                print(f"[FAILED] {self.dev_name} could not be turned on : {err_msg}")
                 self.logger.debug(terr)
         else:
             try:
@@ -219,8 +228,10 @@ class TestTangoDevice:
                 print(f"[  OK  ] {self.dev_name} turned on, now {dev_on}")
                 return 1
             except tango.DevFailed as terr:
-                print(f"[FAILED] {self.dev_name} could not be turned on (device failed)")
-                print(f"[FAILED] {terr.args[0].desc.strip()}")
+                err_msg = terr.args[0].desc.strip()
+                print(
+                    f"[FAILED] {self.dev_name} could not be turned on (device failed) : {err_msg}"
+                )
                 self.logger.debug(terr)
                 return 1
             except TypeError as terr:
@@ -248,8 +259,8 @@ class TestTangoDevice:
                 dev_off = self.dev.Off()
                 print(f"[  OK  ] {self.dev_name} turned off, now {dev_off}")
             except tango.DevFailed as terr:
-                print(f"[FAILED] {self.dev_name} could not be turned off")
-                print(f"[FAILED] {terr.args[0].desc.strip()}")
+                err_msg = terr.args[0].desc.strip()
+                print(f"[FAILED] {self.dev_name} could not be turned off : {err_msg}")
                 self.logger.debug(terr)
                 return 1
         else:
@@ -257,8 +268,8 @@ class TestTangoDevice:
                 dev_off = self.dev.Off([])
                 print(f"[  OK  ] {self.dev_name} turned off, now {dev_off}")
             except tango.DevFailed as terr:
-                print(f"[FAILED] {self.dev_name} could not be turned off")
-                print(f"[FAILED] {terr.args[0].desc.strip()}")
+                err_msg = terr.args[0].desc.strip()
+                print(f"[FAILED] {self.dev_name} could not be turned off : {err_msg}")
                 self.logger.debug(terr)
                 return 1
         return 0
@@ -280,8 +291,8 @@ class TestTangoDevice:
                 print(f"[  OK  ] {self.dev_name} switched to standby, now {dev_standby}")
                 return 0
             except tango.DevFailed as terr:
-                print(f"[FAILED] {self.dev_name} could not be switched to standby")
-                print(f"[FAILED] {terr.args[0].desc.strip()}")
+                err_msg = terr.args[0].desc.strip()
+                print(f"[FAILED] {self.dev_name} could not be switched to standby : {err_msg}")
                 self.logger.debug(terr)
         else:
             try:
@@ -289,8 +300,8 @@ class TestTangoDevice:
                 print(f"[  OK  ] {self.dev_name} switched to standby, now {dev_standby}")
                 return 0
             except tango.DevFailed as terr:
-                print(f"[FAILED] {self.dev_name} could not be switched to standby")
-                print(f"[FAILED] {terr.args[0].desc.strip()}")
+                err_msg = terr.args[0].desc.strip()
+                print(f"[FAILED] {self.dev_name} could not be switched to standby : {err_msg}")
                 self.logger.debug(terr)
         return 1
 
@@ -301,8 +312,8 @@ class TestTangoDevice:
             self.dev.adminMode = 1
             self.adminMode = self.dev.adminMode
         except tango.DevFailed as terr:
-            print(f"[FAILED] {self.dev_name} admin mode could not be turned on")
-            print(f"[FAILED] {terr.args[0].desc.strip()}")
+            err_msg = terr.args[0].desc.strip()
+            print(f"[FAILED] {self.dev_name} admin mode could not be turned on : {err_msg}")
             self.logger.debug(terr)
             return
         print(f"[  OK  ] {self.dev_name} admin mode turned on, now ({self.adminMode})")
@@ -319,8 +330,8 @@ class TestTangoDevice:
             self.dev.adminMode = admin_mode
             self.adminMode = self.dev.adminMode
         except tango.DevFailed as terr:
-            print(f"[FAILED] {self.dev_name} admin mode could not be changed")
-            print(f"[FAILED] {terr.args[0].desc.strip()}")
+            err_msg = terr.args[0].desc.strip()
+            print(f"[FAILED] {self.dev_name} admin mode could not be changed : {err_msg}")
             self.logger.debug(terr)
             return 1
         if self.adminMode != admin_mode:
@@ -504,15 +515,15 @@ class TestTangoDevice:
             events = self.dev.get_events(evnt_id)
             print(f"[  OK  ] got events {events}")
         except tango.EventSystemFailed as terr:
-            print(f"[ WARN ] got no events for {self.dev_name} {attrib}")
-            print(f"[FAILED] {terr.args[0].desc.strip()}")
+            err_msg = terr.args[0].desc.strip()
+            print(f"[ WARN ] got no events for {self.dev_name} {attrib} : {err_msg}")
             self.logger.debug(terr)
         try:
             self.dev.devc.unsubscribe_event(evnt_id)
             print(f"[  OK  ] unsubscribed from event ID {evnt_id}")
-        except AttributeError as terr:
+        except AttributeError as oerr:
             print(f"[ WARN ] could not unsubscribe from event ID {evnt_id}")
-            self.logger.debug(terr)
+            self.logger.debug(oerr)
         return 0
 
 
@@ -524,7 +535,7 @@ class TestTangoDevices:
         Read Tango device names.
 
         :param logger: logging handle
-        :param evrythng: add the kitchen sink
+        :param evrythng: include the kitchen sink
         :param cfg_data: configuration data
         """
         self.logger = logger
