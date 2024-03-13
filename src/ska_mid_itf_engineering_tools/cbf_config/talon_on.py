@@ -12,8 +12,9 @@ from tango import DeviceProxy, DevState
 
 TIMEOUT = 100
 ns = os.environ["KUBE_NAMESPACE"]
-src_pth = os.path.join(os.getcwd(), os.environ["MCS_CONFIG_FILE_PATH"], "hw_config.yaml")
-dest_pth = ns + "/ds-cbfcontroller-controller-0:/app/mnt/hw_config/hw_config.yaml"
+mcs_config_pth = os.path.join(os.getcwd(), os.environ["MCS_CONFIG_FILE_PATH"])
+hw_config_src_pth = os.path.join(mcs_config_pth, "hw_config.yaml")
+hw_config_dest_pth = ns + "/ds-cbfcontroller-controller-0:/app/mnt/hw_config/hw_config.yaml"
 configure_logging(logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -81,8 +82,8 @@ def wait_for_devices(
 
 def main() -> None:  # noqa C901
     """Call the CBF On command."""
-    logger.debug(f"Path of hw_config.yaml is {src_pth}")
-    logger.debug(f"Destination Path of hw_config.yaml is {dest_pth}")
+    logger.debug(f"Path of hw_config.yaml is {hw_config_src_pth}")
+    logger.debug(f"Destination Path of hw_config.yaml is {hw_config_dest_pth}")
 
     cbf = DeviceProxy("mid_csp_cbf/sub_elt/controller")
     csp = DeviceProxy("mid-csp/control/0")
@@ -112,15 +113,20 @@ def main() -> None:  # noqa C901
             cbf_subarray3,
         )
 
-    dish_config = {
-        "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
-        "dish_parameters": {
-            "SKA001": {"vcc": 1, "k": 11},
-            "SKA036": {"vcc": 2, "k": 101},
-            "SKA063": {"vcc": 3, "k": 1127},
-            "SKA100": {"vcc": 4, "k": 620},
-        },
-    }
+    filepath = os.path.join(hw_config_src_pth, "init_sys_param.json.json")
+    with open(filepath) as fn:
+        dish_config = json.load(fn)
+        logger.debug(f"Dish Config loaded: {dish_config}")
+
+    # dish_config = {
+    #     "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
+    #     "dish_parameters": {
+    #         "SKA001": {"vcc": 1, "k": 11},
+    #         "SKA036": {"vcc": 2, "k": 101},
+    #         "SKA063": {"vcc": 3, "k": 1127},
+    #         "SKA100": {"vcc": 4, "k": 620},
+    #     },
+    # }
 
     csp.loaddishcfg(json.dumps(dish_config))
     vcc_config = csp.dishVccConfig
