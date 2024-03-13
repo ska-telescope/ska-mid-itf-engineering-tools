@@ -108,7 +108,7 @@ class TangoctlDevicesBasic:
         ):
             self.devices[device].read_config()
 
-    def make_json(self) -> None:
+    def make_json(self) -> dict:
         """Print list of devices."""
         devdict = {}
         self.logger.info("List %d devices in JSON format...", len(self.devices))
@@ -151,16 +151,20 @@ class TangoctlDevicesBasic:
             dev_classes[dev_class].append(self.devices[device].dev_name)
         return OrderedDict(sorted(dev_classes.items()))
 
-    def print_json(self) -> None:
+    def print_json(self, disp_action: int) -> None:
         """
         Print in JSON format.
+
+        :param disp_action: not used
         """
         devsdict = self.make_json()
         print(json.dumps(devsdict, indent=4))
 
-    def print_yaml(self) -> None:
+    def print_yaml(self, disp_action: int) -> None:
         """
         Print in YAML format.
+
+        :param disp_action: not used
         """
         devsdict = self.make_json()
         print(yaml.dump(devsdict))

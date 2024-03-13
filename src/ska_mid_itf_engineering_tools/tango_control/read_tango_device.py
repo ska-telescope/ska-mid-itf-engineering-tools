@@ -224,7 +224,7 @@ class TangoctlDeviceBasic:
             f" {self.dev_class}"
         )
 
-    def make_json(self):
+    def make_json(self) -> dict:
         devdict = {}
         devdict["name"] = self.dev_name
         devdict["state"] = self.dev_str
