@@ -11,27 +11,19 @@ from typing import Any, TextIO
 import tango
 
 from ska_mid_itf_engineering_tools import __version__
-from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl
 from ska_mid_itf_engineering_tools.tango_control.read_tango_device import TangoctlDevice
-from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import (
-    TangoctlDevices,
-    TangoctlDevicesBasic,
-)
+from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import TangoctlDevices
 from ska_mid_itf_engineering_tools.tango_control.ska_jargon import print_jargon
-from ska_mid_itf_engineering_tools.tango_control.test_tango_device2 import TestTangoDevice
-from ska_mid_itf_engineering_tools.tango_control.test_tango_script import TangoScript
-
 from ska_mid_itf_engineering_tools.tango_control.tango_control import (
     check_tango,
-    show_namespaces,
-    print_pods,
-    get_pods_json,
-    read_input_file,
-    read_input_files,
-    show_pods,
     list_classes,
     list_devices,
+    read_input_file,
+    read_input_files,
+    show_namespaces,
+    show_pods,
 )
+from ska_mid_itf_engineering_tools.tango_control.test_tango_device2 import TestTangoDevice
 
 logging.basicConfig(level=logging.WARNING)
 _module_logger = logging.getLogger("tangoctl")

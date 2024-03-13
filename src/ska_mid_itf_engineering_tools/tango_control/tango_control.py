@@ -9,15 +9,8 @@ from typing import Any
 import tango
 import yaml
 
-from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesControl
-from ska_mid_itf_engineering_tools.tango_control.read_tango_device import TangoctlDevice
-from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import (
-    TangoctlDevices,
-    TangoctlDevicesBasic,
-)
-from ska_mid_itf_engineering_tools.tango_control.ska_jargon import print_jargon
-from ska_mid_itf_engineering_tools.tango_control.test_tango_device2 import TestTangoDevice
+from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import TangoctlDevicesBasic
 from ska_mid_itf_engineering_tools.tango_control.test_tango_script import TangoScript
 
 logging.basicConfig(level=logging.WARNING)
@@ -33,7 +26,7 @@ def read_input_file(input_file: str | None, tgo_name: str | None, dry_run: bool)
     if input_file is None:
         return
     inf: str = input_file
-    tgo_script = TangoScript(_module_logger, input_file, tgo_name, dry_run)
+    tgo_script = TangoScript(_module_logger, inf, tgo_name, dry_run)
     tgo_script.run()
 
 
@@ -132,7 +125,7 @@ def get_pods_dict(ns_name: str | None, logger: logging.Logger = _module_logger) 
     return pods_dict
 
 
-def print_pods(ns_name: str | None, quiet_mode: bool) -> None:
+def print_pods(ns_name: str | None, quiet_mode: bool) -> None:  # noqa: C901
     """
     Display pods in Kubernetes namespace.
 
@@ -364,9 +357,10 @@ def read_input_files(
     rv = 0
     _module_logger.info("List JSON and YAML files in %s", json_dir)
     relevant_path = json_dir
-    included_extensions = ['json', 'yaml']
+    included_extensions = ["json", "yaml"]
     file_names = [
-        fn for fn in os.listdir(relevant_path)
+        fn
+        for fn in os.listdir(relevant_path)
         if any(fn.endswith(ext) for ext in included_extensions)
     ]
     if not file_names:
@@ -378,7 +372,7 @@ def read_input_files(
             try:
                 cfg_data = json.load(cfg_file)
                 try:
-                    description = cfg_data['description']
+                    description = cfg_data["description"]
                     if not quiet_mode:
                         print(f"{file_name:40} {description}")
                 except KeyError:
