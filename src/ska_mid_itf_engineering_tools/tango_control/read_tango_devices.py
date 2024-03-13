@@ -108,9 +108,17 @@ class TangoctlDevicesBasic:
         ):
             self.devices[device].read_config()
 
+    def make_json(self) -> None:
+        """Print list of devices."""
+        devdict = {}
+        self.logger.info("List %d devices in JSON format...", len(self.devices))
+        for device in self.devices:
+            devdict[device] = self.devices[device].make_json()
+        return devdict
+
     def print_txt_list(self) -> None:
         """Print list of devices."""
-        self.logger.info("List %d devices...", len(self.devices))
+        self.logger.info("List %d devices in text format...", len(self.devices))
         print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN':11} {'VERSION':8} CLASS")
         for device in self.devices:
             self.devices[device].print_list()
@@ -143,6 +151,20 @@ class TangoctlDevicesBasic:
             dev_classes[dev_class].append(self.devices[device].dev_name)
         return OrderedDict(sorted(dev_classes.items()))
 
+    def print_json(self) -> None:
+        """
+        Print in JSON format.
+        """
+        devsdict = self.make_json()
+        print(json.dumps(devsdict, indent=4))
+
+    def print_yaml(self) -> None:
+        """
+        Print in YAML format.
+        """
+        devsdict = self.make_json()
+        print(yaml.dump(devsdict))
+
 
 class TangoctlDevices(TangoctlDevicesBasic):
     """Compile a dictionary of available Tango devices."""
@@ -156,7 +178,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
         self,
         logger: logging.Logger,
         quiet_mode: bool,
-        kube_namespace: str | None,
         evrythng: bool,
         cfg_data: dict,
         tgo_name: str | None,
@@ -171,7 +192,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
         Get a dict of devices.
 
         :param logger: logging handle
-        :param kube_namespace: Kubernetes namespace
         :param cfg_data: configuration data in JSON format
         :param quiet_mode: flag for displaying progress bars
         :param evrythng: get commands and attributes regadrless of state
@@ -195,10 +215,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
         )
         # Get Tango database host
         tango_host = os.getenv("TANGO_HOST")
-        if kube_namespace is not None:
-            self.tgo_space = f"namespace {kube_namespace}"
-        else:
-            self.tgo_space = f"host {tango_host}"
 
         self.delimiter = cfg_data["delimiter"]
         self.run_commands = cfg_data["run_commands"]

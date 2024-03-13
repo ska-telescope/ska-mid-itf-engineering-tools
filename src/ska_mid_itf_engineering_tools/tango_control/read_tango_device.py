@@ -201,7 +201,7 @@ class TangoctlDeviceBasic:
         elif "adminMode" in self.list_values["attributes"]:
             try:
                 self.adminMode = self.dev.adminMode
-                self.logger.debug("Admin mode: %s", self.adminMode)
+                # self.logger.debug("Admin mode: %s", self.adminMode)
             except tango.CommunicationFailed as terr:
                 err_msg = terr.args[0].desc.strip()
                 self.logger.info("Could not read %s admin mode : %s", self.dev_name, err_msg)
@@ -223,6 +223,15 @@ class TangoctlDeviceBasic:
             f"{self.dev_name:40} {self.dev_str:10} {self.adminModeStr:11} {self.version:8}"
             f" {self.dev_class}"
         )
+
+    def make_json(self):
+        devdict = {}
+        devdict["name"] = self.dev_name
+        devdict["state"] = self.dev_str
+        devdict["adminMode"] = self.adminModeStr
+        devdict["version"] = self.version
+        devdict["class"] = self.dev_class
+        return devdict
 
 
 class TangoctlDevice(TangoctlDeviceBasic):
