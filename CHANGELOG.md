@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* [AT-1841] - Update to TMC values file: dish_name has been updated to dish_names in new version of TMC.
+
 ## 0.5.2
 
 * [AT-1967] - Updated tmc_dish_ids and tmc tests to fix fqdn bug

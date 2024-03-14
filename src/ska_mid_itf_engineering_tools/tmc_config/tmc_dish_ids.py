@@ -181,7 +181,7 @@ def tmc_values(
             },
             "global": {
                 "namespace_dish": {
-                    "dish_name": dish_fqdns(
+                    "dish_names": dish_fqdns(
                         hostname=hostname,
                         cluster_domain_postfix=cluster_domain_postfix,
                         namespace_prefix=namespace_prefix,
