@@ -2,7 +2,7 @@
 tmc:
   global:
     namespace_dish:
-      dish_name:
+      dish_names:
         [
           "tango://tango-databaseds.dish-lmc-ska001.svc.miditf.internal.skao.int:10000/mid-dish/dish-manager/SKA001",
           "tango://tango-databaseds.dish-lmc-ska036.svc.miditf.internal.skao.int:10000/mid-dish/dish-manager/SKA036",
