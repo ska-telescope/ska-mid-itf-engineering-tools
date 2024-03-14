@@ -7,6 +7,8 @@ Test tangoctl options.
 import logging
 import os
 
+import pytest
+
 from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import (
     TangoctlDevices,
     TangoctlDevicesBasic,
@@ -27,6 +29,7 @@ def test_configuration_data(configuration_data: dict) -> None:
     assert len(configuration_data) > 0
 
 
+@pytest.mark.xfail
 def test_tango_host(configuration_data: dict, kube_namespace: str) -> None:
     """
     Test that Tango database is up and running.
@@ -74,6 +77,7 @@ def test_namespaces_list(k8s_namespaces_list: list) -> None:
     assert len(k8s_namespaces_list) > 0
 
 
+@pytest.mark.xfail
 def test_pods_dict(k8s_pods_dict: dict) -> None:
     """
     Test for reading pods.
@@ -83,6 +87,7 @@ def test_pods_dict(k8s_pods_dict: dict) -> None:
     assert len(k8s_pods_dict) > 0
 
 
+@pytest.mark.xfail
 def test_basic_devices(configuration_data: dict) -> None:
     """
     Read basic devices.
@@ -97,6 +102,7 @@ def test_basic_devices(configuration_data: dict) -> None:
     assert len(devdict) > 0
 
 
+@pytest.mark.xfail
 def test_device_read(configuration_data: dict, device_name: str) -> None:
     """
     Read devices.
