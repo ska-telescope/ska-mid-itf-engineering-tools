@@ -1,4 +1,8 @@
-"""Test tangoctl options."""
+"""
+Test tangoctl options.
+
+# type: ignore[import-untyped]
+"""
 
 import logging
 import os
@@ -7,7 +11,10 @@ from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import (
     TangoctlDevices,
     TangoctlDevicesBasic,
 )
-from ska_mid_itf_engineering_tools.tango_control.tango_control import check_tango, read_input_files
+from ska_mid_itf_engineering_tools.tango_control.tango_control import (
+    check_tango,
+    read_input_files,
+)
 
 logging.basicConfig(level=logging.WARNING)
 _module_logger = logging.getLogger("test_tango_control")
@@ -15,7 +22,11 @@ _module_logger.setLevel(logging.WARNING)
 
 
 def test_configuration_data(configuration_data: dict) -> None:
-    """Check configuration data file."""
+    """
+    Check configuration data file.
+
+    :param configuration_data: tangoctl setup
+    """
     assert len(configuration_data) > 0
 
 
@@ -81,7 +92,6 @@ def test_basic_devices(configuration_data: dict) -> None:
 
     :param configuration_data: read from JSON file
     """
-
     _module_logger.info("List device classes")
     devices = TangoctlDevicesBasic(_module_logger, True, False, configuration_data, None, "json")
 
