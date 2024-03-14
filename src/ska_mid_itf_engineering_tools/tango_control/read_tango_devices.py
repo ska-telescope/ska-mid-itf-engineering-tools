@@ -179,7 +179,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
 
     devices: dict = {}
     attribs_found: list = []
-    tgo_space: str
+    tgo_space: str = ""
     quiet_mode: bool = True
 
     def __init__(  # noqa: C901s
@@ -442,6 +442,19 @@ class TangoctlDevices(TangoctlDevicesBasic):
             self.logger, not self.prog_bar, self.tgo_space, devsdict, self.output_file
         )
         json_reader.print_markdown_all()
+
+    def print_html(self, disp_action: int) -> None:
+        """
+        Print in JSON format.
+
+        :param disp_action: display control flag
+        """
+        self.logger.info("Markdown")
+        devsdict = self.make_json()
+        json_reader = TangoJsonReader(
+            self.logger, not self.prog_bar, self.tgo_space, devsdict, self.output_file
+        )
+        json_reader.print_html_all(True)
 
     def print_yaml(self, disp_action: int) -> None:
         """

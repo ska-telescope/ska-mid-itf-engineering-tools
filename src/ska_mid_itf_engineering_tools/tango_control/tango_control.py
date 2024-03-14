@@ -172,23 +172,26 @@ def print_pods(ns_name: str | None, quiet_mode: bool) -> None:  # noqa: C901
                 print(f"\t- {resps}")
 
 
-def get_pods_json(ns_name: str | None) -> dict:
+def get_pods_json(ns_name: str | None, quiet_mode: bool) -> dict:
     """
     Read pods in Kubernetes namespace.
 
     :param ns_name: namespace name
+    :param quiet_mode: print progress bars
     :return: dictionary with pod information
     """
     pods: dict = {}
+    pod_exec: list = ["ps", "-ef"]
     if ns_name is None:
         _module_logger.error("K8S namespace not specified")
         return pods
     k8s = KubernetesControl(_module_logger)
+    _module_logger.debug("Read pods running in namespace %s", ns_name)
     pods_list = k8s.get_pods(ns_name, None)
     _module_logger.info("Found %d pods running in namespace %s", len(pods_list), ns_name)
     for pod_name in pods_list:
         _module_logger.info("Read processes running in pod %s", pod_name)
-        resps = k8s.exec_command(ns_name, pod_name, ["ps", "-ef"])
+        resps = k8s.exec_command(ns_name, pod_name, pod_exec)
         pods[pod_name] = []
         if not resps:
             pass
@@ -223,7 +226,7 @@ def show_pods(
     :param fmt: output format
     """
     if fmt == "json":
-        pods = get_pods_json(ns_name)
+        pods = get_pods_json(ns_name, quiet_mode)
         if output_file is not None:
             _module_logger.info("Write output file %s", output_file)
             with open(output_file, "w") as outf:
@@ -231,7 +234,7 @@ def show_pods(
         else:
             print(json.dumps(pods, indent=4))
     elif fmt == "yaml":
-        pods = get_pods_json(ns_name)
+        pods = get_pods_json(ns_name, quiet_mode)
         if output_file is not None:
             _module_logger.info("Write output file %s", output_file)
             with open(output_file, "w") as outf:
@@ -239,7 +242,9 @@ def show_pods(
         else:
             print(yaml.dump(pods))
     else:
-        show_pods(ns_name, quiet_mode, output_file, fmt)
+        # show_pods(ns_name, quiet_mode, output_file, fmt)
+        _module_logger.warning("Output format %s not supported", fmt)
+        pass
 
 
 def get_tango_classes(

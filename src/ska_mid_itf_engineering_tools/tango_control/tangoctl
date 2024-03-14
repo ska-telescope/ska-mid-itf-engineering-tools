@@ -26,7 +26,7 @@ from ska_mid_itf_engineering_tools.tango_control.tango_control import (
 from ska_mid_itf_engineering_tools.tango_control.test_tango_device2 import TestTangoDevice
 
 logging.basicConfig(level=logging.WARNING)
-_module_logger = logging.getLogger("tangoctl")
+_module_logger = logging.getLogger("tango_control")
 _module_logger.setLevel(logging.WARNING)
 
 
@@ -237,6 +237,8 @@ def run_info(
         devices.print_txt_list_properties()
     elif fmt == "txt":
         devices.print_txt(disp_action)
+    elif fmt == "html":
+        devices.print_html(disp_action)
     elif fmt == "json":
         devices.print_json(disp_action)
     elif fmt == "md":
@@ -332,6 +334,7 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print("\t-l|--list\t\t\tdisplay device name and status on one line")
     print("\t-s|--short\t\t\tdisplay device name, status and query devices")
     print("\t-q|--quiet\t\t\tdo not display progress bars")
+    print("\t-j|--html\t\t\toutput in HTML format")
     print("\t-j|--json\t\t\toutput in JSON format")
     print("\t-m|--md\t\t\t\toutput in markdown format")
     print("\t-y|--yaml\t\t\toutput in YAML format")
@@ -451,7 +454,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
-            "acdefhjklmnoqstvyVA:C:H:D:I:J:K:p:O:P:T:W:",
+            "acdefhjklmnoqstvwyVA:C:H:D:I:J:K:p:O:P:T:W:",
             [
                 "class",
                 "cmd",
@@ -459,6 +462,7 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "everything",
                 "full",
                 "help",
+                "html",
                 "json",
                 "list",
                 "md",
@@ -520,6 +524,8 @@ def main(y_arg: list) -> int:  # noqa: C901
             disp_action = 1
         elif opt in ("--host", "-H"):
             tango_host = arg
+        elif opt in ("--html", "-w"):
+            fmt = "html"
         elif opt in ("--input", "-I"):
             input_file = arg
         elif opt in ("--json", "-j"):
