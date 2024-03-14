@@ -1,4 +1,5 @@
 """Test tangoctl options."""
+
 import logging
 import os
 
