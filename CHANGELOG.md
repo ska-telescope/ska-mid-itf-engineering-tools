@@ -3,6 +3,7 @@
 ## Unreleased
 
 * [AT-1841] - Update to TMC values file: dish_name has been updated to dish_names in new version of TMC.
+* [AT-1955] - Update k-value.
 
 ## 0.5.2
 
