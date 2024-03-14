@@ -11,10 +11,7 @@ from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import (
     TangoctlDevices,
     TangoctlDevicesBasic,
 )
-from ska_mid_itf_engineering_tools.tango_control.tango_control import (
-    check_tango,
-    read_input_files,
-)
+from ska_mid_itf_engineering_tools.tango_control.tango_control import check_tango, read_input_files
 
 logging.basicConfig(level=logging.WARNING)
 _module_logger = logging.getLogger("test_tango_control")
