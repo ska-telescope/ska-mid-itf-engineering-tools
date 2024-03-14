@@ -22,6 +22,9 @@ def read_input_file(input_file: str | None, tgo_name: str | None, dry_run: bool)
     """
     Read instructions from JSON file.
 
+    :param input_file: input file name
+    :param tgo_name: device name
+    :param dry_run: flag for dry run
     """
     if input_file is None:
         return
@@ -63,6 +66,7 @@ def get_namespaces_list(logger: logging.Logger = _module_logger) -> list:
     Read namespaces in Kubernetes cluster.
 
     :param logger: logging handle
+    :return: list with devices
     """
     k8s = KubernetesControl(logger)
     ns_list = k8s.get_namespaces_list()
@@ -75,6 +79,7 @@ def get_namespaces_dict(logger: logging.Logger = _module_logger) -> dict:
     Read namespaces in Kubernetes cluster.
 
     :param logger: logging handle
+    :return: dictionary with devices
     """
     k8s = KubernetesControl(logger)
     ns_dict = k8s.get_namespaces_dict()
@@ -118,6 +123,7 @@ def get_pods_dict(ns_name: str | None, logger: logging.Logger = _module_logger) 
 
     :param ns_name: namespace name
     :param logger: logging handle
+    :return: dictionary with devices
     """
     k8s = KubernetesControl(logger)
     pods_dict = k8s.get_pods(ns_name, None)
@@ -168,9 +174,10 @@ def print_pods(ns_name: str | None, quiet_mode: bool) -> None:  # noqa: C901
 
 def get_pods_json(ns_name: str | None) -> dict:
     """
-    Display pods in Kubernetes namespace.
+    Read pods in Kubernetes namespace.
 
     :param ns_name: namespace name
+    :return: dictionary with pod information
     """
     pods: dict = {}
     if ns_name is None:
@@ -252,7 +259,7 @@ def get_tango_classes(
     :param cfg_data: configuration data in JSON format
     :param tgo_name: device name
     :param logger: logging handle
-    :return:
+    :return: dictionary with devices
     """
     try:
         devices = TangoctlDevicesBasic(
@@ -274,6 +281,7 @@ def list_classes(
     tgo_name: str | None,
 ) -> int:
     """
+    Get device classes.
 
     :param fmt: output format
     :param evrythng: get commands and attributes regadrless of state
@@ -284,7 +292,7 @@ def list_classes(
     """
     _module_logger.info("List classes")
     if fmt == "json":
-        _module_logger.info("Get device classesm")
+        _module_logger.info("Get device classes")
         try:
             devices = TangoctlDevicesBasic(
                 _module_logger, quiet_mode, evrythng, cfg_data, tgo_name, fmt
@@ -317,7 +325,7 @@ def list_devices(
     :param disp_action: flag for output format
     :param cfg_data: configuration data in JSON format
     :param tgo_name: device name
-    :return:
+    :return: error condition
     """
     if disp_action == 4:
         _module_logger.info("List devices (%s)", fmt)
@@ -354,6 +362,14 @@ def list_devices(
 def read_input_files(
     json_dir: str, quiet_mode: bool = True, logger: logging.Logger = _module_logger
 ) -> int:
+    """
+    Read info from script files.
+
+    :param json_dir: directory with script files
+    :param quiet_mode: turn off progress bar
+    :param logger: logging handle
+    :return: error condition
+    """
     rv = 0
     _module_logger.info("List JSON and YAML files in %s", json_dir)
     relevant_path = json_dir

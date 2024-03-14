@@ -109,7 +109,11 @@ class TangoctlDevicesBasic:
             self.devices[device].read_config()
 
     def make_json(self) -> dict:
-        """Print list of devices."""
+        """
+        Make dictionary of devices.
+
+        :return: dictionary with device data
+        """
         devdict = {}
         self.logger.info("List %d devices in JSON format...", len(self.devices))
         for device in self.devices:
@@ -138,7 +142,7 @@ class TangoctlDevicesBasic:
         """
         Get list of classes.
 
-        :return: list of classes
+        :return: dictionary of classes
         """
         self.logger.info("Get classes in %d devices", len(self.devices))
         dev_classes: dict = {}

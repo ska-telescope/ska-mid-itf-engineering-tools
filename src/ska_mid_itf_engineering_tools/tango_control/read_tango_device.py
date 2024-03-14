@@ -225,6 +225,11 @@ class TangoctlDeviceBasic:
         )
 
     def make_json(self) -> dict:
+        """
+        Build dictionary.
+
+        :return: dictionary with device data
+        """
         devdict = {}
         devdict["name"] = self.dev_name
         devdict["state"] = self.dev_str

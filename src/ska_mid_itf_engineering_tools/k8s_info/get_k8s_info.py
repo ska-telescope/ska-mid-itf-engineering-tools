@@ -214,7 +214,9 @@ class KubernetesControl:
             self.logger.info("Read services")
         if ns_name:
             self.logger.info("Use namespace %s", ns_name)
-        services = self.k8s_client.list_service_for_all_namespaces(watch=False)  # type: ignore[union-attr]
+        services = self.k8s_client.list_service_for_all_namespaces(  # type: ignore[union-attr]
+            watch=False
+        )
         for isvc in services.items:
             svc_nm, svc_ns, svc_ip, svc_port, svc_prot = self.get_service(isvc, ns_name, svc_name)
             if svc_nm is not None:
