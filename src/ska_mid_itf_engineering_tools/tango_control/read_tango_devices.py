@@ -11,10 +11,9 @@ import yaml
 
 from ska_mid_itf_engineering_tools.tango_control.read_tango_device import (
     TangoctlDevice,
-    TangoctlDeviceBasic,
-    progress_bar,
+    TangoctlDeviceBasic
 )
-from ska_mid_itf_engineering_tools.tango_control.tango_json import TangoJsonReader
+from ska_mid_itf_engineering_tools.tango_control.tango_json import TangoJsonReader, progress_bar
 
 
 class TangoctlDevicesBasic:
@@ -126,6 +125,22 @@ class TangoctlDevicesBasic:
         print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN':11} {'VERSION':8} CLASS")
         for device in self.devices:
             self.devices[device].print_list()
+
+    def print_html(self, disp_action: int) -> None:
+        """
+        Print in HTML format.
+
+        :param disp_action: display control flag
+        """
+        self.logger.info("List %d devices in HTML format...", len(self.devices))
+        print("<table>")
+        print(
+            "<tr><td>DEVICE NAME</td><td>STATE</td><td>ADMIN</td><td>VERSION</td>"
+            "<td>CLASS</td></tr>"
+        )
+        for device in self.devices:
+            self.devices[device].print_html()
+        print("<table>")
 
     def print_txt_classes(self) -> None:
         """Print list of classes."""
@@ -354,7 +369,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         self.read_attribute_values()
         self.read_command_values()
         self.read_property_values()
-        self.logger.info("Read devices %s", self.devices)
+        self.logger.debug("Read devices %s", self.devices)
 
     def make_json(self) -> dict:
         """
@@ -445,16 +460,19 @@ class TangoctlDevices(TangoctlDevicesBasic):
 
     def print_html(self, disp_action: int) -> None:
         """
-        Print in JSON format.
+        Print in HTML format.
 
         :param disp_action: display control flag
         """
-        self.logger.info("Markdown")
+        self.logger.info("HTML")
         devsdict = self.make_json()
         json_reader = TangoJsonReader(
             self.logger, not self.prog_bar, self.tgo_space, devsdict, self.output_file
         )
-        json_reader.print_html_all(True)
+        if disp_action == 4:
+            json_reader.print_html_all(True)
+        else:
+            json_reader.print_html_quick(True)
 
     def print_yaml(self, disp_action: int) -> None:
         """

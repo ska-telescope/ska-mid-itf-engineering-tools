@@ -9,60 +9,7 @@ import numpy
 import tango
 
 from ska_mid_itf_engineering_tools.tango_control.ska_jargon import find_jargon
-
-
-def progress_bar(
-    iterable: list | dict,
-    show: bool,
-    prefix: str = "",
-    suffix: str = "",
-    decimals: int = 1,
-    length: int = 100,
-    fill: str = "*",
-    print_end: str = "\r",
-) -> Any:
-    r"""
-    Call this in a loop to create a terminal progress bar.
-
-    :param iterable: Required - iterable object (Iterable)
-    :param show: print the actual thing
-    :param prefix: prefix string
-    :param suffix: suffix string
-    :param decimals: positive number of decimals in percent complete
-    :param length: character length of bar
-    :param fill: fill character for bar
-    :param print_end: end character (e.g. "\r", "\r\n")
-    :yields: the next one in line
-    """
-
-    def print_progress_bar(iteration: Any) -> None:
-        """
-        Progress bar printing function.
-
-        :param iteration: the thing
-        """
-        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-        filled_length = int(length * iteration // total)
-        bar = fill * filled_length + "-" * (length - filled_length)
-        print(f"\r{prefix} |{bar}| {percent}% {suffix}", end=print_end)
-
-    if show:
-        total = len(iterable)
-        # Do not divide by zero
-        if total == 0:
-            total = 1
-        # Initial call
-        print_progress_bar(0)
-        # Update progress bar
-        for i, item in enumerate(iterable):
-            yield item
-            print_progress_bar(i + 1)
-        # Erase line upon completion
-        sys.stdout.write("\033[K")
-    else:
-        # Nothing to see here
-        for i, item in enumerate(iterable):
-            yield item
+from ska_mid_itf_engineering_tools.tango_control.tango_json import TangoJsonReader, progress_bar
 
 
 class TangoctlDeviceBasic:
@@ -224,6 +171,14 @@ class TangoctlDeviceBasic:
             f" {self.dev_class}"
         )
 
+    def print_html(self) -> None:
+        """Print data."""
+        self.read_config()
+        print(
+            f"<tr><td>{self.dev_name}</td><td>{self.dev_str}</td><td>{self.adminModeStr}</td>"
+            f"<td>{self.version}</td><td>{self.dev_class}</td></tr>"
+        )
+
     def make_json(self) -> dict:
         """
         Build dictionary.
@@ -251,6 +206,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
     cmds_found: list = []
     info: Any
     quiet_mode: bool = True
+    outf = sys.stdout
 
     def __init__(  # noqa: C901
         self,
@@ -446,7 +402,9 @@ class TangoctlDevice(TangoctlDeviceBasic):
             devdict["attributes"][attr_name]["data"] = {}
             if "error" in self.attributes[attr_name]:
                 devdict["attributes"][attr_name]["error"] = self.attributes[attr_name]["error"]
-            if "value" in self.attributes[attr_name]["data"]:
+            if "data" not in self.attributes[attr_name]:
+                pass
+            elif "value" in self.attributes[attr_name]["data"]:
                 data_val = self.attributes[attr_name]["data"]["value"]
                 self.logger.debug(
                     "Attribute %s data type %s: %s", attr_name, type(data_val), data_val
@@ -470,16 +428,18 @@ class TangoctlDevice(TangoctlDeviceBasic):
                         devdict["attributes"][attr_name]["data"]["value"] = data_val
                 else:
                     devdict["attributes"][attr_name]["data"]["value"] = str(data_val)
+                devdict["attributes"][attr_name]["data"]["type"] = str(
+                    self.attributes[attr_name]["data"]["type"]
+                )
+                devdict["attributes"][attr_name]["data"]["data_format"] = str(
+                    self.attributes[attr_name]["data"]["data_format"]
+                )
+            else:
+                pass
             if "error" in self.attributes[attr_name]:
                 devdict["attributes"][attr_name]["error"] = str(
                     self.attributes[attr_name]["error"]
                 )
-            devdict["attributes"][attr_name]["data"]["type"] = str(
-                self.attributes[attr_name]["data"]["type"]
-            )
-            devdict["attributes"][attr_name]["data"]["data_format"] = str(
-                self.attributes[attr_name]["data"]["data_format"]
-            )
             if self.attributes[attr_name]["config"] is not None:
                 devdict["attributes"][attr_name]["config"] = {}
                 devdict["attributes"][attr_name]["config"]["description"] = self.attributes[
@@ -634,11 +594,11 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 self.attributes[attrib]["data"]["type"] = "N/A"
                 self.attributes[attrib]["data"]["data_format"] = "N/A"
                 continue
-            self.logger.debug("Read attribute %s : %s", attrib, attrib_data)
+            # self.logger.debug("Read attribute %s : %s", attrib, attrib_data)
             self.attributes[attrib]["data"]["value"] = attrib_data.value
             self.attributes[attrib]["data"]["type"] = str(attrib_data.type)
             self.attributes[attrib]["data"]["data_format"] = str(attrib_data.data_format)
-            self.logger.info(
+            self.logger.debug(
                 "Read attribute %s data : %s", attrib, self.attributes[attrib]["data"]
             )
 
@@ -663,7 +623,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
                     self.logger.info("Could not run command %s : %s", cmd, err_msg)
                     self.commands[cmd]["value"] = "N/A"
                     self.commands[cmd]["error"] = err_msg
-                self.logger.info(
+                self.logger.debug(
                     "Read command %s (%s) : %s",
                     cmd,
                     type(self.commands[cmd]["value"]),
@@ -671,7 +631,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 )
             elif cmd in run_commands_name:
                 self.commands[cmd]["value"] = self.dev.command_inout(cmd, self.dev_name)
-                self.logger.info(
+                self.logger.debug(
                     "Read command %s (%s) with arg %s : %s",
                     cmd,
                     type(self.commands[cmd]["value"]),
@@ -686,7 +646,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
         """Read device properties."""
         for prop in self.properties:
             self.properties[prop]["value"] = self.dev.get_property(prop)[prop]
-            self.logger.info("Read property %s : %s", prop, self.properties[prop]["value"])
+            self.logger.debug("Read property %s : %s", prop, self.properties[prop]["value"])
         return
 
     def print_list_attribute(self) -> None:
@@ -730,3 +690,25 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 print(f"{' ':40} {' ':10} {' ':11} {' ':8} {' ':24} ", end="")
             print(f"{prop}")
             n += 1
+
+    def print_html_all(self, html_body: bool) -> None:
+        """
+        Print full HTML report.
+
+        :param html_body: Flag to print HTML header and footer
+        """
+        self.logger.info("HTML")
+        devsdict = {f"{self.dev_name}": self.make_json()}
+        json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
+        json_reader.print_html_all(html_body)
+
+    def print_html_quick(self, html_body: bool) -> None:
+        """
+        Print full HTML report.
+
+        :param html_body: Flag to print HTML header and footer
+        """
+        self.logger.info("HTML")
+        devsdict = {f"{self.dev_name}": self.make_json()}
+        json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
+        json_reader.print_html_quick(html_body)
