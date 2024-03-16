@@ -1,4 +1,5 @@
 {
+  "timeout_millis": 500,
   "cluster_domain": "miditf.internal.skao.int",
   "databaseds_name": "tango-databaseds",
   "databaseds_port": 10000,

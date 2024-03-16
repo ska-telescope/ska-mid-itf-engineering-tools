@@ -39,6 +39,7 @@ class TangoctlDeviceBasic:
         logger: logging.Logger,
         device: str,
         list_values: dict = {},
+        timeout_millis: float = 500,
     ):
         """
         Iniltialise the thing.
@@ -50,6 +51,7 @@ class TangoctlDeviceBasic:
         self.logger = logger
         self.logger.debug("Open device %s", device)
         self.dev = tango.DeviceProxy(device)
+        self.dev.set_timeout_millis(timeout_millis)
         try:
             self.dev_name = self.dev.name()
         except tango.DevFailed as terr:
@@ -702,9 +704,31 @@ class TangoctlDevice(TangoctlDeviceBasic):
         json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
         json_reader.print_html_all(html_body)
 
-    def print_html_quick(self, html_body: bool) -> None:
+    def print_markdown_all(self) -> None:
         """
         Print full HTML report.
+
+        :param html_body: Flag to print HTML header and footer
+        """
+        self.logger.info("Markdown")
+        devsdict = {f"{self.dev_name}": self.make_json()}
+        json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
+        json_reader.print_markdown_all()
+
+    def print_txt_all(self) -> None:
+        """
+        Print full HTML report.
+
+        :param html_body: Flag to print HTML header and footer
+        """
+        self.logger.info("Text")
+        devsdict = {f"{self.dev_name}": self.make_json()}
+        json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
+        json_reader.print_txt_all()
+
+    def print_html_quick(self, html_body: bool) -> None:
+        """
+        Print shortened HTML report.
 
         :param html_body: Flag to print HTML header and footer
         """

@@ -238,6 +238,152 @@ class TangoJsonReader:
                     md_print(f"| {dstr:143} ||", file=self.outf)
             return
 
+        def print_data(dstr: str, dc1: int, dc2: int, dc3: int) -> None:
+            """
+            Print device data.
+
+            :param dstr: data string
+            :param dc1: column 1 width
+            :param dc2: column 2 width
+            :param dc3: column 2 width
+            """
+            if not dstr:
+                md_print(f"| {' ':{dc3}} |", file=self.outf)
+            elif type(dstr) is not str:
+                md_print(f"| {str(dstr):{dc3}} |", file=self.outf)
+            elif "\n" in dstr:
+                self.logger.debug("Print '%s'", dstr)
+                n = 0
+                for line in dstr.split("\n"):
+                    line = line.strip()
+                    if line:
+                        if n:
+                            print(f"| {' ':{dc1}} | {' ':{dc2}}.", end="", file=self.outf)
+                        md_print(f"| {line:{dc3}} |", file=self.outf)
+                        n += 1
+            elif len(dstr) > dc3 and "," in dstr:
+                n = 0
+                for line in dstr.split(","):
+                    if n:
+                        if dc2:
+                            print(f"| {' ':{dc1}} | {' ':{dc2}}.", end="", file=self.outf)
+                        else:
+                            print(f"| {' ':{dc1}} ", end="", file=self.outf)
+                    md_print(f"| {line:{dc3}} |", file=self.outf)
+                    n += 1
+            else:
+                md_print(f"| {str(dstr):{dc3}} |", file=self.outf)
+
+        def print_md_attributes() -> None:
+            """Print attributes."""
+            print("### Attributes\n", file=self.outf)
+            for attrib in devdict["attributes"]:
+                print(f"#### {attrib}\n", file=self.outf)
+                print("| ITEM | VALUE |       |", file=self.outf)
+                print("|:-----|:------|:------|", file=self.outf)
+                attrib_data = devdict["attributes"][attrib]["data"]
+                for item in attrib_data:
+                    data = attrib_data[item]
+                    if type(data) is str:
+                        self.logger.debug("Print attribute str %s : %s", item, data)
+                        print_attribute_data(item, data)
+                    elif type(data) is dict:
+                        self.logger.debug("Print attribute dict %s : %s", item, data)
+                        n = 0
+                        for item2 in data:
+                            print_attribute_data(item2, str(data[item2]))
+                            n += 1
+                    elif type(data) is list:
+                        self.logger.debug("Print attribute list %s : %s", item, data)
+                        n = 0
+                        for item2 in data:
+                            if not n:
+                                md_print(f"| {str(item):30} ", end="", file=self.outf)
+                            else:
+                                print(f"| {' ':30} ", end="", file=self.outf)
+                            md_print(f"| {str(item2):143} ||", file=self.outf)
+                            n += 1
+                    else:
+                        self.logger.warning(
+                            "Data type for %s (%s) not supported", item, type(data)
+                        )
+                if "config" in devdict["attributes"][attrib]:
+                    for item in devdict["attributes"][attrib]["config"]:
+                        config = devdict["attributes"][attrib]["config"][item]
+                        print_attribute_data(item, config)
+                print("\n*******\n", file=self.outf)
+            print("\n", file=self.outf)
+
+        def print_md_commands() -> None:
+            """Print commands."""
+            cc1 = 30
+            cc2 = 50
+            cc3 = 90
+            print("### Commands\n", file=self.outf)
+            print(f"| {'NAME':{cc1}} | {'FIELD':{cc2}} | {'VALUE':{cc3}} |", file=self.outf)
+            print(f"|:{'-'*cc1}-|:{'-'*cc2}-|:{'-'*cc3}-|", file=self.outf)
+            n = 0
+            for cmd in devdict["commands"]:
+                print(f"| {cmd:{cc1}} ", end="", file=self.outf)
+                m = 0
+                cmd_items = devdict["commands"][cmd]
+                self.logger.debug("Print command %s : %s", cmd, cmd_items)
+                if cmd_items:
+                    for item in cmd_items:
+                        if m:
+                            print(f"| {' ':{cc1}} ", end="", file=self.outf)
+                        md_print(f"| {item:{cc2}} ", end="", file=self.outf)
+                        print_data(devdict["commands"][cmd][item], cc1, cc2, cc3)
+                        m += 1
+                else:
+                    md_print(f"| {' ':{cc2}} | {' ':{cc3}} |", file=self.outf)
+                n += 1
+            print("\n*******\n", file=self.outf)
+
+        def print_md_properties() -> None:
+            """Print properties."""
+            pc1 = 40
+            pc2 = 133
+            print("### Properties\n", file=self.outf)
+            print(f"| {'NAME':{pc1}} | {'VALUE':{pc2}} |", file=self.outf)
+            print(f"|:{'-'*pc1}-|:{'-'*pc2}-|", file=self.outf)
+            for prop in devdict["properties"]:
+                self.logger.debug(
+                    "Print command %s : %s", prop, devdict["properties"][prop]["value"]
+                )
+                md_print(f"| {prop:{pc1}} ", end="", file=self.outf)
+                print_data(devdict["properties"][prop]["value"], pc1, 0, pc2)
+            print("\n*******\n", file=self.outf)
+
+        print(f"# Tango devices in {self.tgo_space}\n", file=self.outf)
+        # Run "for device in self.devices_dict:"
+        for device in progress_bar(
+            self.devices_dict,
+            not self.quiet_mode,
+            prefix=f"Read {len(self.devices_dict)} JSON devices :",
+            suffix="complete",
+            decimals=0,
+            length=100,
+        ):
+            self.logger.info("Print device %s", device)
+            devdict = self.devices_dict[device]
+            md_print(f"## Device {devdict['name']}\n", file=self.outf)
+            print("| FIELD | VALUE |", file=self.outf)
+            print("|:------|:------|", file=self.outf)
+            print(f"| version | {devdict['version']} |", file=self.outf)
+            print(f"| device access| {devdict['device_access']} |", file=self.outf)
+            if "adminMode" in devdict:
+                print(f"| Admin mode | {devdict['adminMode']} |", file=self.outf)
+            if "info" in devdict:
+                md_print(f"| Device class | {devdict['info']['dev_class']} |", file=self.outf)
+                md_print(f"| Server host | {devdict['info']['server_host']} |", file=self.outf)
+                md_print(f"| Server ID | {devdict['info']['server_id']} |", file=self.outf)
+            print("\n*******\n", file=self.outf)
+            print_md_attributes()
+            print_md_commands()
+            print_md_properties()
+            print("\n", file=self.outf)
+
     def print_html_all(self, html_body: bool) -> None:  # noqa: C901
         """
         Print the whole thing.
@@ -813,7 +959,9 @@ class TangoJsonReader:
 
         def print_attributes() -> None:
             """Print attribute in short form."""
-            print("<tr><td>attributes</td><td><table>", end="", file=self.outf)
+            print(
+                '<tr><td style="vertical-align: top">attributes</td><td><table>', file=self.outf
+            )
             i = 0
             for attrib in devdict["attributes"]:
                 print(f"<tr><td>{attrib}</td>", end="", file=self.outf)
