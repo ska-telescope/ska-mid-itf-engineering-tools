@@ -2,39 +2,50 @@
 
 [![Documentation Status](https://readthedocs.org/projects/ska-mid-itf-engineering-tools/badge/?version=latest)](https://developer.skatelescope.org/projects/ska-mid-itf-engineering-tools/en/latest/?badge=latest)
 
+## Introduction
+
+This repo provides a suite of utilities for use in the Mid ITF environment:
+* *tangoctl*, a utility to query and test Tanfo devices
+* *dependency_checker*, a utility to check Helm and Poetry dependencies
+
 ## How to Use
 
 Clone this repo:
 
 ```
-git clone https://gitlab.com/ska-telescope/ska-mid-itf-engineering-tools.git
-cd ska-mid-itf-engineering-tools
-git submodule update --init --recursive
+$ git clone https://gitlab.com/ska-telescope/ska-mid-itf-engineering-tools.git
+$ cd ska-mid-itf-engineering-tools
+$ git submodule update --init --recursive
 ```
 
 
-## Installation
+## Installation of *tangoctl*
 
 ### Using poetry
 
 ```
 $ poetry install
-...
 $ poetry lock
-...
 $ poetry shell
-...
 $ ./setup.py install
-
 $ ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl -h
 ```
 
 ### Local install
 
+To run *tangoctl* on your own computer, either of the following methogs should work.
+
+#### Use setup utility
+
 ```
 $ sudo python ./setup.py install
-
 $ ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl -h
+```
+
+#### Update Python path
+
+```
+$ export PYTHONPATH=${PYTHONPATH}:{PWD}/src/ska_mid_itf_engineering_tools/tango_control
 ```
 
 ## Testing
@@ -51,7 +62,7 @@ $ make oci-build
 Install python requirements:
 
 ```
-poetry install
+$ poetry install
 ```
 
 Run python-test:
@@ -115,53 +126,207 @@ The dependency checker Gitlab job, *check-dependencies*, is run as part of a sch
 To obtain help:
 
 ```$ tangoctl --help
+Read Tango devices:
+
 Display version number
         tangoctl --version
+
 Display help
         tangoctl --help
         tangoctl -h
+
 Display Kubernetes namespaces
         tangoctl --show-ns
-        tangoctl -n
+        tangoctl -k
+
 Display Tango database address
-        tangoctl --show-db [--namespace=<NAMESPACE>|--host=<HOST>]
-        tangoctl -t [-N <NAMESPACE>|-H <HOST>]
-Display Tango device names
-        tangoctl --show-dev [--namespace=<NAMESPACE>|--host=<HOST>]
-        tangoctl -d [-N <NAMESPACE>|-H <HOST>]
-Display all devices
-        tangoctl --full|--long|--quick|--short [--dry-run] [--namespace=<NAMESPACE>|--host=<HOST>]
-        tangoctl -f|-l|-q|-s [-N <NAMESPACE>|-H <HOST>]
+        tangoctl --show-db --k8s-ns=<NAMESPACE>
+        tangoctl -t -K <NAMESPACE>
+e.g. tangoctl -t -K integration
+
+Display classes and Tango devices associated with them
+        tangoctl -d|--class --k8s-ns=<NAMESPACE>|--host=<HOST>
+        tangoctl -d|--class -K <NAMESPACE>|-H <HOST>
+e.g. tangoctl -d -K integration
+
+List Tango device names
+        tangoctl --show-dev --k8s-ns=<NAMESPACE>|--host=<HOST>
+        tangoctl -l -K <NAMESPACE>|-H <HOST>
+e.g. tangoctl -l -K integration
+
+Display all Tango devices (will take a long time)
+        tangoctl --full|--short -e|--everything [--namespace=<NAMESPACE>|--host=<HOST>]
+        tangoctl -l -K integration
+        e.g. tangoctl -f|-s -K <NAMESPACE>|-H <HOST>
+
 Filter on device name
-        tangoctl --full|--long|--quick|--short -D <DEVICE> [-N <NAMESPACE>|-H <HOST>]
-        tangoctl -f|-l|-q|-s --device=<DEVICE> [--namespace=<NAMESPACE>|--host=<HOST>]
+        tangoctl --full|--short -D <DEVICE> -K <NAMESPACE>|-H <HOST>
+        tangoctl -f|-s --device=<DEVICE> --k8s-ns=<NAMESPACE>|--host=<HOST>
+e.g. tangoctl -f -K integration -D ska_mid/tm_leaf_node/csp_subarray01
+
 Filter on attribute name
-        tangoctl --full|--long|--quick|--short --attribute=<ATTRIBUTE> [--namespace=<NAMESPACE>|--host=<HOST>]
-        tangoctl -f|-l|-q|-s -A <ATTRIBUTE> [-N <NAMESPACE>|-H <HOST>]
+        tangoctl --full|--short --attribute=<ATTRIBUTE> --k8s-ns=<NAMESPACE>|--host=<HOST>
+        tangoctl -f|-s -A <ATTRIBUTE> -K <NAMESPACE>|-H <HOST>
+e.g. tangoctl -f -K integration -A timeout
+
 Filter on command name
-        tangoctl --full|--long|--quick|--short --command=<COMMAND> [--namespace=<NAMESPACE>|--host=<HOST>]
-        tangoctl -f|-l|-q|-s -C <COMMAND> [-N <NAMESPACE>|-H <HOST>]
+        tangoctl --full|--short --command=<COMMAND> --k8s-ns=<NAMESPACE>|--host=<HOST>
+        tangoctl -f|-s -C <COMMAND> -K <NAMESPACE>|-H <HOST>
+e.g. tangoctl -l -K integration -C status
+
 Filter on property name
-        tangoctl --full|--long|--quick|--short --property=<PROPERTY> [--namespace=<NAMESPACE>|--host=<HOST>]
-        tangoctl -f|-l|-q|-s -P <PROPERTY> [-N <NAMESPACE>|--host=<HOST>]
-Display known acronyms
-        tangoctl -j
-where:
-        -f                              display in full
-        -l                              display device name and status on one line
-        -q                              display device name, status and query devices
-        -s                              display device name and status only
-        -f                              get commands, attributes and properties regardless of state
+        tangoctl --full|--list|--short --property=<PROPERTY> --k8s-ns=<NAMESPACE>|--host=<HOST>
+        tangoctl -f|-s -P <PROPERTY> --k8s-ns=<NAMESPACE>|--host=<HOST>
+e.g. tangoctl -l -K integration -P power
+
+Display tangoctl test input files
+        tangoctl --json-dir=<PATH>
+        tangoctl -J <PATH>
+e.g. ADMIN_MODE=1 tangoctl -J resources/
+
+Run test, reading from input file
+        tangoctl --k8s-ns=<NAMESPACE> --input=<FILE>
+        tangoctl --K <NAMESPACE> -O <FILE>
+Files are in JSON format and contain values to be read and/or written, e.g:
+{
+    "description": "Turn admin mode on and check status",
+    "test_on": [
+        {
+            "attribute": "adminMode",
+            "read" : ""
+        },
+        {
+            "attribute": "adminMode",
+            "write": 1
+        },
+        {
+            "attribute": "adminMode",
+            "read": 1
+        },
+        {
+            "command": "State",
+            "return": "OFFLINE"
+        },
+        {
+            "command": "Status"
+        }
+    ]
+}  
+    
+Files can contain environment variables that are read at run-time:
+{
+    "description": "Turn admin mode off and check status",
+    "test_on": [
+        {
+            "attribute": "adminMode",
+            "read": ""
+        },
+        {
+            "attribute": "adminMode",
+            "write": "${ADMIN_MODE}"
+        },
+        {
+            "attribute": "adminMode",
+            "read": "${ADMIN_MODE}"
+        },
+        {
+            "command": "State",
+            "return": "ONLINE"
+        },
+        {
+            "command": "Status"
+        }
+    ]    
+}  
+    
+To run the above:
+ADMIN_MODE=1 tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_board/001 -f --in resources/dev_online.json -V
+
+Test Tango devices:
+
+Test a Tango device
+        tangoctl -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]
+
+Test a Tango device and read attributes
+        tangoctl -a -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]
+
+Display attribute and command names for a Tango device
+        tangoctl -c -K <NAMESPACE>|-H <HOST> -D <DEVICE>
+
+Turn a Tango device on
+        tangoctl --on -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]
+
+Turn a Tango device off
+        tangoctl --off -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]
+
+Set a Tango device to standby mode
+        tangoctl --standby -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]
+
+Change admin mode on a Tango device
+        tangoctl --admin=<0|1>
+
+Display status of a Tango device
+        tangoctl --status -K <NAMESPACE>|-H <HOST> -D <DEVICE>
+
+Check events for attribute of a Tango device
+        tangoctl -K <NAMESPACE>|-H <HOST> -D <DEVICE> -A <ATTRIBUTE>
+
+Parameters:
+
+        -a                              flag for reading attributes during tests
+        -c|--cmd                        flag for running commands during tests
+        --simul=<0|1>                   set simulation mode off or on
+        --admin=<0|1>                   set admin mode off or on
+        -f|--full                       display in full
+        -l|--list                       display device name and status on one line
+        -s|--short                      display device name, status and query devices
+        -q|--quiet                      do not display progress bars
+        -j|--html                       output in HTML format
+        -j|--json                       output in JSON format
+        -m|--md                         output in markdown format
+        -y|--yaml                       output in YAML format
+        --json-dir=<PATH>               directory with JSON input file, e.g. 'resources'
+        -J <PATH>
         --device=<DEVICE>               device name, e.g. 'csp' (not case sensitive, only a part is needed)
-        --namespace=<NAMESPACE>         Kubernetes namespace for Tango database, e.g. 'integration'
+        -D <DEVICE>
+        --k8s-ns=<NAMESPACE>            Kubernetes namespace for Tango database, e.g. 'integration'
+        -K <NAMESPACE>
         --host=<HOST>                   Tango database host and port, e.g. 10.8.13.15:10000
-        --attribute=<ATTRIBUTE>         attribute name, e.g. 'obsState' (case sensitive)
-        --command=<COMMAND>             command name, e.g. 'Status' (case sensitive)
-        -D <DEVICE>                     device name, e.g. 'csp' (not case sensitive, only a part is needed)
-        -N <NAMESPACE>                  Kubernetes namespace for Tango database, default is ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2
-        -H <HOST>                       Tango database host and port, e.g. 10.8.13.15:10000
-        -A <ATTRIBUTE>                  attribute name, e.g. 'obsState' (case sensitive)
-        -C <COMMAND>                    command name, e.g. 'Status' (case sensitive)
+        -H <HOST>
+        --attribute=<ATTRIBUTE>         attribute name, e.g. 'obsState' (not case sensitive)
+        -A <ATTRIBUTE>
+        --command=<COMMAND>             command name, e.g. 'Status' (not case sensitive)
+        -C <COMMAND>
+        --output=<FILE>                 output file name
+        -O <FILE>
+        --input=<FILE>                  input file name
+        -I <FILE>
+
+Note that values for device, attribute, command or property are not case sensitive.
+Partial matches for strings longer than 4 charaters are OK.
+
+When a namespace is specified, the Tango database host will be made up as follows:
+        tango-databaseds.<NAMESPACE>.miditf.internal.skao.int:10000
+
+Run the following commands where applicable:
+        QueryClass,QueryDevice,QuerySubDevice,GetVersionInfo,State,Status
+
+Run commands with device name as parameter where applicable:
+        DevLockStatus,DevPollStatus,GetLoggingTarget
+
+Examples:
+
+        tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -l
+        tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -l
+        tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout
+        tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -C Telescope
+        tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -P Power
+        tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -f
+        tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -q
+        tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_board/001 -f
+        tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_board/001 -f --dry
+        tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid-sdp/control/0 --on
+        ADMIN_MODE=1 tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_board/001 -f --in resources/dev_online.json -V
 ```
 
 ### Read all namespaces in Kubernetes cluster
@@ -908,5 +1073,6 @@ $ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_cs
 $ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -s
 $ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -q
 $ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_board/001 -f
-$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_board/001 -f --dry
+$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_board/001 -f --dry-run
+$ ADMIN_MODE=1 tangoctl --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_board/001 -f --in resources/dev_online.json -V
 ```

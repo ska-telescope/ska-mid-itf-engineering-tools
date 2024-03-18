@@ -23,7 +23,6 @@ _module_logger.setLevel(logging.WARNING)
 
 
 def run_test(
-    kube_namespace: str | None,
     input_file: str | None,
     dry_run: bool,
     dev_admin: int | None,
@@ -41,7 +40,6 @@ def run_test(
     """
     Run tests on Tango devices.
 
-    :param kube_namespace: Kubernetes namespace
     :param input_file: JSON file containing test information
     :param dry_run: only show what will be done
     :param dev_admin: check admin mode
@@ -298,10 +296,7 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print(f"\t{p_name} -l -K <NAMESPACE>|-H <HOST>")
     print(f"e.g. \033[3m{p_name} -l -K integration\033[0m")
     print("\nDisplay all Tango devices (will take a long time)")
-    print(
-        f"\t{p_name} --full|--short -e|--everything [-n|--dry-run]"
-        f" [--namespace=<NAMESPACE>|--host=<HOST>]"
-    )
+    print(f"\t{p_name} --full|--short -e|--everything [--namespace=<NAMESPACE>|--host=<HOST>]")
     print(f"\t{p_name} -l -K integration\033[0m")
     print(f"\te.g. \033[3m{p_name} -f|-s -K <NAMESPACE>|-H <HOST>")
     # Display devices
@@ -542,6 +537,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     show_version: bool = False
     tgo_attrib: str | None = None
     tgo_cmd: str | None = None
+    # TODO Feature to search by input type not implemented yet
     tgo_in_type: str | None = None
     tgo_prop: str | None = None
     tgo_value: str | None = None
@@ -624,7 +620,7 @@ def main(y_arg: list) -> int:  # noqa: C901
         elif opt in ("--device", "-D"):
             tgo_name = arg.lower()
         elif opt in ("--dry-run", "-n"):
-            # Undocumented feature for dry runs
+            # TODO Undocumented and unused feature for dry runs
             dry_run = True
         elif opt in ("--everything", "-e"):
             evrythng = True
@@ -676,8 +672,8 @@ def main(y_arg: list) -> int:  # noqa: C901
             dev_status = True
         elif opt == "--test":
             dev_test = True
+        # TODO Feature to search by input type not implemented yet
         elif opt in ("--type", "-T"):
-            # TODO Undocumented feature to search by input type
             tgo_in_type = arg.lower()
         elif opt == "-v":
             _module_logger.setLevel(logging.INFO)
@@ -719,8 +715,13 @@ def main(y_arg: list) -> int:  # noqa: C901
     if kube_namespace is None and tango_host is None:
         tango_host = os.getenv("TANGO_HOST")
         if tango_host is None:
-            print("No Kubernetes namespace or Tango database server specified, TANGO_HOST not set")
-            return 1
+            kube_namespace = os.getenv("KUBE_NAMESPACE")
+            if kube_namespace is None:
+                print(
+                    "No Kubernetes namespace or Tango database server specified,"
+                    " TANGO_HOST and KUBE_NAMESPACE not set"
+                )
+                return 1
 
     if tango_host is None:
         tango_fqdn = f"{databaseds_name}.{kube_namespace}.svc.{cluster_domain}"
@@ -741,17 +742,12 @@ def main(y_arg: list) -> int:  # noqa: C901
         tangoctl.check_tango(tango_fqdn)
         return 0
 
-
-    # _module_logger.debug("Run commands: %s", cfg_data["run_commands_name"])
-    # _module_logger.debug("Run commands with name: %s", cfg_data["run_commands"])
-
     if dev_off or dev_on or dev_sim or dev_standby or dev_status or show_command or show_attrib:
         dev_test = True
     if dev_admin is not None:
         dev_test = True
     if dev_test:
         rc: int = run_test(
-            kube_namespace,
             input_file,
             dry_run,
             dev_admin,
