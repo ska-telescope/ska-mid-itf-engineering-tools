@@ -47,6 +47,7 @@ class TangoctlDeviceBasic:
         :param logger: logging handle
         :param device: device name
         :param list_values: dictionary with values to process
+        :param timeout_millis: timeout in milliseconds
         """
         self.logger = logger
         self.logger.debug("Open device %s", device)
@@ -708,22 +709,14 @@ class TangoctlDevice(TangoctlDeviceBasic):
         json_reader.print_html_all(html_body)
 
     def print_markdown_all(self) -> None:
-        """
-        Print full HTML report.
-
-        :param html_body: Flag to print HTML header and footer
-        """
+        """Print full HTML report."""
         self.logger.info("Markdown")
         devsdict = {f"{self.dev_name}": self.make_json()}
         json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
         json_reader.print_markdown_all()
 
     def print_txt_all(self) -> None:
-        """
-        Print full HTML report.
-
-        :param html_body: Flag to print HTML header and footer
-        """
+        """Print full HTML report."""
         self.logger.info("Text")
         devsdict = {f"{self.dev_name}": self.make_json()}
         json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)

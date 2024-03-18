@@ -955,7 +955,11 @@ class TangoJsonReader:
             print(file=self.outf)
 
     def print_html_quick(self, html_body: bool) -> None:  # noqa: C901
-        """Print text in short form."""
+        """
+        Print text in short form.
+
+        :param html_body: Flag to print HTML header and footer
+        """
 
         def print_attributes() -> None:
             """Print attribute in short form."""
