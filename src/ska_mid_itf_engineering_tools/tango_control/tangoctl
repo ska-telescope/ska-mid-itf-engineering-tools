@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """Read all information about Tango devices."""
 
 import getopt
@@ -14,15 +14,7 @@ from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.tango_control.read_tango_device import TangoctlDevice
 from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import TangoctlDevices
 from ska_mid_itf_engineering_tools.tango_control.ska_jargon import print_jargon
-from ska_mid_itf_engineering_tools.tango_control.tango_control import (
-    check_tango,
-    list_classes,
-    list_devices,
-    read_input_file,
-    read_input_files,
-    show_namespaces,
-    show_pods,
-)
+from ska_mid_itf_engineering_tools.tango_control.tango_control_skao import TangoControlSkao
 from ska_mid_itf_engineering_tools.tango_control.test_tango_device2 import TestTangoDevice
 
 logging.basicConfig(level=logging.WARNING)
@@ -32,6 +24,8 @@ _module_logger.setLevel(logging.WARNING)
 
 def run_test(
     kube_namespace: str | None,
+    input_file: str | None,
+    dry_run: bool,
     dev_admin: int | None,
     dev_off: bool,
     dev_on: bool,
@@ -48,6 +42,8 @@ def run_test(
     Run tests on Tango devices.
 
     :param kube_namespace: Kubernetes namespace
+    :param input_file: JSON file containing test information
+    :param dry_run: only show what will be done
     :param dev_admin: check admin mode
     :param dev_off: turn device on
     :param dev_on: turn device off
@@ -61,6 +57,11 @@ def run_test(
     :param tango_port: device port
     :return: error condition
     """
+    if input_file is not None:
+        tangoctl = TangoControlSkao(_module_logger)
+        tangoctl.read_input_file(input_file, tgo_name, dry_run)
+        return 0
+
     if dev_admin is not None and tgo_name is not None:
         dut = TestTangoDevice(_module_logger, tgo_name)
         dut.test_admin_mode(dev_admin)
@@ -189,7 +190,8 @@ def run_info(
 
     # List Tango devices
     if disp_action in (4, 5) and tgo_attrib is None and tgo_cmd is None and tgo_prop is None:
-        rc = list_devices(
+        tangoctl = TangoControlSkao(_module_logger)
+        rc = tangoctl.list_devices(
             file_name,
             fmt,
             evrythng,
@@ -202,7 +204,8 @@ def run_info(
 
     # Get device classes
     if disp_action == 5 and fmt == "json":
-        rc = list_classes(fmt, evrythng, quiet_mode, cfg_data, tgo_name)
+        tangoctl = TangoControlSkao(_module_logger)
+        rc = tangoctl.list_classes(fmt, evrythng, quiet_mode, cfg_data, tgo_name)
         return rc
 
     if file_name is not None:
@@ -344,54 +347,54 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print(f"\t{p_name} --K <NAMESPACE> -O <FILE>")
     print("Files are in JSON format and contain values to be read and/or written, e.g:")
     print("""\033[3m{
-  "description": "Turn admin mode on and check status",
-  "test_on": [
-    {
-      "attribute": "adminMode",
-       "read" : ""
-    },
-    {
-      "attribute": "adminMode",
-      "write": 1
-    },
-    {
-      "attribute": "adminMode",
-      "read": 1
-    },
-    {
-      "command": "State",
-      "return": "OFFLINE"
-    },
-    {
-      "command": "Status"
-    }
-  ]
+    "description": "Turn admin mode on and check status",
+    "test_on": [
+        {
+            "attribute": "adminMode",
+            "read" : ""
+        },
+        {
+            "attribute": "adminMode",
+            "write": 1
+        },
+        {
+            "attribute": "adminMode",
+            "read": 1
+        },
+        {
+            "command": "State",
+            "return": "OFFLINE"
+        },
+        {
+            "command": "Status"
+        }
+    ]
 }\033[0m  
     """)
     print("Files can contain environment variables that are read at run-time:")
     print("""\033[3m{
-        "description": "Turn admin mode off and check status",
-        "test_on": [
-                {
-                        "attribute": "adminMode",
-                        "read": ""
-                },
-                {
-                        "attribute": "adminMode",
-                        "write": "${ADMIN_MODE}"
-                },
-                {
-                        "attribute": "adminMode",
-                        "read": "${ADMIN_MODE}"
-                },
-                {
-                        "command": "State",
-                        "return": "ONLINE"
-                },
-                {
-                        "command": "Status"
-                }
-        ]    
+    "description": "Turn admin mode off and check status",
+    "test_on": [
+        {
+            "attribute": "adminMode",
+            "read": ""
+        },
+        {
+            "attribute": "adminMode",
+            "write": "${ADMIN_MODE}"
+        },
+        {
+            "attribute": "adminMode",
+            "read": "${ADMIN_MODE}"
+        },
+        {
+            "command": "State",
+            "return": "ONLINE"
+        },
+        {
+            "command": "Status"
+        }
+    ]    
 }\033[0m  
     """)
     print("To run the above:")
@@ -699,15 +702,18 @@ def main(y_arg: list) -> int:  # noqa: C901
         return 0
 
     if show_ns:
-        show_namespaces(output_file, fmt)
+        tangoctl = TangoControlSkao(_module_logger)
+        tangoctl.show_namespaces(output_file, fmt)
         return 0
 
     if show_pod:
-        show_pods(kube_namespace, quiet_mode, output_file, fmt)
+        tangoctl = TangoControlSkao(_module_logger)
+        tangoctl.show_pods(kube_namespace, quiet_mode, output_file, fmt)
         return 0
 
     if json_dir:
-        read_input_files(json_dir, quiet_mode)
+        tangoctl = TangoControlSkao(_module_logger)
+        tangoctl.read_input_files(json_dir, quiet_mode)
         return 0
 
     if kube_namespace is None and tango_host is None:
@@ -731,12 +737,10 @@ def main(y_arg: list) -> int:  # noqa: C901
     _module_logger.info("Set TANGO_HOST to %s", tango_host)
 
     if show_tango:
-        check_tango(tango_fqdn)
+        tangoctl = TangoControlSkao(_module_logger)
+        tangoctl.check_tango(tango_fqdn)
         return 0
 
-    if input_file is not None:
-        read_input_file(input_file, tgo_name, dry_run)
-        return 0
 
     # _module_logger.debug("Run commands: %s", cfg_data["run_commands_name"])
     # _module_logger.debug("Run commands with name: %s", cfg_data["run_commands"])
@@ -748,6 +752,8 @@ def main(y_arg: list) -> int:  # noqa: C901
     if dev_test:
         rc: int = run_test(
             kube_namespace,
+            input_file,
+            dry_run,
             dev_admin,
             dev_off,
             dev_on,

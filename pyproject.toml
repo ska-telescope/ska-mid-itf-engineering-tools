@@ -32,6 +32,7 @@ nbsphinx = "^0.9.3"
 slack-sdk = "^3.27.1"
 semver = "^3.0.2"
 requests-mock = "^1.11.0"
+pytango = "9.4.2"
 
 [tool.poetry.group.docs.dependencies]
 Sphinx = "^7.2.6"

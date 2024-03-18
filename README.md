@@ -14,8 +14,27 @@ git submodule update --init --recursive
 
 
 ## Installation
+
+### Using poetry
+
+```
+$ poetry install
+...
+$ poetry lock
+...
+$ poetry shell
+...
+$ ./setup.py install
+
+$ ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl -h
+```
+
+### Local install
+
 ```
 $ sudo python ./setup.py install
+
+$ ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl -h
 ```
 
 ## Testing

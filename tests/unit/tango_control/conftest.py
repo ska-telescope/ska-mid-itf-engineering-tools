@@ -10,11 +10,7 @@ from typing import Any, TextIO
 
 import pytest
 
-from ska_mid_itf_engineering_tools.tango_control.tango_control import (
-    get_namespaces_dict,
-    get_namespaces_list,
-    get_pods_dict,
-)
+from ska_mid_itf_engineering_tools.tango_control.tango_control_skao import TangoControlSkao
 
 KUBE_NAMESPACE: str = "integration"
 DEVICE_NAME = "mid-csp/capability-fsp/0"
@@ -58,34 +54,12 @@ def configuration_data() -> dict:
     return cfg_data
 
 
-@pytest.fixture(name="k8s_namespaces_dict")
-def k8s_namespaces_dict() -> dict:
+@pytest.fixture(name="tango_control_handle")
+def tango_control_handle() -> Any:
     """
-    Get namespaces in JSON format.
+    Get instance of Tango control class.
 
-    :return: dictionary with data read from Kubernetes
+    :return: instance of Tango control class
     """
-    ns_dict = get_namespaces_dict()
-    return ns_dict
-
-
-@pytest.fixture(name="k8s_namespaces_list")
-def k8s_namespaces_list() -> list:
-    """
-    Get namespaces in JSON format.
-
-    :return: list with data read from Kubernetes
-    """
-    ns_list = get_namespaces_list()
-    return ns_list
-
-
-@pytest.fixture(name="k8s_pods_dict")
-def k8s_pods_dict() -> dict:
-    """
-    Get pods in JSON formant.
-
-    :return: dictionary with data read from Kubernetes
-    """
-    pods_dict = get_pods_dict(KUBE_NAMESPACE)
-    return pods_dict
+    tangoctl = TangoControlSkao(_module_logger)
+    return tangoctl

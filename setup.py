@@ -5,13 +5,13 @@ import setuptools
 from setuptools import setup
 
 with open('README.md') as readme_file:
-    readme = readme_file.read()
+    README = readme_file.read()
 
 setup(
     name='ska_mid_itf_engineering_tools',
     version='0.5.2',
     description="",
-    long_description=readme + '\n\n',
+    long_description=README + '\n\n',
     author="Team Atlas",
     author_email='johan.coetzer@tsolo.io',
     url='https://gitlab.com/ska-telescope/ska-mid-itf-engineering-tools',
@@ -31,13 +31,8 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     test_suite='tests',
-    install_requires=[],  # FIXME: add this package's dependencies to the list
-    setup_requires=[],  # FIXME: add this package's dependencies to the list
-    tests_require=[
-        'pytest',
-        'pytest-cov',
-        'pytest-json-report',
-        'pycodestyle',
-    ],
+    install_requires=["numpy", "pytango"],
+    setup_requires=[],  # TODO add this package's dependencies to the list
+    tests_require=['pytest', 'pytest-cov' 'pytest-json-report', 'pycodestyle'],
     extras_require={}
 )
