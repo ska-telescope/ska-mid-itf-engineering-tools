@@ -16,7 +16,11 @@ class TangoControl:
     """Connect to Tango environment and retrieve information."""
 
     def __init__(self, logger: logging.Logger):
-        """Get the show on the road"""
+        """
+        Get the show on the road.
+
+        :param logger: logging handle
+        """
         self.logger = logger
 
     def read_input_file(self, input_file: str | None, tgo_name: str | None, dry_run: bool) -> None:

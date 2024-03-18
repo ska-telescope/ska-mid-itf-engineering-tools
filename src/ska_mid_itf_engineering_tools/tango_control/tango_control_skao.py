@@ -98,7 +98,6 @@ class TangoControlSkao(TangoControl):
         Read pods in Kubernetes namespace.
 
         :param ns_name: namespace name
-        :param logger: logging handle
         :return: dictionary with devices
         """
         k8s = KubernetesControl(self.logger)
