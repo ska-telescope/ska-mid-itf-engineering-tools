@@ -14,8 +14,8 @@ from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.tango_control.read_tango_device import TangoctlDevice
 from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import TangoctlDevices
 from ska_mid_itf_engineering_tools.tango_control.ska_jargon import print_jargon
-from ska_mid_itf_engineering_tools.tango_kontrol.tango_kontrol import TangoControlKubernetes
 from ska_mid_itf_engineering_tools.tango_control.test_tango_device2 import TestTangoDevice
+from ska_mid_itf_engineering_tools.tango_kontrol.tango_kontrol import TangoControlKubernetes
 
 logging.basicConfig(level=logging.WARNING)
 _module_logger = logging.getLogger("tango_control")
