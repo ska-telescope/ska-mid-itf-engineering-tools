@@ -230,7 +230,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         self.logger = logger
         self.output_file = output_file
         self.logger.info(
-            "Devices %s : attribute %s command %s property %s",
+            "Read devices %s : attribute %s command %s property %s",
             tgo_name,
             tgo_attrib,
             tgo_cmd,

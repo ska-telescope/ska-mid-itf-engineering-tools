@@ -187,6 +187,7 @@ def run_info(
         tgo_prop,
     )
 
+    # List Tango devices
     if disp_action in (4, 5) and tgo_attrib is None and tgo_cmd is None and tgo_prop is None:
         rc = list_devices(
             file_name,
@@ -199,6 +200,7 @@ def run_info(
         )
         return rc
 
+    # Get device classes
     if disp_action == 5 and fmt == "json":
         rc = list_classes(fmt, evrythng, quiet_mode, cfg_data, tgo_name)
         return rc
@@ -207,6 +209,16 @@ def run_info(
         if os.path.splitext(file_name)[-1] != f".{fmt}":
             file_name = f"{file_name}.{fmt}"
             _module_logger.warning("File name changed to %s", file_name)
+
+    if (
+        tgo_name is None and tgo_attrib is None and tgo_cmd is None and tgo_prop is None
+        and (not evrythng)
+    ):
+        _module_logger.error(
+            "No filters specified, use '-l' flag to list all devices"
+            " or '-e' for a full display of every device in the namespace",
+        )
+        return 1
 
     try:
         devices = TangoctlDevices(
@@ -258,7 +270,7 @@ def usage(p_name: str, cfg_data: Any) -> None:
     :param p_name: executable name
     :param cfg_data: configuration in JSON format
     """
-    print("Read and test Tango devices.")
+    print("\033[1mRead Tango devices:\033[0m")
     print("\nDisplay version number")
     print(f"\t{p_name} --version")
     print("\nDisplay help")
@@ -267,65 +279,151 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print("\nDisplay Kubernetes namespaces")
     print(f"\t{p_name} --show-ns")
     print(f"\t{p_name} -k")
+    # Tango database address for a namespace
     print("\nDisplay Tango database address")
-    print(f"\t{p_name} --show-db [--k8s-ns=<NAMESPACE>|--host=<HOST>]")
-    print(f"\t{p_name} -t [-K <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} --show-db --k8s-ns=<NAMESPACE>")
+    print(f"\t{p_name} -t -K <NAMESPACE>")
+    print(f"e.g. \033[3m{p_name} -t -K integration\033[0m")
+    # Display class names
     print("\nDisplay classes and Tango devices associated with them")
-    print(f"\t{p_name} -d|--class")
-    print(f"\nDisplay {p_name} input files")
-    print(f"\t{p_name} -J <PATH>")
-    print(f"\t{p_name} --json-dir=<PATH>")
-    print("\nDisplay Tango device names")
-    print(f"\t{p_name} --show-dev [--k8s-ns=<NAMESPACE>|--host=<HOST>]")
-    print(f"\t{p_name} -d [-K <NAMESPACE>|-H <HOST>]")
-    print("\nDisplay all devices")
+    print(f"\t{p_name} -d|--class --k8s-ns=<NAMESPACE>|--host=<HOST>")
+    print(f"\t{p_name} -d|--class -K <NAMESPACE>|-H <HOST>")
+    print(f"e.g. \033[3m{p_name} -d -K integration\033[0m")
+    # List device names
+    print("\nList Tango device names")
+    print(f"\t{p_name} --show-dev --k8s-ns=<NAMESPACE>|--host=<HOST>")
+    print(f"\t{p_name} -l -K <NAMESPACE>|-H <HOST>")
+    print(f"e.g. \033[3m{p_name} -l -K integration\033[0m")
+    print("\nDisplay all Tango devices (will take a long time)")
     print(
-        f"\t{p_name} --full|--list|--short [--dry-run]"
+        f"\t{p_name} --full|--short -e|--everything [-n|--dry-run]"
         f" [--namespace=<NAMESPACE>|--host=<HOST>]"
     )
-    print(f"\t{p_name} -f|-l|-q|-s [-K <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} -l -K integration\033[0m")
+    print(f"\te.g. \033[3m{p_name} -f|-s -K <NAMESPACE>|-H <HOST>")
+    # Display devices
     print("\nFilter on device name")
-    print(f"\t{p_name} --full|--list|--short -D <DEVICE> [-K <NAMESPACE>|-H <HOST>]")
-    print(f"\t{p_name} -f|-l|-q|-s --device=<DEVICE> [--k8s-ns=<NAMESPACE>|--host=<HOST>]")
+    print(f"\t{p_name} --full|--short -D <DEVICE> -K <NAMESPACE>|-H <HOST>")
+    print(f"\t{p_name} -f|-s --device=<DEVICE> --k8s-ns=<NAMESPACE>|--host=<HOST>")
+    print(f"e.g. \033[3m{p_name} -f -K integration -D ska_mid/tm_leaf_node/csp_subarray01\033[0m")
+    # Display attributes
     print("\nFilter on attribute name")
     print(
-        f"\t{p_name} --full|--list|--short --attribute=<ATTRIBUTE>"
-        " [--k8s-ns=<NAMESPACE>|--host=<HOST>]"
+        f"\t{p_name} --full|--short --attribute=<ATTRIBUTE>"
+        " --k8s-ns=<NAMESPACE>|--host=<HOST>"
     )
-    print(f"\t{p_name} -f|-l|-q|-s -A <ATTRIBUTE> [-K <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} -f|-s -A <ATTRIBUTE> -K <NAMESPACE>|-H <HOST>")
+    print(f"e.g. \033[3m{p_name} -f -K integration -A timeout\033[0m")
+    # Display commands
     print("\nFilter on command name")
     print(
-        f"\t{p_name} --full|--list|--short --command=<COMMAND>"
-        " [--k8s-ns=<NAMESPACE>|--host=<HOST>]"
+        f"\t{p_name} --full|--short --command=<COMMAND>"
+        " --k8s-ns=<NAMESPACE>|--host=<HOST>"
     )
-    print(f"\t{p_name} -f|-l|-q|-s -C <COMMAND> [-N <NAMESPACE>|-H <HOST>]")
+    print(f"\t{p_name} -f|-s -C <COMMAND> -K <NAMESPACE>|-H <HOST>")
+    print(f"e.g. \033[3m{p_name} -l -K integration -C status\033[0m")
+    # Display properties
     print("\nFilter on property name")
     print(
         f"\t{p_name} --full|--list|--short --property=<PROPERTY>"
-        " [--k8s-ns=<NAMESPACE>|--host=<HOST>]"
+        " --k8s-ns=<NAMESPACE>|--host=<HOST>"
     )
-    print(f"\t{p_name} -f|-l|-q|-s -P <PROPERTY> [-N <NAMESPACE>|--host=<HOST>]")
-    print("\nDisplay known acronyms")
-    print(f"\t{p_name} -j")
+    print(f"\t{p_name} -f|-s -P <PROPERTY> --k8s-ns=<NAMESPACE>|--host=<HOST>")
+    print(f"e.g. \033[3m{p_name} -l -K integration -P power\033[0m")
+    # TODO make this work
+    # print("\nDisplay known acronyms")
+    # print(f"\t{p_name} -j")
+    # _______________________
+    # Testing with input file
+    print(f"\nDisplay {p_name} test input files")
+    print(f"\t{p_name} --json-dir=<PATH>")
+    print(f"\t{p_name} -J <PATH>")
+    print(f"e.g. \033[3mADMIN_MODE=1 {p_name} -J resources/\033[0m")
+    print(f"\nRun test, reading from input file")
+    print(f"\t{p_name} --k8s-ns=<NAMESPACE> --input=<FILE>")
+    print(f"\t{p_name} --K <NAMESPACE> -O <FILE>")
+    print("Files are in JSON format and contain values to be read and/or written, e.g:")
+    print("""\033[3m{
+  "description": "Turn admin mode on and check status",
+  "test_on": [
+    {
+      "attribute": "adminMode",
+       "read" : ""
+    },
+    {
+      "attribute": "adminMode",
+      "write": 1
+    },
+    {
+      "attribute": "adminMode",
+      "read": 1
+    },
+    {
+      "command": "State",
+      "return": "OFFLINE"
+    },
+    {
+      "command": "Status"
+    }
+  ]
+}\033[0m  
+    """)
+    print("Files can contain environment variables that are read at run-time:")
+    print("""\033[3m{
+        "description": "Turn admin mode off and check status",
+        "test_on": [
+                {
+                        "attribute": "adminMode",
+                        "read": ""
+                },
+                {
+                        "attribute": "adminMode",
+                        "write": "${ADMIN_MODE}"
+                },
+                {
+                        "attribute": "adminMode",
+                        "read": "${ADMIN_MODE}"
+                },
+                {
+                        "command": "State",
+                        "return": "ONLINE"
+                },
+                {
+                        "command": "Status"
+                }
+        ]    
+}\033[0m  
+    """)
+    print("To run the above:")
+    print(
+        f"\033[3mADMIN_MODE=1 {p_name}"
+        " --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
+        " -D mid_csp_cbf/talon_board/001 -f --in resources/dev_online.json -V\033[0m"
+    )
+    # _______
+    # Testing
+    print("\n\033[1mTest Tango devices:\033[0m")
     print("\nTest a Tango device")
-    print(f"\t{p_name} [-K <NAMESPACE>] -D <DEVICE> [--simul=<0|1>]")
+    print(f"\t{p_name} -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]")
     print("\nTest a Tango device and read attributes")
-    print(f"\t{p_name} -a [-K <NAMESPACE>] -D <DEVICE> [--simul=<0|1>]")
+    print(f"\t{p_name} -a -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]")
     print("\nDisplay attribute and command names for a Tango device")
-    print(f"\t{p_name} -c [-K <NAMESPACE>] -D <DEVICE>")
+    print(f"\t{p_name} -c -K <NAMESPACE>|-H <HOST> -D <DEVICE>")
     print("\nTurn a Tango device on")
-    print(f"\t{p_name} --on [-K <NAMESPACE>] -D <DEVICE> [--simul=<0|1>]")
+    print(f"\t{p_name} --on -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]")
     print("\nTurn a Tango device off")
-    print(f"\t{p_name} --off [-K <NAMESPACE>] -D <DEVICE> [--simul=<0|1>]")
+    print(f"\t{p_name} --off -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]")
     print("\nSet a Tango device to standby mode")
-    print(f"\t{p_name} --standby [-K <NAMESPACE>] -D <DEVICE> [--simul=<0|1>]")
+    print(f"\t{p_name} --standby -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]")
     print("\nChange admin mode on a Tango device")
     print(f"\t{p_name} --admin=<0|1>")
     print("\nDisplay status of a Tango device")
-    print(f"\t{p_name} --status [-K <NAMESPACE>] -D <DEVICE>")
+    print(f"\t{p_name} --status -K <NAMESPACE>|-H <HOST> -D <DEVICE>")
     print("\nCheck events for attribute of a Tango device")
-    print(f"\t{p_name} [-K <NAMESPACE>] -D <DEVICE> -A <ATTRIBUTE>")
-    print("\nParameters:")
+    print(f"\t{p_name} -K <NAMESPACE>|-H <HOST> -D <DEVICE> -A <ATTRIBUTE>")
+    # ______________________
+    # Options and parameters
+    print("\n\033[1mParameters:\033[0m\n")
     print("\t-a\t\t\t\tflag for reading attributes during tests")
     print("\t-c|--cmd\t\t\tflag for running commands during tests")
     print("\t--simul=<0|1>\t\t\tset simulation mode off or on")
@@ -356,6 +454,10 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print("\t-A <ATTRIBUTE>")
     print("\t--command=<COMMAND>\t\tcommand name, e.g. 'Status' (not case sensitive)")
     print("\t-C <COMMAND>")
+    print("\t--output=<FILE>\t\t\toutput file name")
+    print("\t-O <FILE>")
+    print("\t--input=<FILE>\t\t\tinput file name")
+    print("\t-I <FILE>")
     print("\nNote that values for device, attribute, command or property are not case sensitive.")
     print(f"Partial matches for strings longer than {cfg_data['min_str_len']} charaters are OK.")
     print("\nWhen a namespace is specified, the Tango database host will be made up as follows:")
@@ -370,7 +472,9 @@ def usage(p_name: str, cfg_data: Any) -> None:
         f"\nRun commands with device name as parameter where applicable:\n"
         f"\t{','.join(cfg_data['run_commands_name'])}"
     )
-    print("\nExamples:")
+    # __________________
+    # Some more examples
+    print("\n\033[1mExamples:\033[0m\n")
     print(f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -l")
     print(f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -l")
     print(f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout")
@@ -400,6 +504,7 @@ def usage(p_name: str, cfg_data: Any) -> None:
         f"\tADMIN_MODE=1 {p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
         f" -D mid_csp_cbf/talon_board/001 -f --in resources/dev_online.json -V"
     )
+    print()
 
 
 def main(y_arg: list) -> int:  # noqa: C901

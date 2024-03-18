@@ -401,6 +401,9 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 self.logger.debug("Could not read device %s alias : %s", self.dev_name, str(oerr))
                 devdict["aliases"] = "N/A"
             devdict["attributes"][attr_name] = {}
+            if attr_name not in self.attributes:
+                self.logger.debug("Unknown attribute %s not shown", attr_name)
+                return
             devdict["attributes"][attr_name]["data"] = {}
             if "error" in self.attributes[attr_name]:
                 devdict["attributes"][attr_name]["error"] = self.attributes[attr_name]["error"]

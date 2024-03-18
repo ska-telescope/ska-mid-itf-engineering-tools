@@ -241,6 +241,8 @@ def show_pods(
                 outf.write(yaml.dump(pods))
         else:
             print(yaml.dump(pods))
+    elif fmt == "txt":
+        print_pods(ns_name, quiet_mode)
     else:
         # show_pods(ns_name, quiet_mode, output_file, fmt)
         _module_logger.warning("Output format %s not supported", fmt)
@@ -333,7 +335,7 @@ def list_devices(
     :return: error condition
     """
     if disp_action == 4:
-        _module_logger.info("List devices (%s)", fmt)
+        _module_logger.info("List devices (%s) with name %s", fmt, tgo_name)
         try:
             devices = TangoctlDevicesBasic(
                 _module_logger, quiet_mode, evrythng, cfg_data, tgo_name, fmt
