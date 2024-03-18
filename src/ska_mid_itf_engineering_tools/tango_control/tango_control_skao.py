@@ -14,6 +14,12 @@ class TangoControlSkao(TangoControl):
     """Read Tango devices running in a Kubernetes cluster."""
 
     def __init__(self, logger: logging.Logger):
+        """
+        Time to rock and roll.
+
+        :param logger: logging handle
+        """
+
         super().__init__(logger)
 
     def check_tango(

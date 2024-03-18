@@ -49,7 +49,6 @@ class TangoControl:
         :param tango_fqdn: fully qualified domain name
         :param quiet_mode: flag to suppress extra output
         :param tango_port: port number
-        :param logger: logging handle
         :return: error condition
         """
         self.logger.info("Check Tango host %s:%d", tango_fqdn, tango_port)
@@ -80,7 +79,6 @@ class TangoControl:
         :param quiet_mode: flag for displaying progress bars
         :param cfg_data: configuration data in JSON format
         :param tgo_name: device name
-        :param logger: logging handle
         :return: dictionary with devices
         """
         try:
