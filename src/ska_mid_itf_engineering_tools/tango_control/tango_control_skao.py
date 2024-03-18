@@ -19,7 +19,6 @@ class TangoControlSkao(TangoControl):
 
         :param logger: logging handle
         """
-
         super().__init__(logger)
 
     def check_tango(
