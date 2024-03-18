@@ -10,7 +10,7 @@ from ska_mid_itf_engineering_tools.k8s_info.get_k8s_info import KubernetesContro
 from ska_mid_itf_engineering_tools.tango_control.tango_control import TangoControl
 
 
-class TangoControlSkao(TangoControl):
+class TangoControlKubernetes(TangoControl):
     """Read Tango devices running in a Kubernetes cluster."""
 
     def __init__(self, logger: logging.Logger):
