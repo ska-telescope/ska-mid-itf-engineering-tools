@@ -433,11 +433,6 @@ def usage(p_name: str, cfg_data: Any) -> None:
         " (not case sensitive, only a part is needed)"
     )
     print("\t-D <DEVICE>")
-    print(
-        "\t--k8s-ns=<NAMESPACE>\t\tKubernetes namespace for Tango database,"
-        " e.g. 'integration'"
-    )
-    print("\t-K <NAMESPACE>")
     print("\t--host=<HOST>\t\t\tTango database host and port, e.g. 10.8.13.15:10000")
     print("\t-H <HOST>")
     print("\t--attribute=<ATTRIBUTE>\t\tattribute name, e.g. 'obsState' (not case sensitive)")
@@ -450,11 +445,6 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print("\t-I <FILE>")
     print("\nNote that values for device, attribute, command or property are not case sensitive.")
     print(f"Partial matches for strings longer than {cfg_data['min_str_len']} charaters are OK.")
-    print("\nWhen a namespace is specified, the Tango database host will be made up as follows:")
-    print(
-        f"\t{cfg_data['databaseds_name']}.<NAMESPACE>.{cfg_data['cluster_domain']}"
-        f":{cfg_data['databaseds_port']}"
-    )
     print(
         f"\nRun the following commands where applicable:\n\t{','.join(cfg_data['run_commands'])}"
     )
@@ -465,33 +455,18 @@ def usage(p_name: str, cfg_data: Any) -> None:
     # __________________
     # Some more examples
     print("\n\033[1mExamples:\033[0m\n")
-    print(f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -l")
-    print(f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -l")
-    print(f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout")
-    print(f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -C Telescope")
-    print(f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -P Power")
+    print(f"\t{p_name} -l")
+    print(f"\t{p_name} -D talon -l")
+    print(f"\t{p_name} -A timeout")
+    print(f"\t{p_name} -C Telescope")
+    print(f"\t{p_name} -P Power")
+    print(f"\t{p_name} -D mid_csp_cbf/talon_lru/001 -f")
+    print(f"\t{p_name} -D mid_csp_cbf/talon_lru/001 -q")
+    print(f"\t{p_name} -D mid_csp_cbf/talon_board/001 -f")
+    print(f"\t{p_name} -D mid_csp_cbf/talon_board/001 -f --dry")
+    print(f"\t{p_name} -D mid-sdp/control/0 --on")
     print(
-        f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
-        " -D mid_csp_cbf/talon_lru/001 -f"
-    )
-    print(
-        f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
-        " -D mid_csp_cbf/talon_lru/001 -q"
-    )
-    print(
-        f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
-        " -D mid_csp_cbf/talon_board/001 -f"
-    )
-    print(
-        f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
-        " -D mid_csp_cbf/talon_board/001 -f --dry"
-    )
-    print(
-        f"\t{p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
-        " -D mid-sdp/control/0 --on"
-    )
-    print(
-        f"\tADMIN_MODE=1 {p_name} --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
+        f"\tADMIN_MODE=1 {p_name} "
         f" -D mid_csp_cbf/talon_board/001 -f --in resources/dev_online.json -V"
     )
     print()
@@ -539,10 +514,6 @@ def main(y_arg: list) -> int:  # noqa: C901
     cfg_file: TextIO = open(cfg_name)
     cfg_data: Any = json.load(cfg_file)
     cfg_file.close()
-
-    databaseds_name: str = cfg_data["databaseds_name"]
-    cluster_domain: str = cfg_data["cluster_domain"]
-    databaseds_port: int = cfg_data["databaseds_port"]
 
     try:
         opts, _args = getopt.getopt(
