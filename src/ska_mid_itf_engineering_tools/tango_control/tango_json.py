@@ -959,10 +959,7 @@ class TangoJsonReader:
 
         def print_attributes() -> None:
             """Print attribute in short form."""
-            print(
-                '<tr><td style="vertical-align: top">attributes</td><td><table>', file=self.outf
-            )
-            i = 0
+            print('<tr><td style="vertical-align: top">attributes</td><td><table>', file=self.outf)
             for attrib in devdict["attributes"]:
                 print(f"<tr><td>{attrib}</td>", end="", file=self.outf)
                 try:
@@ -973,7 +970,7 @@ class TangoJsonReader:
                 except KeyError as oerr:
                     self.logger.info("Could not read attribute %s : %s", attrib, oerr)
                     print("<td>N/A</td>", file=self.outf)
-                print(f"</td></tr>")
+                print("</td></tr>")
             print("</table></td></tr>")
 
         def print_commands() -> None:
@@ -996,10 +993,10 @@ class TangoJsonReader:
             if "versioninfo" in devdict:
                 print(
                     f"<tr><td>versioninfo</td><td>{devdict['versioninfo'][0]}</td></tr>",
-                    file=self.outf
+                    file=self.outf,
                 )
             else:
-                print(f"<tr><td>versioninfo</td><td>---</td></tr>")
+                print("<tr><td>versioninfo</td><td>---</td></tr>")
             print_attributes()
             print_commands()
             print("</table>", file=self.outf)

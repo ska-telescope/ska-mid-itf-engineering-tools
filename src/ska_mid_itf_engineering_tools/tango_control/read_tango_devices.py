@@ -11,7 +11,7 @@ import yaml
 
 from ska_mid_itf_engineering_tools.tango_control.read_tango_device import (
     TangoctlDevice,
-    TangoctlDeviceBasic
+    TangoctlDeviceBasic,
 )
 from ska_mid_itf_engineering_tools.tango_control.tango_json import TangoJsonReader, progress_bar
 
