@@ -6,7 +6,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=Etc/UTC
 
 RUN apt-get update && \
-    apt-get install gnupg2 gawk yamllint vim telnet expect sshpass inetutils-ping netcat -y && \
+    apt-get install gnupg2 gawk yamllint vim telnet expect sshpass inetutils-ping netcat wget -y && \
     wget https://github.com/infrahq/infra/releases/download/v0.21.0/infra_0.21.0_amd64.deb && \
     apt install ./infra_*.deb && \
     apt-get clean && apt clean
