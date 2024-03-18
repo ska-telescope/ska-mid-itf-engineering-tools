@@ -6,6 +6,7 @@
 
 This repo provides a suite of utilities for use in the Mid ITF environment:
 * *tangoctl*, a utility to query and test Tanfo devices
+* *tangoktl*, a utility to query and test Tanfo devices running in a Kubernetes cluster
 * *dependency_checker*, a utility to check Helm and Poetry dependencies
 
 ## How to Use
@@ -19,6 +20,8 @@ $ git submodule update --init --recursive
 ```
 
 ## Installation of *tangoctl*
+
+Note that installation of *tangoktl* in a virtual environment is not supported yet.
 
 ### Using poetry
 
@@ -41,7 +44,7 @@ root@346b0ffcf616:/app# ./src/ska_mid_itf_engineering_tools/tango_control/tangoc
 
 ### Local install
 
-To run *tangoctl* on your own computer, either of the following methogs should work.
+To run *tangoctl* or *tangoktl* on your own computer, either of the following methogs should work.
 
 #### Use setup utility
 

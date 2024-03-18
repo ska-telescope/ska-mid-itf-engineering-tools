@@ -39,7 +39,7 @@ class TangoControl:
 
     def check_tango(
         self,
-        tango_fqdn: str,
+        tango_host: str,
         quiet_mode: bool,
         tango_port: int = 10000,
     ) -> int:
@@ -51,7 +51,15 @@ class TangoControl:
         :param tango_port: port number
         :return: error condition
         """
-        self.logger.info("Check Tango host %s:%d", tango_fqdn, tango_port)
+        tango_fqdn: str
+        tport: int
+        if ":" in tango_host:
+            tango_fqdn = tango_host.split(":")[0]
+            tport = int(tango_host.split(":")[1])
+        else:
+            tango_fqdn = tango_host
+            tport = tango_port
+        self.logger.info("Check Tango host %s:%d", tango_fqdn, tport)
         try:
             tango_addr = socket.gethostbyname_ex(tango_fqdn)
             tango_ip = tango_addr[2][0]
@@ -59,8 +67,8 @@ class TangoControl:
             self.logger.error("Could not read address %s : %s" % (tango_fqdn, e))
             return 1
         if not quiet_mode:
-            print(f"TANGO_HOST={tango_fqdn}:{tango_port}")
-            print(f"TANGO_HOST={tango_ip}:{tango_port}")
+            print(f"TANGO_HOST={tango_fqdn}:{tport}")
+            print(f"TANGO_HOST={tango_ip}:{tport}")
         return 0
 
     def get_tango_classes(

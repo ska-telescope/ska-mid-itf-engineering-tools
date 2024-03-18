@@ -14,7 +14,7 @@ from ska_mid_itf_engineering_tools import __version__
 from ska_mid_itf_engineering_tools.tango_control.read_tango_device import TangoctlDevice
 from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import TangoctlDevices
 from ska_mid_itf_engineering_tools.tango_control.ska_jargon import print_jargon
-from ska_mid_itf_engineering_tools.tango_control.tango_control import TangoControl
+from ska_mid_itf_engineering_tools.tango_control.tango_control_skao import TangoControlSkao
 from ska_mid_itf_engineering_tools.tango_control.test_tango_device2 import TestTangoDevice
 
 logging.basicConfig(level=logging.WARNING)
@@ -56,7 +56,7 @@ def run_test(
     :return: error condition
     """
     if input_file is not None:
-        tangoctl = TangoControl(_module_logger)
+        tangoctl = TangoControlSkao(_module_logger)
         tangoctl.read_input_file(input_file, tgo_name, dry_run)
         return 0
 
@@ -148,6 +148,7 @@ def set_value(tgo_name: str | None, quiet_mode:bool, tgo_attrib: str | None, tgo
     dev.write_attribute_value(tgo_attrib, tgo_value)
     return
 
+
 def run_info(
     file_name: str | None,
     fmt: str,
@@ -188,7 +189,7 @@ def run_info(
 
     # List Tango devices
     if disp_action in (4, 5) and tgo_attrib is None and tgo_cmd is None and tgo_prop is None:
-        tangoctl = TangoControl(_module_logger)
+        tangoctl = TangoControlSkao(_module_logger)
         rc = tangoctl.list_devices(
             file_name,
             fmt,
@@ -202,7 +203,7 @@ def run_info(
 
     # Get device classes
     if disp_action == 5 and fmt == "json":
-        tangoctl = TangoControl(_module_logger)
+        tangoctl = TangoControlSkao(_module_logger)
         rc = tangoctl.list_classes(fmt, evrythng, quiet_mode, cfg_data, tgo_name)
         return rc
 
@@ -277,48 +278,56 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print("\nDisplay help")
     print(f"\t{p_name} --help")
     print(f"\t{p_name} -h")
+    print("\nDisplay Kubernetes namespaces")
+    print(f"\t{p_name} --show-ns")
+    print(f"\t{p_name} -k")
+    # Tango database address for a namespace
+    print("\nDisplay Tango database address")
+    print(f"\t{p_name} --show-db --k8s-ns=<NAMESPACE>")
+    print(f"\t{p_name} -t -K <NAMESPACE>")
+    print(f"e.g. \033[3m{p_name} -t -K integration\033[0m")
     # Display class names
     print("\nDisplay classes and Tango devices associated with them")
-    print(f"\t{p_name} -d|--class [--host=<HOST>]")
-    print(f"\t{p_name} -d|--class [-H <HOST>]")
-    print(f"e.g. \033[3m{p_name} \033[0m")
+    print(f"\t{p_name} -d|--class --k8s-ns=<NAMESPACE>|--host=<HOST>")
+    print(f"\t{p_name} -d|--class -K <NAMESPACE>|-H <HOST>")
+    print(f"e.g. \033[3m{p_name} -d -K integration\033[0m")
     # List device names
     print("\nList Tango device names")
-    print(f"\t{p_name} --show-dev [--host=<HOST>]")
-    print(f"\t{p_name} -l [-H <HOST>]")
+    print(f"\t{p_name} --show-dev --k8s-ns=<NAMESPACE>|--host=<HOST>")
+    print(f"\t{p_name} -l -K <NAMESPACE>|-H <HOST>")
     print(f"e.g. \033[3m{p_name} -l -K integration\033[0m")
     print("\nDisplay all Tango devices (will take a long time)")
-    print(f"\t{p_name} --full|--short -e|--everything [--host=<HOST>]")
-    print(f"\t{p_name} -l\033[0m")
-    print(f"\te.g. \033[3m{p_name} -f|-s[-H <HOST>]")
+    print(f"\t{p_name} --full|--short -e|--everything [--namespace=<NAMESPACE>|--host=<HOST>]")
+    print(f"\t{p_name} -l -K integration\033[0m")
+    print(f"\te.g. \033[3m{p_name} -f|-s -K <NAMESPACE>|-H <HOST>")
     # Display devices
     print("\nFilter on device name")
-    print(f"\t{p_name} --full|--short -D <DEVICE>[-H <HOST>]")
-    print(f"\t{p_name} -f|-s --device=<DEVICE> [--host=<HOST>]")
-    print(f"e.g. \033[3m{p_name} -f -D ska_mid/tm_leaf_node/csp_subarray01\033[0m")
+    print(f"\t{p_name} --full|--short -D <DEVICE> -K <NAMESPACE>|-H <HOST>")
+    print(f"\t{p_name} -f|-s --device=<DEVICE> --k8s-ns=<NAMESPACE>|--host=<HOST>")
+    print(f"e.g. \033[3m{p_name} -f -K integration -D ska_mid/tm_leaf_node/csp_subarray01\033[0m")
     # Display attributes
     print("\nFilter on attribute name")
     print(
         f"\t{p_name} --full|--short --attribute=<ATTRIBUTE>"
-        " [--host=<HOST>]"
+        " --k8s-ns=<NAMESPACE>|--host=<HOST>"
     )
-    print(f"\t{p_name} -f|-s -A <ATTRIBUTE>[-H <HOST>]")
+    print(f"\t{p_name} -f|-s -A <ATTRIBUTE> -K <NAMESPACE>|-H <HOST>")
     print(f"e.g. \033[3m{p_name} -f -K integration -A timeout\033[0m")
     # Display commands
     print("\nFilter on command name")
     print(
         f"\t{p_name} --full|--short --command=<COMMAND>"
-        " [--host=<HOST>]"
+        " --k8s-ns=<NAMESPACE>|--host=<HOST>"
     )
-    print(f"\t{p_name} -f|-s -C <COMMAND>[-H <HOST>]")
+    print(f"\t{p_name} -f|-s -C <COMMAND> -K <NAMESPACE>|-H <HOST>")
     print(f"e.g. \033[3m{p_name} -l -K integration -C status\033[0m")
     # Display properties
     print("\nFilter on property name")
     print(
         f"\t{p_name} --full|--list|--short --property=<PROPERTY>"
-        " [--host=<HOST>]"
+        " --k8s-ns=<NAMESPACE>|--host=<HOST>"
     )
-    print(f"\t{p_name} -f|-s -P <PROPERTY> [--host=<HOST>]")
+    print(f"\t{p_name} -f|-s -P <PROPERTY> --k8s-ns=<NAMESPACE>|--host=<HOST>")
     print(f"e.g. \033[3m{p_name} -l -K integration -P power\033[0m")
     # TODO make this work
     # print("\nDisplay known acronyms")
@@ -330,8 +339,8 @@ def usage(p_name: str, cfg_data: Any) -> None:
     print(f"\t{p_name} -J <PATH>")
     print(f"e.g. \033[3mADMIN_MODE=1 {p_name} -J resources/\033[0m")
     print(f"\nRun test, reading from input file")
-    print(f"\t{p_name} --input=<FILE>")
-    print(f"\t{p_name} -I <FILE>")
+    print(f"\t{p_name} --k8s-ns=<NAMESPACE> --input=<FILE>")
+    print(f"\t{p_name} --K <NAMESPACE> -O <FILE>")
     print("Files are in JSON format and contain values to be read and/or written, e.g:")
     print("""\033[3m{
     "description": "Turn admin mode on and check status",
@@ -394,23 +403,23 @@ def usage(p_name: str, cfg_data: Any) -> None:
     # Testing
     print("\n\033[1mTest Tango devices:\033[0m")
     print("\nTest a Tango device")
-    print(f"\t{p_name}[-H <HOST>] -D <DEVICE> [--simul=<0|1>]")
+    print(f"\t{p_name} -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]")
     print("\nTest a Tango device and read attributes")
-    print(f"\t{p_name} -a[-H <HOST>] -D <DEVICE> [--simul=<0|1>]")
+    print(f"\t{p_name} -a -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]")
     print("\nDisplay attribute and command names for a Tango device")
-    print(f"\t{p_name} -c[-H <HOST>] -D <DEVICE>")
+    print(f"\t{p_name} -c -K <NAMESPACE>|-H <HOST> -D <DEVICE>")
     print("\nTurn a Tango device on")
-    print(f"\t{p_name} --on[-H <HOST>] -D <DEVICE> [--simul=<0|1>]")
+    print(f"\t{p_name} --on -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]")
     print("\nTurn a Tango device off")
-    print(f"\t{p_name} --off[-H <HOST>] -D <DEVICE> [--simul=<0|1>]")
+    print(f"\t{p_name} --off -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]")
     print("\nSet a Tango device to standby mode")
-    print(f"\t{p_name} --standby[-H <HOST>] -D <DEVICE> [--simul=<0|1>]")
+    print(f"\t{p_name} --standby -K <NAMESPACE>|-H <HOST> -D <DEVICE> [--simul=<0|1>]")
     print("\nChange admin mode on a Tango device")
     print(f"\t{p_name} --admin=<0|1>")
     print("\nDisplay status of a Tango device")
-    print(f"\t{p_name} --status[-H <HOST>] -D <DEVICE>")
+    print(f"\t{p_name} --status -K <NAMESPACE>|-H <HOST> -D <DEVICE>")
     print("\nCheck events for attribute of a Tango device")
-    print(f"\t{p_name}[-H <HOST>] -D <DEVICE> -A <ATTRIBUTE>")
+    print(f"\t{p_name} -K <NAMESPACE>|-H <HOST> -D <DEVICE> -A <ATTRIBUTE>")
     # ______________________
     # Options and parameters
     print("\n\033[1mParameters:\033[0m\n")
@@ -504,6 +513,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     :param y_arg: input arguments
     :return: error condition
     """
+    kube_namespace: str | None = None
     dry_run: bool = False
     tgo_name: str | None = None
     dev_on: bool = False
@@ -522,6 +532,8 @@ def main(y_arg: list) -> int:  # noqa: C901
     show_attrib: bool = False
     show_command: bool = False
     show_jargon: bool = False
+    show_ns: bool = False
+    show_pod: bool = False
     show_tango: bool = False
     show_version: bool = False
     tgo_attrib: str | None = None
@@ -547,7 +559,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             y_arg[1:],
-            "acdefhjklmnoqstvwyVA:C:H:D:I:J:p:O:P:T:W:",
+            "acdefhjklmnoqstvwyVA:C:H:D:I:J:K:p:O:P:T:W:",
             [
                 "class",
                 "cmd",
@@ -568,6 +580,8 @@ def main(y_arg: list) -> int:  # noqa: C901
                 "show-acronym",
                 "show-db",
                 "show-dev",
+                "show-ns",
+                "show-pod",
                 "version",
                 "yaml",
                 "admin=",
@@ -627,6 +641,10 @@ def main(y_arg: list) -> int:  # noqa: C901
             json_dir = arg
         elif opt in ("--md", "-m"):
             fmt = "md"
+        elif opt in ("--k8s-ns", "-K"):
+            kube_namespace = arg
+        elif opt in ("--k8s-pod", "-K"):
+            kube_namespace = arg
         elif opt in ("--property", "-P"):
             tgo_prop = arg.lower()
         elif opt == "--off":
@@ -681,20 +699,39 @@ def main(y_arg: list) -> int:  # noqa: C901
         return 0
 
     if show_ns:
-        tangoctl = TangoControl(_module_logger)
+        tangoctl = TangoControlSkao(_module_logger)
         tangoctl.show_namespaces(output_file, fmt)
         return 0
 
+    if show_pod:
+        tangoctl = TangoControlSkao(_module_logger)
+        tangoctl.show_pods(kube_namespace, quiet_mode, output_file, fmt)
+        return 0
+
     if json_dir:
-        tangoctl = TangoControl(_module_logger)
+        tangoctl = TangoControlSkao(_module_logger)
         tangoctl.read_input_files(json_dir, quiet_mode)
         return 0
 
-    if tango_host is None:
+    if kube_namespace is None and tango_host is None:
         tango_host = os.getenv("TANGO_HOST")
         if tango_host is None:
-            print("No Tango database server specified, TANGO_HOST  not set")
-            return 1
+            kube_namespace = os.getenv("KUBE_NAMESPACE")
+            if kube_namespace is None:
+                print(
+                    "No Kubernetes namespace or Tango database server specified,"
+                    " TANGO_HOST and KUBE_NAMESPACE not set"
+                )
+                return 1
+
+    if tango_host is None:
+        tango_fqdn = f"{databaseds_name}.{kube_namespace}.svc.{cluster_domain}"
+        tango_host = f"{tango_fqdn}:{databaseds_port}"
+    elif ":" in tango_host:
+        tango_fqdn = tango_host.split(":")[0]
+    else:
+        tango_fqdn = tango_host
+        tango_host = f"{tango_fqdn}:{databaseds_port}"
 
     _module_logger.info("Use Tango host %s", tango_host)
 
@@ -702,8 +739,8 @@ def main(y_arg: list) -> int:  # noqa: C901
     _module_logger.info("Set TANGO_HOST to %s", tango_host)
 
     if show_tango:
-        tangoctl = TangoControl(_module_logger)
-        tangoctl.check_tango(tango_host)
+        tangoctl = TangoControlSkao(_module_logger)
+        tangoctl.check_tango(tango_fqdn)
         return 0
 
     if dev_off or dev_on or dev_sim or dev_standby or dev_status or show_command or show_attrib:
