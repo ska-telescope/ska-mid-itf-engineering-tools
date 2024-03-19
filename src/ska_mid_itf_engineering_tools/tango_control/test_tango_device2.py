@@ -558,7 +558,6 @@ class TestTangoDevice:
         :param tango_port: device port
         :return: error condition
         """
-
         if dev_admin is not None and tgo_name is not None:
             self.test_admin_mode(dev_admin)
         elif dev_off and tgo_name is not None:

@@ -22,6 +22,7 @@ class TangoControlKubernetes(TangoControl):
         Time to rock and roll.
 
         :param logger: logging handle
+        :param cfg_data: configuration dictionary
         """
         super().__init__(logger, cfg_data)
         self.cfg_data = cfg_data
