@@ -391,11 +391,10 @@ class TangoJsonReader:
         :param html_body: print HTML header and footer
         """
 
-        def print_html_attribute_data(item: str, dstr: str) -> None:
+        def print_html_attribute_data(dstr: str) -> None:
             """
             Print attribute data in various formats.
 
-            :param item: item name
             :param dstr: itmen value
             """
             dstr = re.sub(" +", " ", dstr)
@@ -418,7 +417,6 @@ class TangoJsonReader:
                     print(f"<pre>{dstr}</pre>", file=self.outf)
                     return
                 self.logger.debug("Print JSON :\n%s", json.dumps(ddict, indent=4))
-                n = 0
                 for ditem in ddict:
                     print(f"<table><tr><td>{ditem}</td>", file=self.outf)
                     if type(ddict[ditem]) is dict:
@@ -521,11 +519,11 @@ class TangoJsonReader:
                     print(f'<tr><td style="vertical-align: top">{item}</td><td>', file=self.outf)
                     if type(data) is str:
                         self.logger.debug("Print attribute str %s : %s", item, data)
-                        print_html_attribute_data(item, data)
+                        print_html_attribute_data(data)
                     elif type(data) is dict:
                         self.logger.debug("Print attribute dict %s : %s", item, data)
                         for item2 in data:
-                            print_html_attribute_data(item2, str(data[item2]))
+                            print_html_attribute_data(str(data[item2]))
                     elif type(data) is list:
                         self.logger.debug("Print attribute list %s : %s", item, data)
                         print("<table>", file=self.outf)
@@ -542,7 +540,7 @@ class TangoJsonReader:
                     for item in devdict["attributes"][attrib]["config"]:
                         print(f"<tr><td>{item}</td><td>", file=self.outf)
                         config = devdict["attributes"][attrib]["config"][item]
-                        print_html_attribute_data(item, config)
+                        print_html_attribute_data(config)
                         print("</td></tr>", file=self.outf)
                 print("</table>", file=self.outf)
 
@@ -649,18 +647,18 @@ class TangoJsonReader:
             if not devdict[stuff]:
                 print(file=self.outf)
                 return
-            i = 0
+            ti = 0
             for key in devdict[stuff]:
-                if not i:
+                if not ti:
                     print(f"{key:40} ", end="", file=self.outf)
                 else:
                     print(f"{' ':20} {key:40} ", end="", file=self.outf)
-                i += 1
+                ti += 1
                 devkeys = devdict[stuff][key]
                 if not devkeys:
                     print(file=self.outf)
                     continue
-                j = 0
+                tj = 0
                 for devkey in devkeys:
                     devkeyval = devkeys[devkey]
                     if type(devkeyval) is dict:
@@ -668,7 +666,7 @@ class TangoJsonReader:
                         # Read dictionary value
                         for devkey2 in devkeyval:
                             devkeyval2 = devkeyval[devkey2]
-                            if not j:
+                            if not tj:
                                 print(f"{devkey2:40} ", file=self.outf, end="")
                             else:
                                 print(f"{' ':61} {devkey2:40} ", file=self.outf, end="")
@@ -683,7 +681,7 @@ class TangoJsonReader:
                                 )
                                 if len(devkeyval2) == 1:
                                     if type(devkeyval2[0]) is not str:
-                                        if j:
+                                        if tj:
                                             print(f"{' ':102} ", file=self.outf, end="")
                                         print(f"{str(devkeyval2[0])}", file=self.outf)
                                     elif "," in devkeyval2[0]:
@@ -693,7 +691,7 @@ class TangoJsonReader:
                                         for keyval in keyvals[1:]:
                                             print(f"{' ':102} {keyval}", file=self.outf)
                                     else:
-                                        if j:
+                                        if tj:
                                             print(f"{' ':102} ", file=self.outf, end="")
                                         print(f"{devkeyval2[0]}", file=self.outf)
                                 else:
@@ -784,10 +782,10 @@ class TangoJsonReader:
                                 print(f"{keyvals2[0]}", file=self.outf)
                                 for keyval2 in keyvals2[1:]:
                                     print(f"{' ':102} {keyval2}", file=self.outf)
-                            j += 1
+                            tj += 1
                     elif type(devkeyval) is list:
                         self.logger.debug("Print list : %s", devkeyval)
-                        if not j:
+                        if not tj:
                             print(f"{devkey:40} ", end="", file=self.outf)
                         else:
                             print(f"{' ':61} {devkey:40} ", end="", file=self.outf)
@@ -814,11 +812,11 @@ class TangoJsonReader:
                     else:
                         self.logger.debug("Print string : %s", devkeyval)
                         # Read string value
-                        if not j:
+                        if not tj:
                             print(f"{devkey:40} ", end="", file=self.outf)
                         else:
                             print(f"{' ':61} {devkey:40} ", end="", file=self.outf)
-                        j += 1
+                        tj += 1
                         if not devkeyval:
                             print(file=self.outf)
                         elif type(devkeyval) is str:

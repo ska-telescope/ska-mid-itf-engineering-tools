@@ -526,6 +526,69 @@ class TestTangoDevice:
             self.logger.debug(oerr)
         return 0
 
+    def run_test(  # noqa: C901
+        self,
+        dry_run: bool,
+        dev_admin: int | None,
+        dev_off: bool,
+        dev_on: bool,
+        dev_sim: int | None,
+        dev_standby: bool,
+        dev_status: bool,
+        show_command: bool,
+        show_attrib: bool,
+        tgo_attrib: str | None,
+        tgo_name: str | None,
+        tango_port: int,
+    ) -> int:
+        """
+        Run tests on Tango devices.
+
+        :param dry_run: only show what will be done
+        :param dev_admin: check admin mode
+        :param dev_off: turn device on
+        :param dev_on: turn device off
+        :param dev_sim: simulation flag
+        :param dev_standby: place device in standby
+        :param dev_status: set device status
+        :param show_command: test device commands
+        :param show_attrib: test device attributes
+        :param tgo_attrib: name of attribute
+        :param tgo_name: device name
+        :param tango_port: device port
+        :return: error condition
+        """
+
+        if dev_admin is not None and tgo_name is not None:
+            self.test_admin_mode(dev_admin)
+        elif dev_off and tgo_name is not None:
+            self.test_off(dev_sim)
+        elif dev_on and tgo_name is not None:
+            self.test_on(dev_sim)
+        elif dev_standby and tgo_name is not None:
+            self.test_standby(dev_sim)
+        elif dev_status and tgo_name is not None:
+            self.test_status()
+        elif dev_sim is not None and tgo_name is not None:
+            self.test_simulation_mode(dev_sim)
+        elif show_command and tgo_name is not None:
+            self.check_device()
+            # TODO for future use
+            # dut.get_simulation_mode()
+            self.show_device_attributes(True)
+            self.show_device_commands(True)
+        elif tgo_attrib is not None and tgo_name is not None:
+            self.test_subscribe(tgo_attrib)
+        elif tgo_name is not None:
+            dut = TestTangoDevice(self.logger, tgo_name)
+            if dut.dev is None:
+                print(f"[FAILED] could not open device {tgo_name}")
+                return 1
+            dut.test_all(show_attrib)
+        else:
+            pass
+        return 0
+
 
 class TestTangoDevices:
     """Compile a list of available Tango devices."""
@@ -537,6 +600,7 @@ class TestTangoDevices:
         :param logger: logging handle
         :param evrythng: include the kitchen sink
         :param cfg_data: configuration data
+        :raises Exception: connect to Tango database failed
         """
         self.logger = logger
         self.tango_devices: list = []
@@ -545,7 +609,8 @@ class TestTangoDevices:
             database = tango.Database()
         except Exception:
             tango_host = os.getenv("TANGO_HOST")
-            print("[FAILED] Could not connect to Tango database %s", tango_host)
+            self.logger.error("[FAILED] Could not connect to Tango database %s", tango_host)
+            raise Exception("Could not connect to Tango database %s", tango_host)
         # Read devices
         device_list = database.get_device_exported("*")
         print(f"[  OK  ] {len(device_list)} devices available")
