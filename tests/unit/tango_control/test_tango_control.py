@@ -5,7 +5,6 @@ Test tangoctl options.
 """
 
 import logging
-import os
 from typing import Any
 
 from ska_mid_itf_engineering_tools.tango_control.read_tango_devices import (
