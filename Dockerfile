@@ -11,7 +11,9 @@ RUN apt-get update && \
     apt install ./infra_*.deb && \
     apt-get clean && apt clean
 
-ENV PATH=/root/.local/bin:$PATH
+ENV PATH=/app/bin:/root/.local/bin:$PATH
+
+ENV PYTHONPATH="/app/src:${PYTHONPATH}"
 
 RUN python3 -m pip install --user pipx && \
     python3 -m pipx ensurepath && \
@@ -24,6 +26,11 @@ WORKDIR /app
 
 FROM base
 COPY . /app
+
+COPY ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl /app/bin/
+COPY ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl.json /app/bin/
+COPY ./src/ska_mid_itf_engineering_tools/tango_kontrol/tangoktl /app/bin/
+COPY ./src/ska_mid_itf_engineering_tools/tango_kontrol/tangoktl.json /app/bin/
 
 RUN poetry install
 

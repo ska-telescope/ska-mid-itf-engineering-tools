@@ -23,19 +23,41 @@ $ git submodule update --init --recursive
 
 Note that installation of *tangoktl* in a virtual environment is not supported yet.
 
+### How to set Tango host
+
+#### Using *kubectl*
+
+Read the external IP address of the service _tango-databaseds_ in the Kubernetes namespace of interest, e.g. _integration_:
+
+```
+$ kubectl get service tango-databaseds --namespace integration
+NAME               TYPE           CLUSTER-IP    EXTERNAL-IP     PORT(S)           AGE
+tango-databaseds   LoadBalancer   10.110.24.5   10.164.10.161   10000:32207/TCP   6d7h
+$ export TANGO_HOST=10.164.10.161:10000
+```
+
+#### Using *tangoktl*
+
+If tangoktl is installed (see below) it can be used to get the tango host setting:
+
+```
+$ tangoktl -K integration -t
+TANGO_HOST=tango-databaseds.integration.svc.miditf.internal.skao.int:10000
+TANGO_HOST=10.164.10.161:10000
+```
+
 ### Using poetry
 
 ```
 $ poetry install
 $ poetry lock
 $ poetry shell
-$ ./setup.py install
 $ ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl -h
 ```
 
 ### Using Docker
 
-Build with choice of Tango version:
+Build with choice of Tango version (note that Tango 9.3 will reach end of life on 2024-03-31):
 
 ```
 $ docker build . -t tangoctl -f Dockerfile --build-arg OCI_IMAGE_VERSION="artefact.skao.int/ska-tango-images-pytango-builder:9.3.35"
