@@ -35,12 +35,20 @@ $ ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl -h
 
 ### Using Docker
 
+Build with choice of Tango version:
+
 ```
 $ docker build . -t tangoctl -f Dockerfile --build-arg OCI_IMAGE_VERSION="artefact.skao.int/ska-tango-images-pytango-builder:9.3.35"
+$ docker build . -t tangoctl -f Dockerfile --build-arg OCI_IMAGE_VERSION="artefact.skao.int/ska-tango-images-pytango-builder:9.4.2"
+$ docker build . -t tangoctl -f Dockerfile --build-arg OCI_IMAGE_VERSION="artefact.skao.int/ska-tango-images-pytango-builder:9.5.0"
+```
+
+Run the Docker image:
+
+```
 $ docker run -it tangoctl /bin/bash
 root@346b0ffcf616:/app# ./src/ska_mid_itf_engineering_tools/tango_control/tangoct -h
 ```
-
 
 ### Local install
 
