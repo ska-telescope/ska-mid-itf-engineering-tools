@@ -41,8 +41,8 @@ def device_name() -> str:
     return DEVICE_NAME
 
 
-@pytest.fixture(name="configuration_data")
-def configuration_data() -> dict:
+@pytest.fixture(name="konfiguration_data")
+def konfiguration_data() -> dict:
     """
     Read configuration file.
 
@@ -54,12 +54,12 @@ def configuration_data() -> dict:
     return cfg_data
 
 
-@pytest.fixture(name="tango_control_handle")
-def tango_control_handle() -> Any:
+@pytest.fixture(name="tango_kontrol_handle")
+def tango_kontrol_handle() -> Any:
     """
     Get instance of Tango control class.
 
     :return: instance of Tango control class
     """
-    tangoctl = TangoControlKubernetes(_module_logger, CFG_NAME)
-    return tangoctl
+    tangoktl = TangoControlKubernetes(_module_logger, CFG_NAME)
+    return tangoktl

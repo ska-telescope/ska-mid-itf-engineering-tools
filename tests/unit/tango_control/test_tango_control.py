@@ -30,8 +30,7 @@ def test_tango_host(tango_host: str, tango_control_handle: Any) -> None:
     """
     Test that Tango database is up and running.
 
-    :param configuration_data: tangoctl setup
-    :param kube_namespace: K8S namespace
+    :param tango_host: hostname and port number
     :param tango_control_handle: instance of Tango control class
     """
     _module_logger.info("Use Tango host %s", tango_host)
