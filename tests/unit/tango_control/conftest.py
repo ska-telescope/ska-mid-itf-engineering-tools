@@ -59,6 +59,10 @@ def tango_control_handle() -> Any:
 
 @pytest.fixture(name="tango_host")
 def tango_host() -> str:
-    """Get Tango host."""
+    """
+    Get Tango host.
+
+    :return: host name and port number
+    """
     os.environ["TANGO_HOST"] = TANGO_HOST
     return TANGO_HOST
