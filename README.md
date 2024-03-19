@@ -68,7 +68,7 @@ $ docker build . -t tangoctl -f Dockerfile --build-arg OCI_IMAGE_VERSION="artefa
 Run the Docker image:
 
 ```
-$ docker run -it tangoctl /bin/bash
+$ docker run --network host -it tangoctl /bin/bash
 root@346b0ffcf616:/app# ./src/ska_mid_itf_engineering_tools/tango_control/tangoct -h
 ```
 
