@@ -6,20 +6,29 @@ Unit tests for tangoctl.
 
 import json
 import logging
-import os
 from typing import Any, TextIO
 
 import pytest
 
-from ska_mid_itf_engineering_tools.tango_control.tango_control import TangoControl
+from ska_mid_itf_engineering_tools.tango_kontrol.tango_kontrol import TangoControlKubernetes
 
-TANGO_HOST: str = "tango-databaseds.integration.svc.miditf.internal.skao.int:10000"
+KUBE_NAMESPACE: str = "integration"
 DEVICE_NAME: str = "mid-csp/capability-fsp/0"
-CFG_NAME: str | bytes = "src/ska_mid_itf_engineering_tools/tango_control/tangoctl.json"
+CFG_NAME: str | bytes = "src/ska_mid_itf_engineering_tools/tango_kontrol/tangoktl.json"
 
 logging.basicConfig(level=logging.WARNING)
 _module_logger = logging.getLogger("conftest")
 _module_logger.setLevel(logging.WARNING)
+
+
+@pytest.fixture(name="kube_namespace")
+def kube_namespace() -> str:
+    """
+    Get K8S namespace.
+
+    :return: K8S namespace
+    """
+    return KUBE_NAMESPACE
 
 
 @pytest.fixture(name="device_name")
@@ -52,13 +61,5 @@ def tango_control_handle() -> Any:
 
     :return: instance of Tango control class
     """
-    os.environ["TANGO_HOST"] = TANGO_HOST
-    tangoctl = TangoControl(_module_logger, CFG_NAME)
+    tangoctl = TangoControlKubernetes(_module_logger, CFG_NAME)
     return tangoctl
-
-
-@pytest.fixture(name="tango_host")
-def tango_host() -> str:
-    """Get Tango host."""
-    os.environ["TANGO_HOST"] = TANGO_HOST
-    return TANGO_HOST
