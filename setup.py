@@ -9,7 +9,7 @@ with open('README.md') as readme_file:
 
 setup(
     name='ska_mid_itf_engineering_tools',
-    version='0.5.2',
+    version='0.6.1',
     description="",
     long_description=README + '\n\n',
     author="Team Atlas",

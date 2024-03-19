@@ -52,7 +52,7 @@ class KubernetesControl:
         """
         Get a list of Kubernetes namespaces.
 
-        :return: list of namespaces
+        :return: dictionary of namespaces
         """
         ns_dict: dict = {}
         try:
