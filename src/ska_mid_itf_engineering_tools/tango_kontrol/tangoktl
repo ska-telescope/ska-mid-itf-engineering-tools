@@ -55,7 +55,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     tgo_prop: str | None = None
     tgo_value: str | None = None
     tango_host: str | None = None
-    tango_port: int = 0
+    tango_port: int = 10000
     fmt: str = "txt"
 
     # Read configuration file
