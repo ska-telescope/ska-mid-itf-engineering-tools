@@ -46,7 +46,7 @@ class TangoControl:
         """
         Check Tango host address.
 
-        :param tango_fqdn: fully qualified domain name
+        :param tango_host: fully qualified domain name
         :param quiet_mode: flag to suppress extra output
         :param tango_port: port number
         :return: error condition
