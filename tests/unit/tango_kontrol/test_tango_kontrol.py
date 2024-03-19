@@ -29,7 +29,7 @@ def test_konfiguration_data(konfiguration_data: dict) -> None:
     assert len(konfiguration_data) > 0
 
 
-@pytest.xfail
+@pytest.mark.xfail()
 def test_tango_host(
     konfiguration_data: dict, kube_namespace: str, tango_kontrol_handle: Any
 ) -> None:
@@ -56,7 +56,7 @@ def test_tango_host(
     assert rv == 0
 
 
-@pytest.xfail
+@pytest.mark.xfail()
 def test_read_input_files(tango_kontrol_handle: Any) -> None:
     """
     Check input files.
@@ -69,7 +69,7 @@ def test_read_input_files(tango_kontrol_handle: Any) -> None:
     assert rv == 0
 
 
-@pytest.xfail
+@pytest.mark.xfail()
 def test_namespaces_dict(kube_namespace: str, tango_kontrol_handle: Any) -> None:
     """
     Test K8S namespaces.
@@ -82,7 +82,7 @@ def test_namespaces_dict(kube_namespace: str, tango_kontrol_handle: Any) -> None
     assert len(k8s_namespaces_dict) > 0
 
 
-@pytest.xfail
+@pytest.mark.xfail()
 def test_namespaces_list(tango_kontrol_handle: Any) -> None:
     """
     Test K8S namespaces.
@@ -94,7 +94,7 @@ def test_namespaces_list(tango_kontrol_handle: Any) -> None:
     assert len(k8s_namespaces_list) > 0
 
 
-@pytest.xfail
+@pytest.mark.xfail()
 def test_pods_dict(kube_namespace: str, tango_kontrol_handle: Any) -> None:
     """
     Test for reading pods.
@@ -107,7 +107,7 @@ def test_pods_dict(kube_namespace: str, tango_kontrol_handle: Any) -> None:
     assert len(k8s_pods_dict) > 0
 
 
-@pytest.xfail
+@pytest.mark.xfail()
 def test_basic_devices(konfiguration_data: dict) -> None:
     """
     Read basic devices.
@@ -122,7 +122,7 @@ def test_basic_devices(konfiguration_data: dict) -> None:
     assert len(devdict) > 0
 
 
-@pytest.xfail
+@pytest.mark.xfail()
 def test_device_read(konfiguration_data: dict, device_name: str) -> None:
     """
     Read devices.
