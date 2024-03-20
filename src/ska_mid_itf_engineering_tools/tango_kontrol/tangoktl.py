@@ -63,7 +63,7 @@ def main() -> int:  # noqa: C901
         cfg_file: TextIO = open(cfg_name)
     except FileNotFoundError:
         cfg_name = "src/ska_mid_itf_engineering_tools/tango_kontrol/tangoktl.json"
-        cfg_file: TextIO = open(cfg_name)
+        cfg_file = open(cfg_name)
     cfg_data: Any = json.load(cfg_file)
     cfg_file.close()
 
@@ -192,6 +192,7 @@ def main() -> int:  # noqa: C901
         # TODO Feature to search by input type not implemented yet
         elif opt in ("--type", "-T"):
             tgo_in_type = arg.lower()
+            _module_logger.info("Input type %s not implemented", tgo_in_type)
         elif opt == "-v":
             _module_logger.setLevel(logging.INFO)
         elif opt == "-V":
