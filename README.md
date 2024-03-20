@@ -21,8 +21,6 @@ $ git submodule update --init --recursive
 
 ## Installation of *tangoctl*
 
-Note that installation of *tangoktl* in a virtual environment is not supported yet.
-
 ### How to set Tango host
 
 #### Using *kubectl*
@@ -70,6 +68,13 @@ Run the Docker image:
 ```
 $ docker run --network host -it tangoctl /bin/bash
 root@346b0ffcf616:/app# ./src/ska_mid_itf_engineering_tools/tango_control/tangoct -h
+```
+
+To use *tangoktl* in a virtual environment, you will need to log in on infra:
+
+```
+# infra login https://boundary.skao.int --enable-ssh
+# infra use za-itf-k8s-master01-k8s
 ```
 
 ### Local install
