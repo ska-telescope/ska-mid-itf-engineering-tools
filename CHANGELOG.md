@@ -25,3 +25,11 @@
 ## 0.4.0
 
 * [AT-1940] - Dependency checker for stale python dependencies.
+
+## 0.7.0
+
+* [AT-1948] new version of tangoctl for use with CIA, also added tangoktl
+
+## 0.7.1
+
+* [AT-1948] fix a bug that erroneously invoked nodb mode

@@ -14,3 +14,7 @@
 
 * [AT-1948] new version of tangoctl for use with CIA, also added tangoktl
 
+## 0.7.1
+
+* [AT-1948] fix a bug that erroneously invoked nodb mode
+
