@@ -27,9 +27,9 @@ WORKDIR /app
 FROM base
 COPY . /app
 
-COPY ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl /app/bin/
+COPY ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl.py /app/bin/tangoctl
 COPY ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl.json /app/bin/
-COPY ./src/ska_mid_itf_engineering_tools/tango_kontrol/tangoktl /app/bin/
+COPY ./src/ska_mid_itf_engineering_tools/tango_kontrol/tangoktl.py /app/bin/tangoktl
 COPY ./src/ska_mid_itf_engineering_tools/tango_kontrol/tangoktl.json /app/bin/
 
 RUN poetry install
