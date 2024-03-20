@@ -18,11 +18,10 @@ _module_logger = logging.getLogger("tango_control")
 _module_logger.setLevel(logging.WARNING)
 
 
-def main(y_arg: list) -> int:  # noqa: C901
+def main() -> int:  # noqa: C901
     """
     Read and display Tango devices.
 
-    :param y_arg: input arguments
     :return: error condition
     """
     dry_run: bool = False
@@ -56,14 +55,18 @@ def main(y_arg: list) -> int:  # noqa: C901
     fmt: str = "txt"
 
     # Read configuration file
-    cfg_name: str | bytes = y_arg[0] + ".json"
-    cfg_file: TextIO = open(cfg_name)
+    cfg_name: str | bytes = os.path.splitext(sys.argv[0])[0] + ".json"
+    try:
+        cfg_file: TextIO = open(cfg_name)
+    except FileNotFoundError:
+        cfg_name = "src/ska_mid_itf_engineering_tools/tango_control/tangoctl.json"
+        cfg_file: TextIO = open(cfg_name)
     cfg_data: Any = json.load(cfg_file)
     cfg_file.close()
 
     try:
         opts, _args = getopt.getopt(
-            y_arg[1:],
+            sys.argv[1:],
             "acdefhjklmnoqstvwyVA:C:H:D:I:J:p:O:P:T:W:",
             [
                 "class",
@@ -110,7 +113,7 @@ def main(y_arg: list) -> int:  # noqa: C901
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             tangoctl = TangoControl(_module_logger, cfg_data)
-            tangoctl.usage(os.path.basename(y_arg[0]))
+            tangoctl.usage(os.path.basename(sys.argv[0]))
             sys.exit(1)
         elif opt == "-a":
             show_attrib = True
@@ -187,7 +190,7 @@ def main(y_arg: list) -> int:  # noqa: C901
             return 1
 
     if show_version:
-        print(f"{os.path.basename(y_arg[0])} version {__version__}")
+        print(f"{os.path.basename(sys.argv[0])} version {__version__}")
         return 0
 
     if show_jargon:
@@ -268,6 +271,6 @@ def main(y_arg: list) -> int:  # noqa: C901
 
 if __name__ == "__main__":
     try:
-        main(sys.argv)
+        main()
     except KeyboardInterrupt:
         pass

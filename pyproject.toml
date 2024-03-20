@@ -3,7 +3,7 @@ include = ["MANIFEST.skao.int"]
 name = "ska-mid-itf-engineering-tools"
 version = "0.6.1"
 description = "SKA MID ITF Engineering tools"
-authors = ["Matteo Di Carlo", "ATLAS"]
+authors = ["Matteo Di Carlo", "Adriaan de Beer", "Nkosing'phile Nzotho", "Pieter Jordaan", "Dave Horn", "Johan Coetzer"]
 license = "BSD 3-Clause"
 readme = "README.md"
 packages = [{ include = "src/ska_mid_itf_engineering_tools" }, { include = "tests" } ]
@@ -16,6 +16,8 @@ url = 'https://artefact.skao.int/repository/pypi-internal/simple'
 tmc_dish_ids = 'src.ska_mid_itf_engineering_tools.tmc_config.tmc_dish_ids:main'
 talon_on = 'src.ska_mid_itf_engineering_tools.cbf_config.talon_on:main'
 check_dependencies = 'src.ska_mid_itf_engineering_tools.dependency_checker.dependency_checker:main'
+tangoctl = 'src.ska_mid_itf_engineering_tools.tango_control.tangoctl:main'
+tangoktl = 'src.ska_mid_itf_engineering_tools.tango_kontrol.tangoktl:main'
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"

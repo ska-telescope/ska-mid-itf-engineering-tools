@@ -21,7 +21,7 @@ $ git submodule update --init --recursive
 
 ## Installation of *tangoctl*
 
-### How to set Tango host
+### How to get and set Tango host
 
 #### Using *kubectl*
 
@@ -39,26 +39,43 @@ $ export TANGO_HOST=10.164.10.161:10000
 If tangoktl is installed (see below) it can be used to get the tango host setting:
 
 ```
-$ tangoktl -K integration -t
+$ tangoktl.py -K integration -t
 TANGO_HOST=tango-databaseds.integration.svc.miditf.internal.skao.int:10000
 TANGO_HOST=10.164.10.161:10000
+$ export TANGO_HOST=10.164.10.161:10000
 ```
 
 ### Using poetry
+
+Activate poetry:
 
 ```
 $ poetry install
 $ poetry lock
 $ poetry shell
-$ ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl -h
+$ source .venv/bin/activate
+```
+
+Inside the poetry shell, any of the following should work:
+
+```
+# tangoctl -h
+# ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl.py -h
+```
+
+To use *tangoktl* in Poetry, you will need to log in on infra:
+
+```
+# infra login https://boundary.skao.int --enable-ssh
+# infra use za-itf-k8s-master01-k8s
+# tangoctl -k
 ```
 
 ### Using Docker
 
-Build with choice of Tango version (note that Tango 9.3 will reach end of life on 2024-03-31):
+Build a Docker image with your choice of Tango version (both of these have been tested to work):
 
 ```
-$ docker build . -t tangoctl -f Dockerfile --build-arg OCI_IMAGE_VERSION="artefact.skao.int/ska-tango-images-pytango-builder:9.3.35"
 $ docker build . -t tangoctl -f Dockerfile --build-arg OCI_IMAGE_VERSION="artefact.skao.int/ska-tango-images-pytango-builder:9.4.2"
 $ docker build . -t tangoctl -f Dockerfile --build-arg OCI_IMAGE_VERSION="artefact.skao.int/ska-tango-images-pytango-builder:9.5.0"
 ```
@@ -67,31 +84,34 @@ Run the Docker image:
 
 ```
 $ docker run --network host -it tangoctl /bin/bash
-root@346b0ffcf616:/app# ./src/ska_mid_itf_engineering_tools/tango_control/tangoct -h
+root@346b0ffcf616:/app# ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl.py -h
 ```
 
-To use *tangoktl* in a virtual environment, you will need to log in on infra:
+To use *tangoktl* in Docker, you will need to log in on infra:
 
 ```
 # infra login https://boundary.skao.int --enable-ssh
 # infra use za-itf-k8s-master01-k8s
+# tangoctl -k
 ```
 
 ### Local install
 
-To run *tangoctl* or *tangoktl* on your own computer, either of the following methogs should work.
-
-#### Use setup utility
+To run *tangoctl* or *tangoktl* on your own computer:
 
 ```
-$ sudo python ./setup.py install
-$ ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl -h
+$ mkdir -p ${HOME}/bin
+$ export PATH=${HOME}/bin:${PATH}
+$ ln -s src/ska_mid_itf_engineering_tools/tango_control/tangoctl.py ${HOME}/bin/tangoctl
+$ ln -s src/ska_mid_itf_engineering_tools/tango_kontrol/tangoktl.py ${HOME}/bin/tangoktl
 ```
 
-#### Update Python path
+Also update the Python path and check:
 
 ```
-$ export PYTHONPATH=${PYTHONPATH}:{PWD}/src/ska_mid_itf_engineering_tools/tango_control
+$ export PYTHONPATH=${PYTHONPATH}:{PWD}/src/ska_mid_itf_engineering_tools
+$ tangoctl -h
+$ ./src/ska_mid_itf_engineering_tools/tango_control/tangoctl.py -h
 ```
 
 ## Testing
