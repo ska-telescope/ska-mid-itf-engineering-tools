@@ -6,9 +6,63 @@ import logging
 import os
 import re
 import sys
-from typing import TextIO
+from typing import Any, TextIO
 
-from ska_mid_itf_engineering_tools.tango_control.read_tango_device import progress_bar
+# from ska_mid_itf_engineering_tools.tango_control.read_tango_device import progress_bar
+
+
+def progress_bar(
+    iterable: list | dict,
+    show: bool,
+    prefix: str = "",
+    suffix: str = "",
+    decimals: int = 1,
+    length: int = 100,
+    fill: str = "*",
+    print_end: str = "\r",
+) -> Any:
+    r"""
+    Call this in a loop to create a terminal progress bar.
+
+    :param iterable: Required - iterable object (Iterable)
+    :param show: print the actual thing
+    :param prefix: prefix string
+    :param suffix: suffix string
+    :param decimals: positive number of decimals in percent complete
+    :param length: character length of bar
+    :param fill: fill character for bar
+    :param print_end: end character (e.g. "\r", "\r\n")
+    :yields: the next one in line
+    """
+
+    def print_progress_bar(iteration: Any) -> None:
+        """
+        Progress bar printing function.
+
+        :param iteration: the thing
+        """
+        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+        filled_length = int(length * iteration // total)
+        bar = fill * filled_length + "-" * (length - filled_length)
+        print(f"\r{prefix} |{bar}| {percent}% {suffix}", end=print_end)
+
+    if show:
+        total = len(iterable)
+        # Do not divide by zero
+        if total == 0:
+            total = 1
+        # Initial call
+        print_progress_bar(0)
+        # Update progress bar
+        for i, item in enumerate(iterable):
+            yield item
+            print_progress_bar(i + 1)
+        # Erase line upon completion
+        sys.stdout.write("\033[K")
+    else:
+        # Nothing to see here
+        for i, item in enumerate(iterable):
+            yield item
 
 
 def md_format(inp: str) -> str:
@@ -115,7 +169,7 @@ class TangoJsonReader:
                         m = 0
                         for ditem2 in ddict[ditem]:
                             md_print(
-                                f"| {ditem:{50}} | {ditem2:42} | {ddict[ditem][ditem2]:45} |",
+                                f"| {ditem:50} | {ditem2:42} | {ddict[ditem][ditem2]:45} |",
                                 file=self.outf,
                             )
                             m += 1
@@ -330,6 +384,253 @@ class TangoJsonReader:
             print_md_properties()
             print("\n", file=self.outf)
 
+    def print_html_all(self, html_body: bool) -> None:  # noqa: C901
+        """
+        Print the whole thing.
+
+        :param html_body: print HTML header and footer
+        """
+
+        def print_html_attribute_data(dstr: str) -> None:
+            """
+            Print attribute data in various formats.
+
+            :param dstr: itmen value
+            """
+            dstr = re.sub(" +", " ", dstr)
+            if not dstr:
+                print("&nbsp;", file=self.outf)
+            elif dstr[0] == "{" and dstr[-1] == "}":
+                if "'" in dstr:
+                    dstr = dstr.replace("'", '"')
+                try:
+                    ddict = json.loads(dstr)
+                except json.decoder.JSONDecodeError as jerr:
+                    # TODO this string breaks it
+                    # {
+                    # "state": "DevState.ON", "healthState": "HealthState.OK", "ping": "545",
+                    # "last_event_arrived": "1709799240.7604482", "unresponsive": "False",
+                    # "exception": "", "isSubarrayAvailable": True, "resources": [],
+                    # "device_id ": -1, "obsState": "ObsState.EMPTY"
+                    # }
+                    self.logger.info("Could not read %s- : %s", dstr, str(jerr))
+                    print(f"<pre>{dstr}</pre>", file=self.outf)
+                    return
+                self.logger.debug("Print JSON :\n%s", json.dumps(ddict, indent=4))
+                for ditem in ddict:
+                    print(f"<table><tr><td>{ditem}</td>", file=self.outf)
+                    if type(ddict[ditem]) is dict:
+                        print("<td><table>", file=self.outf)
+                        for ditem2 in ddict[ditem]:
+                            print(
+                                f"<tr><td>{ditem}</td><td>{ditem2}</td>"
+                                f"<td>{ddict[ditem][ditem2]}</td></tr>",
+                                file=self.outf,
+                            )
+                        print("</table>", file=self.outf)
+                    elif type(ddict[ditem]) is list or type(ddict[ditem]) is tuple:
+                        print("<table>", file=self.outf)
+                        for ditem2 in ddict[ditem]:
+                            print("<tr>", file=self.outf)
+                            self.logger.debug(
+                                "Print attribute value list item %s (%s)", ditem2, type(ditem2)
+                            )
+                            print(f"<td>{ditem}</td>", file=self.outf)
+                            if type(ditem2) is dict:
+                                print("<td><table>", file=self.outf)
+                                for ditem3 in ditem2:
+                                    print(
+                                        f"<tr><td>{ditem3}</td><td>{ditem2[ditem3]}</td></tr>",
+                                        file=self.outf,
+                                    )
+                                print("</table></td>", file=self.outf)
+                            else:
+                                print(f'<td colspan="2">{ditem2}</td>', file=self.outf)
+                            print("</tr>", file=self.outf)
+                        print("</table>", file=self.outf)
+                    else:
+                        print(f"<td>{ditem}</td><td>{ddict[ditem]}</td>", file=self.outf)
+                    print("</td></tr></table>", file=self.outf)
+            elif dstr[0] == "[" and dstr[-1] == "]":
+                dlist = ast.literal_eval(dstr)
+                self.logger.debug("Print attribute value list %s (%s)", dlist, type(dlist))
+                n = 0
+                print("<table>", file=self.outf)
+                for ditem in dlist:
+                    if type(ditem) is dict:
+                        for ditem2 in ditem:
+                            ditem_val = str(ditem[ditem2])
+                            print(f"<tr><td>{ditem2}</td>", end="", file=self.outf)
+                            print(f"<td>{ditem_val}</td></tr>", file=self.outf)
+                    else:
+                        print(f'<tr><td colspan="2">{str(ditem)}</td></tr>', file=self.outf)
+                    n += 1
+                print("</table>", file=self.outf)
+            elif "\n" in dstr:
+                self.logger.debug("Print attribute value str %s (%s)", dstr, type(dstr))
+                print("<pre>", file=self.outf)
+                for line in dstr.split("\n"):
+                    line = line.strip()
+                    if line:
+                        print(f"{line}", file=self.outf)
+                print("</pre>", file=self.outf)
+            else:
+                print("<pre>", file=self.outf)
+                print(f"{dstr}", file=self.outf)
+                print("</pre>", file=self.outf)
+            return
+
+        def print_html_data(dstr: str) -> None:
+            """
+            Print device data.
+
+            :param dstr: data string
+            """
+            if not dstr:
+                print("&nbsp;", file=self.outf)
+            elif type(dstr) is not str:
+                print(f"{str(dstr)}", file=self.outf)
+            elif "\n" in dstr:
+                self.logger.debug("Print '%s'", dstr)
+                print("<pre>", file=self.outf)
+                for line in dstr.split("\n"):
+                    line = line.strip()
+                    if line:
+                        print(f"{line}", file=self.outf)
+                print("</pre>", file=self.outf)
+            elif "," in dstr:
+                print("<pre>", file=self.outf)
+                for line in dstr.split(","):
+                    print(f"{line}", file=self.outf)
+                print("</pre>", file=self.outf)
+            else:
+                print(f"{dstr}", file=self.outf)
+
+        def print_html_attributes() -> None:
+            """Print attributes."""
+            print("<h3>Attributes</h3>", file=self.outf)
+            for attrib in devdict["attributes"]:
+                print(f"<h4>{attrib}</h4>\n", file=self.outf)
+                print("<table>", file=self.outf)
+                print('<tr><th>ITEM</th><th colspan="2">VALUE</th></tr>', file=self.outf)
+                attrib_data = devdict["attributes"][attrib]["data"]
+                for item in attrib_data:
+                    data = attrib_data[item]
+                    print(f'<tr><td style="vertical-align: top">{item}</td><td>', file=self.outf)
+                    if type(data) is str:
+                        self.logger.debug("Print attribute str %s : %s", item, data)
+                        print_html_attribute_data(data)
+                    elif type(data) is dict:
+                        self.logger.debug("Print attribute dict %s : %s", item, data)
+                        for item2 in data:
+                            print_html_attribute_data(str(data[item2]))
+                    elif type(data) is list:
+                        self.logger.debug("Print attribute list %s : %s", item, data)
+                        print("<table>", file=self.outf)
+                        for item2 in data:
+                            print("<tr><td>&nbsp;<td>", end="", file=self.outf)
+                            print(f"<td>{str(item2)}</td></tr>", file=self.outf)
+                        print("</table>", file=self.outf)
+                    else:
+                        print(
+                            "Data type for %s (%s) not supported", item, type(data), file=self.outf
+                        )
+                    print("</td></tr>", file=self.outf)
+                if "config" in devdict["attributes"][attrib]:
+                    for item in devdict["attributes"][attrib]["config"]:
+                        print(f"<tr><td>{item}</td><td>", file=self.outf)
+                        config = devdict["attributes"][attrib]["config"][item]
+                        print_html_attribute_data(config)
+                        print("</td></tr>", file=self.outf)
+                print("</table>", file=self.outf)
+
+        def print_html_commands() -> None:
+            """Print commands."""
+            print("<h3>Commands</h3>", file=self.outf)
+            print("<table>", file=self.outf)
+            print("<tr><th>NAME</th><th>FIELD VALUE</th></tr>", file=self.outf)
+            for cmd in devdict["commands"]:
+                cmd_items = devdict["commands"][cmd]
+                self.logger.debug("Print command %s : %s", cmd, cmd_items)
+                print(f'<tr><td style="vertical-align: top">{cmd}</td><td>', file=self.outf)
+                if cmd_items:
+                    print("<table>", file=self.outf)
+                    for item in cmd_items:
+                        print(f"<tr><td>{item}</td><td>", end="", file=self.outf)
+                        print_html_data(devdict["commands"][cmd][item])
+                        print("</td></tr>", file=self.outf)
+                    print("</table>", file=self.outf)
+                print("</td></tr>", file=self.outf)
+            print("</table>", file=self.outf)
+
+        def print_html_properties() -> None:
+            """Print properties."""
+            print("<h3>Properties</h3>", file=self.outf)
+            print("<table>", file=self.outf)
+            print("<tr><th>NAME</th><th>VALUE</th></tr>", file=self.outf)
+            for prop in devdict["properties"]:
+                self.logger.debug(
+                    "Print command %s : %s", prop, devdict["properties"][prop]["value"]
+                )
+                print(f'<tr><td style="vertical-align: top">{prop}</td><td>', file=self.outf)
+                print_html_data(devdict["properties"][prop]["value"])
+                print("</td></tr>", file=self.outf)
+            print("</table>", file=self.outf)
+
+        if html_body:
+            print("<html><body>", file=self.outf)
+        print(f"<h1>Tango devices in {self.tgo_space}</h1>\n", file=self.outf)
+        # Run "for device in self.devices_dict:"
+        for device in progress_bar(
+            self.devices_dict,
+            not self.quiet_mode,
+            prefix=f"Read {len(self.devices_dict)} JSON devices :",
+            suffix="complete",
+            decimals=0,
+            length=100,
+        ):
+            self.logger.info("Print device %s", device)
+            devdict = self.devices_dict[device]
+            print(f"<h2>Device {devdict['name']}</h2>\n", file=self.outf)
+            print("<table>", file=self.outf)
+            print('<tr><th>FIELD</th><th colspan="3">VALUE</th></tr>', file=self.outf)
+            print(
+                f'<tr><td>version</td><td colspan="3">{devdict["version"]}</td></tr>',
+                file=self.outf,
+            )
+            print(
+                f"<tr><td>device access</td>"
+                f"<td colspan=\"3\">{devdict['device_access']}</td></tr>",
+                file=self.outf,
+            )
+            if "adminMode" in devdict:
+                print(
+                    f"<tr><td>Admin mode</td><td colspan=\"3\">{devdict['adminMode']}</td></tr>",
+                    file=self.outf,
+                )
+            if "info" in devdict:
+                print(
+                    f"<tr><td>Device class</td>"
+                    f"<td colspan=\"3\">{devdict['info']['dev_class']}</td></tr>",
+                    file=self.outf,
+                )
+                print(
+                    f"<tr><td>Server host</td>"
+                    f"<td colspan=\"3\">{devdict['info']['server_host']}</td></tr>",
+                    file=self.outf,
+                )
+                print(
+                    f"<tr><td>Server ID</td>"
+                    f"<td colspan=\"3\">{devdict['info']['server_id']}</td></tr>",
+                    file=self.outf,
+                )
+            print("</table>", file=self.outf)
+            print_html_attributes()
+            print_html_commands()
+            print_html_properties()
+        if html_body:
+            print("</body></html>", file=self.outf)
+
     def print_txt_all(self) -> None:  # noqa: C901
         """Print the whole thing."""
 
@@ -346,18 +647,18 @@ class TangoJsonReader:
             if not devdict[stuff]:
                 print(file=self.outf)
                 return
-            i = 0
+            ti = 0
             for key in devdict[stuff]:
-                if not i:
+                if not ti:
                     print(f"{key:40} ", end="", file=self.outf)
                 else:
                     print(f"{' ':20} {key:40} ", end="", file=self.outf)
-                i += 1
+                ti += 1
                 devkeys = devdict[stuff][key]
                 if not devkeys:
                     print(file=self.outf)
                     continue
-                j = 0
+                tj = 0
                 for devkey in devkeys:
                     devkeyval = devkeys[devkey]
                     if type(devkeyval) is dict:
@@ -365,7 +666,7 @@ class TangoJsonReader:
                         # Read dictionary value
                         for devkey2 in devkeyval:
                             devkeyval2 = devkeyval[devkey2]
-                            if not j:
+                            if not tj:
                                 print(f"{devkey2:40} ", file=self.outf, end="")
                             else:
                                 print(f"{' ':61} {devkey2:40} ", file=self.outf, end="")
@@ -380,7 +681,7 @@ class TangoJsonReader:
                                 )
                                 if len(devkeyval2) == 1:
                                     if type(devkeyval2[0]) is not str:
-                                        if j:
+                                        if tj:
                                             print(f"{' ':102} ", file=self.outf, end="")
                                         print(f"{str(devkeyval2[0])}", file=self.outf)
                                     elif "," in devkeyval2[0]:
@@ -390,7 +691,7 @@ class TangoJsonReader:
                                         for keyval in keyvals[1:]:
                                             print(f"{' ':102} {keyval}", file=self.outf)
                                     else:
-                                        if j:
+                                        if tj:
                                             print(f"{' ':102} ", file=self.outf, end="")
                                         print(f"{devkeyval2[0]}", file=self.outf)
                                 else:
@@ -481,10 +782,10 @@ class TangoJsonReader:
                                 print(f"{keyvals2[0]}", file=self.outf)
                                 for keyval2 in keyvals2[1:]:
                                     print(f"{' ':102} {keyval2}", file=self.outf)
-                            j += 1
+                            tj += 1
                     elif type(devkeyval) is list:
                         self.logger.debug("Print list : %s", devkeyval)
-                        if not j:
+                        if not tj:
                             print(f"{devkey:40} ", end="", file=self.outf)
                         else:
                             print(f"{' ':61} {devkey:40} ", end="", file=self.outf)
@@ -511,11 +812,11 @@ class TangoJsonReader:
                     else:
                         self.logger.debug("Print string : %s", devkeyval)
                         # Read string value
-                        if not j:
+                        if not tj:
                             print(f"{devkey:40} ", end="", file=self.outf)
                         else:
                             print(f"{' ':61} {devkey:40} ", end="", file=self.outf)
-                        j += 1
+                        tj += 1
                         if not devkeyval:
                             print(file=self.outf)
                         elif type(devkeyval) is str:
@@ -643,7 +944,63 @@ class TangoJsonReader:
             devdict = self.devices_dict[device]
             print(f"{'name':20} {devdict['name']}", file=self.outf)
             print(f"{'version':20} {devdict['version']}", file=self.outf)
-            print(f"{'versioninfo':20} {devdict['versioninfo'][0]}", file=self.outf)
+            if "versioninfo" in devdict:
+                print(f"{'versioninfo':20} {devdict['versioninfo'][0]}", file=self.outf)
+            else:
+                print(f"{'versioninfo':20} ---", file=self.outf)
             print_attributes()
             print_commands()
             print(file=self.outf)
+
+    def print_html_quick(self, html_body: bool) -> None:  # noqa: C901
+        """
+        Print text in short form.
+
+        :param html_body: Flag to print HTML header and footer
+        """
+
+        def print_attributes() -> None:
+            """Print attribute in short form."""
+            print('<tr><td style="vertical-align: top">attributes</td><td><table>', file=self.outf)
+            for attrib in devdict["attributes"]:
+                print(f"<tr><td>{attrib}</td>", end="", file=self.outf)
+                try:
+                    print(
+                        f"<td>{devdict['attributes'][attrib]['data']['value']}</td>",
+                        file=self.outf,
+                    )
+                except KeyError as oerr:
+                    self.logger.info("Could not read attribute %s : %s", attrib, oerr)
+                    print("<td>N/A</td>", file=self.outf)
+                print("</td></tr>")
+            print("</table></td></tr>")
+
+        def print_commands() -> None:
+            """Print commands with values."""
+            self.logger.debug("Print commands : %s", devdict["commands"])
+            print("<tr><td>commands</td><td><table>", end="", file=self.outf)
+            for cmd in devdict["commands"]:
+                if "value" in devdict["commands"][cmd]:
+                    print(f"<tr><td>{cmd}</td>", file=self.outf)
+                    print(f"<td>{devdict['commands'][cmd]['value']}</td></tr>", file=self.outf)
+            print("</table></td></tr>")
+
+        if html_body:
+            print("<html><body>", file=self.outf)
+        for device in self.devices_dict:
+            devdict = self.devices_dict[device]
+            print(f"<h2>{devdict['name']}</h2>", file=self.outf)
+            print("<table>", file=self.outf)
+            print(f"<tr><td>version</td><td>{devdict['version']}</td></tr>", file=self.outf)
+            if "versioninfo" in devdict:
+                print(
+                    f"<tr><td>versioninfo</td><td>{devdict['versioninfo'][0]}</td></tr>",
+                    file=self.outf,
+                )
+            else:
+                print("<tr><td>versioninfo</td><td>---</td></tr>")
+            print_attributes()
+            print_commands()
+            print("</table>", file=self.outf)
+        if html_body:
+            print("</body></html>", file=self.outf)

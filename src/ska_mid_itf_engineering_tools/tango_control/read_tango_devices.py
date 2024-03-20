@@ -12,9 +12,8 @@ import yaml
 from ska_mid_itf_engineering_tools.tango_control.read_tango_device import (
     TangoctlDevice,
     TangoctlDeviceBasic,
-    progress_bar,
 )
-from ska_mid_itf_engineering_tools.tango_control.tango_json import TangoJsonReader
+from ska_mid_itf_engineering_tools.tango_control.tango_json import TangoJsonReader, progress_bar
 
 
 class TangoctlDevicesBasic:
@@ -108,12 +107,40 @@ class TangoctlDevicesBasic:
         ):
             self.devices[device].read_config()
 
+    def make_json(self) -> dict:
+        """
+        Make dictionary of devices.
+
+        :return: dictionary with device data
+        """
+        devdict = {}
+        self.logger.info("List %d devices in JSON format...", len(self.devices))
+        for device in self.devices:
+            devdict[device] = self.devices[device].make_json()
+        return devdict
+
     def print_txt_list(self) -> None:
         """Print list of devices."""
-        self.logger.info("List %d devices...", len(self.devices))
+        self.logger.info("List %d devices in text format...", len(self.devices))
         print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN':11} {'VERSION':8} CLASS")
         for device in self.devices:
             self.devices[device].print_list()
+
+    def print_html(self, disp_action: int) -> None:
+        """
+        Print in HTML format.
+
+        :param disp_action: display control flag
+        """
+        self.logger.info("List %d devices in HTML format...", len(self.devices))
+        print("<table>")
+        print(
+            "<tr><td>DEVICE NAME</td><td>STATE</td><td>ADMIN</td><td>VERSION</td>"
+            "<td>CLASS</td></tr>"
+        )
+        for device in self.devices:
+            self.devices[device].print_html()
+        print("<table>")
 
     def print_txt_classes(self) -> None:
         """Print list of classes."""
@@ -130,7 +157,7 @@ class TangoctlDevicesBasic:
         """
         Get list of classes.
 
-        :return: list of classes
+        :return: dictionary of classes
         """
         self.logger.info("Get classes in %d devices", len(self.devices))
         dev_classes: dict = {}
@@ -143,20 +170,37 @@ class TangoctlDevicesBasic:
             dev_classes[dev_class].append(self.devices[device].dev_name)
         return OrderedDict(sorted(dev_classes.items()))
 
+    def print_json(self, disp_action: int) -> None:
+        """
+        Print in JSON format.
+
+        :param disp_action: not used
+        """
+        devsdict = self.make_json()
+        print(json.dumps(devsdict, indent=4))
+
+    def print_yaml(self, disp_action: int) -> None:
+        """
+        Print in YAML format.
+
+        :param disp_action: not used
+        """
+        devsdict = self.make_json()
+        print(yaml.dump(devsdict))
+
 
 class TangoctlDevices(TangoctlDevicesBasic):
     """Compile a dictionary of available Tango devices."""
 
     devices: dict = {}
     attribs_found: list = []
-    tgo_space: str
+    tgo_space: str = ""
     quiet_mode: bool = True
 
     def __init__(  # noqa: C901s
         self,
         logger: logging.Logger,
         quiet_mode: bool,
-        kube_namespace: str | None,
         evrythng: bool,
         cfg_data: dict,
         tgo_name: str | None,
@@ -171,7 +215,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
         Get a dict of devices.
 
         :param logger: logging handle
-        :param kube_namespace: Kubernetes namespace
         :param cfg_data: configuration data in JSON format
         :param quiet_mode: flag for displaying progress bars
         :param evrythng: get commands and attributes regadrless of state
@@ -187,7 +230,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         self.logger = logger
         self.output_file = output_file
         self.logger.info(
-            "Devices %s : attribute %s command %s property %s",
+            "Read devices %s : attribute %s command %s property %s",
             tgo_name,
             tgo_attrib,
             tgo_cmd,
@@ -195,10 +238,6 @@ class TangoctlDevices(TangoctlDevicesBasic):
         )
         # Get Tango database host
         tango_host = os.getenv("TANGO_HOST")
-        if kube_namespace is not None:
-            self.tgo_space = f"namespace {kube_namespace}"
-        else:
-            self.tgo_space = f"host {tango_host}"
 
         self.delimiter = cfg_data["delimiter"]
         self.run_commands = cfg_data["run_commands"]
@@ -330,7 +369,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         self.read_attribute_values()
         self.read_command_values()
         self.read_property_values()
-        self.logger.info("Read devices %s", self.devices)
+        self.logger.debug("Read devices %s", self.devices)
 
     def make_json(self) -> dict:
         """
@@ -418,6 +457,22 @@ class TangoctlDevices(TangoctlDevicesBasic):
             self.logger, not self.prog_bar, self.tgo_space, devsdict, self.output_file
         )
         json_reader.print_markdown_all()
+
+    def print_html(self, disp_action: int) -> None:
+        """
+        Print in HTML format.
+
+        :param disp_action: display control flag
+        """
+        self.logger.info("HTML")
+        devsdict = self.make_json()
+        json_reader = TangoJsonReader(
+            self.logger, not self.prog_bar, self.tgo_space, devsdict, self.output_file
+        )
+        if disp_action == 4:
+            json_reader.print_html_all(True)
+        else:
+            json_reader.print_html_quick(True)
 
     def print_yaml(self, disp_action: int) -> None:
         """

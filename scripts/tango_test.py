@@ -26,7 +26,7 @@ def show_namespaces() -> None:
     Display namespace in Kubernetes cluster.
     """
     k8s = KubernetesControl(_module_logger)
-    ns_list = k8s.get_namespaces()
+    ns_list = k8s.get_namespaces_list()
     print(f"[  OK  ] Namespaces : {len(ns_list)}")
     for ns_name in ns_list:
         print(f"\t{ns_name}")
@@ -39,7 +39,7 @@ def check_namespace(kube_namespace: str) -> int:
     :return: error condition
     """
     k8s = KubernetesControl(_module_logger)
-    ns_list = k8s.get_namespaces()
+    ns_list = k8s.get_namespaces_list()
     print(f"[  OK  ] Namespaces : {len(ns_list)}")
     if kube_namespace in ns_list:
         print(f"[  OK  ] namespace {kube_namespace} is valid")

@@ -16,7 +16,7 @@ from kubernetes.stream import stream  # type: ignore[import]
 class KubernetesControl:
     """Do weird and wonderful things in a Kubernetes cluser."""
 
-    v1 = None
+    k8s_client = None
     logger: logging.Logger
 
     def __init__(self, logger: logging.Logger) -> None:
@@ -28,9 +28,9 @@ class KubernetesControl:
         self.logger = logger
         self.logger.info("Get Kubernetes client")
         config.load_kube_config()
-        self.v1 = client.CoreV1Api()
+        self.k8s_client = client.CoreV1Api()
 
-    def get_namespaces(self) -> list:
+    def get_namespaces_list(self) -> list:
         """
         Get a list of Kubernetes namespaces.
 
@@ -38,7 +38,7 @@ class KubernetesControl:
         """
         ns_list: list = []
         try:
-            namespaces: list = self.v1.list_namespace()  # type: ignore[union-attr]
+            namespaces: list = self.k8s_client.list_namespace()  # type: ignore[union-attr]
         except client.exceptions.ApiException:
             self.logger.error("Could not read Kubernetes namespaces")
             return ns_list
@@ -47,6 +47,30 @@ class KubernetesControl:
             ns_name = namespace.metadata.name
             ns_list.append(ns_name)
         return ns_list
+
+    def get_namespaces_dict(self) -> dict:
+        """
+        Get a list of Kubernetes namespaces.
+
+        :return: dictionary of namespaces
+        """
+        ns_dict: dict = {}
+        try:
+            namespaces: list = self.k8s_client.list_namespace()  # type: ignore[union-attr]
+        except client.exceptions.ApiException:
+            self.logger.error("Could not read Kubernetes namespaces")
+            return ns_dict
+        for namespace in namespaces.items:  # type: ignore[attr-defined]
+            self.logger.debug("Namespace: %s", namespace)
+            ns_name = namespace.metadata.name
+            ns_dict[ns_name] = {}
+            ns_dict[ns_name]["status"] = namespace.status.phase
+            creation_dt = namespace.metadata.creation_timestamp
+            ns_dict[ns_name]["creation"] = creation_dt.strftime("%Y-%m-%d %H:%M:%S")
+            ns_dict[ns_name]["uid"] = namespace.metadata.uid
+            ns_dict[ns_name]["labels"] = namespace.metadata.labels
+            ns_dict[ns_name]["version"] = int(namespace.metadata.resource_version)
+        return ns_dict
 
     def exec_command(self, ns_name: str, pod_name: str, exec_command: list) -> str:
         """
@@ -60,7 +84,7 @@ class KubernetesControl:
         self.logger.debug(f"Run command : {' '.join(exec_command)}")
         resp = None
         try:
-            resp = self.v1.read_namespaced_pod(  # type: ignore[union-attr]
+            resp = self.k8s_client.read_namespaced_pod(  # type: ignore[union-attr]
                 name=pod_name, namespace=ns_name
             )
         except ApiException as e:
@@ -75,7 +99,7 @@ class KubernetesControl:
         # Call exec and wait for response
         try:
             resp = stream(
-                self.v1.connect_get_namespaced_pod_exec,  # type: ignore[union-attr]
+                self.k8s_client.connect_get_namespaced_pod_exec,  # type: ignore[union-attr]
                 pod_name,
                 ns_name,
                 command=exec_command,
@@ -137,7 +161,7 @@ class KubernetesControl:
             self.logger.info("Read pods")
         if ns_name:
             self.logger.info("Use namespace %s", ns_name)
-        ret = self.v1.list_pod_for_all_namespaces(watch=False)  # type: ignore[union-attr]
+        ret = self.k8s_client.list_pod_for_all_namespaces(watch=False)  # type: ignore[union-attr]
         for ipod in ret.items:
             pod_nm, pod_ip, pod_ns = self.get_pod(ipod, ns_name, pod_name)
             if pod_nm is not None:
@@ -190,7 +214,9 @@ class KubernetesControl:
             self.logger.info("Read services")
         if ns_name:
             self.logger.info("Use namespace %s", ns_name)
-        services = self.v1.list_service_for_all_namespaces(watch=False)  # type: ignore[union-attr]
+        services = self.k8s_client.list_service_for_all_namespaces(  # type: ignore[union-attr]
+            watch=False
+        )
         for isvc in services.items:
             svc_nm, svc_ns, svc_ip, svc_port, svc_prot = self.get_service(isvc, ns_name, svc_name)
             if svc_nm is not None:
