@@ -210,6 +210,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         tango_port: int,
         output_file: str | None,
         fmt: str = "json",
+        nodb: bool = False,
     ):
         """
         Get a dict of devices.
@@ -225,6 +226,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         :param tango_port: device port
         :param output_file: output file name
         :param fmt: output format
+        :param nodb: flag to run without database
         :raises Exception: when database connect fails
         """
         self.logger = logger
@@ -246,7 +248,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         self.logger.info("Run commands with name %s", self.run_commands_name)
         self.prog_bar: bool = not quiet_mode
 
-        if tango_port:
+        if nodb:
             trl = f"tango://127.0.0.1:{tango_port}/{tgo_name}#dbase=no"
             new_dev = TangoctlDevice(logger, not self.prog_bar, trl, tgo_attrib, tgo_cmd, tgo_prop)
             self.devices[tgo_name] = new_dev
