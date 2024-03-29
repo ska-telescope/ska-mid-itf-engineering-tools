@@ -238,7 +238,7 @@ class TangoJsonReader:
                     md_print(f"| {dstr:143} ||", file=self.outf)
             return
 
-        def print_data(dstr: str, dc1: int, dc2: int, dc3: int) -> None:
+        def print_data(dstr: Any, dc1: int, dc2: int, dc3: int) -> None:
             """
             Print device data.
 
@@ -249,6 +249,8 @@ class TangoJsonReader:
             """
             if not dstr:
                 md_print(f"| {' ':{dc3}} |", file=self.outf)
+            # elif type(dstr) is list:
+            #     for dst in dstr:
             elif type(dstr) is not str:
                 md_print(f"| {str(dstr):{dc3}} |", file=self.outf)
             elif "\n" in dstr:
@@ -859,6 +861,32 @@ class TangoJsonReader:
                         else:
                             print(f"{devkeyval}", file=self.outf)
 
+        def print_properties():
+            self.logger.debug("Print %d properties", len(devdict["properties"]))
+            if not devdict["properties"]:
+                return
+            print(f"{'properties':20} ", end="", file=self.outf)
+            if not devdict['properties']:
+                print(file=self.outf)
+                return
+            ti = 0
+            for prop_name in devdict["properties"]:
+                if not ti:
+                    print(f"{prop_name:40} {'value':40} ", end="", file=self.outf)
+                else:
+                    print(f"{' ':20} {prop_name:40} {'value':40} ", end="", file=self.outf)
+                ti += 1
+                prop_vals = devdict["properties"][prop_name]["value"]
+                if not prop_vals:
+                    print(file=self.outf)
+                    continue
+                elif type(prop_vals) is list:
+                    tj = 0
+                    print(f"{prop_vals[0]}", file=self.outf)
+                    for prop_val in prop_vals[1:]:
+                        print(f"{' ':102} {prop_val}", file=self.outf)
+            # print(file=self.outf)
+
         for device in self.devices_dict:
             self.logger.info("Print device %s", device)
             devdict = self.devices_dict[device]
@@ -904,7 +932,7 @@ class TangoJsonReader:
                     i += 1
             print_txt("attributes")
             print_txt("commands")
-            print_txt("properties")
+            print_properties()
             print(file=self.outf)
 
     def print_txt_quick(self) -> None:  # noqa: C901

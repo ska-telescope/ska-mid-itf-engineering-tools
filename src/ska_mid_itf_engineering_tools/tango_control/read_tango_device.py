@@ -515,7 +515,9 @@ class TangoctlDevice(TangoctlDeviceBasic):
                 devdict["properties"][prop_name] = {}
                 # pylint: disable-next=c-extension-no-member
                 if type(prop_val) is tango._tango.StdStringVector:
-                    devdict["properties"][prop_name]["value"] = delimiter.join(prop_val)
+                    devdict["properties"][prop_name]["value"] = []  # delimiter.join(prop_val)
+                    for propv in prop_val:
+                        devdict["properties"][prop_name]["value"].append(propv)
                 else:
                     devdict["properties"][prop_name]["value"] = prop_val
 

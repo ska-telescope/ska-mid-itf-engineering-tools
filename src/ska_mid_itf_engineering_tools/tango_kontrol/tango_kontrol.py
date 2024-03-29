@@ -377,9 +377,9 @@ class TangoControlKubernetes(TangoControl):
             return
         k8s = KubernetesControl(self.logger)
         pods_dict = self.get_pods_dict(ns_name)
-        print(f"Pods : {len(pods_dict)}")
+        print(f"Pods in namespace {ns_name} : {len(pods_dict)}")
         for pod_name in pods_dict:
-            print(f"{pod_name}")
+            print(f"\t{pod_name}")
             if not quiet_mode:
                 resps = k8s.exec_command(ns_name, pod_name, ["ps", "-ef"])
                 if not resps:
@@ -399,11 +399,11 @@ class TangoControlKubernetes(TangoControl):
                         #     pass
                         elif resp[0:5] in ("tango", "root ", "mysql") or resp[0:3] == "100":
                             respl = resp.split()
-                            print(f"\t* {respl[0]:8} {' '.join(respl[7:])}")
+                            print(f"\t\t* {respl[0]:8} {' '.join(respl[7:])}")
                         else:
-                            print(f"\t  {resp}")
+                            print(f"\t\t  {resp}")
                 else:
-                    print(f"\t- {resps}")
+                    print(f"\t\t- {resps}")
 
     def get_pods_json(self, ns_name: str | None, quiet_mode: bool) -> dict:
         """
@@ -426,6 +426,8 @@ class TangoControlKubernetes(TangoControl):
             self.logger.info("Read processes running in pod %s", pod_name)
             resps = k8s.exec_command(ns_name, pod_name, pod_exec)
             pods[pod_name] = []
+            if quiet_mode:
+                continue
             if not resps:
                 pass
             elif "\n" in resps:

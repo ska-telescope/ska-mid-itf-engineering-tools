@@ -25,6 +25,8 @@ def main() -> int:  # noqa: C901
     :return: error condition
     """
     kube_namespace: str | None = None
+    # TODO Feature to dispaly a pod, not implemented yet
+    kube_pod: str | None = None
     dry_run: bool = False
     tgo_name: str | None = None
     dev_on: bool = False
@@ -49,7 +51,7 @@ def main() -> int:  # noqa: C901
     show_version: bool = False
     tgo_attrib: str | None = None
     tgo_cmd: str | None = None
-    # TODO Feature to search by input type not implemented yet
+    # TODO Feature to search by input type, not implemented yet
     tgo_in_type: str | None = None
     tgo_prop: str | None = None
     tgo_value: str | None = None
@@ -74,7 +76,7 @@ def main() -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             sys.argv[1:],
-            "acdefhjklmnoqstvwyVA:C:H:D:I:J:K:p:O:P:T:W:",
+            "acdefhjklmnoqstvwxyVA:C:H:D:I:J:K:p:O:P:X:T:W:X:",
             [
                 "class",
                 "cmd",
@@ -107,6 +109,7 @@ def main() -> int:  # noqa: C901
                 "input=",
                 "json-dir=",
                 "k8s-ns=",
+                "k8s-pod=",
                 "output=",
                 "port=",
                 "property=",
@@ -159,8 +162,8 @@ def main() -> int:  # noqa: C901
             fmt = "md"
         elif opt in ("--k8s-ns", "-K"):
             kube_namespace = arg
-        elif opt in ("--k8s-pod", "-K"):
-            kube_namespace = arg
+        elif opt in ("--k8s-pod", "-X"):
+            kube_pod = arg
         elif opt in ("--property", "-P"):
             tgo_prop = arg.lower()
         elif opt == "--off":
@@ -179,7 +182,7 @@ def main() -> int:  # noqa: C901
             show_tango = True
         elif opt in ("--show-ns", "-k"):
             show_ns = True
-        elif opt in ("--show-pod", "-o"):
+        elif opt in ("--show-pod", "-x"):
             show_pod = True
         elif opt == "--simul":
             dev_sim = int(arg)
