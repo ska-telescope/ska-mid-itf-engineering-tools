@@ -170,7 +170,7 @@ class TangoctlDeviceBasic:
     def print_list(self) -> None:
         """Print data."""
         print(
-            f"{self.dev_name:40} {self.dev_str:10} {self.adminModeStr:11} {self.version:8}"
+            f"{self.dev_name:64} {self.dev_str:10} {self.adminModeStr:11} {self.version:8}"
             f" {self.dev_class}"
         )
 
@@ -321,7 +321,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
             except tango.DevFailed as terr:
                 err_msg = terr.args[0].desc.strip()
                 self.logger.info("Could not not read command config %s : %s", cmd, err_msg)
-                self.attributes[cmd]["error"] = err_msg
+                self.commands[cmd]["error"] = err_msg
                 self.commands[cmd]["config"] = None
 
     def check_for_attribute(self, tgo_attrib: str | None) -> list:
@@ -617,6 +617,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
         :param run_commands: commands safe to run without parameters
         :param run_commands_name: commands safe to run with device name as parameter
         """
+        self.logger.info(f"Read {len(self.commands)} commands")
         for cmd in self.commands:
             if cmd in run_commands:
                 try:
@@ -652,7 +653,10 @@ class TangoctlDevice(TangoctlDeviceBasic):
 
     def read_property_value(self) -> None:
         """Read device properties."""
+        self.logger.info(f"Read {len(self.properties)} properties")
         for prop in self.properties:
+            # get_property returns this:
+            # {'CspMasterFQDN': ['mid-csp/control/0']}
             self.properties[prop]["value"] = self.dev.get_property(prop)[prop]
             self.logger.debug("Read property %s : %s", prop, self.properties[prop]["value"])
         return
@@ -705,21 +709,21 @@ class TangoctlDevice(TangoctlDeviceBasic):
 
         :param html_body: Flag to print HTML header and footer
         """
-        self.logger.info("HTML")
+        self.logger.info("Print as HTML")
         devsdict = {f"{self.dev_name}": self.make_json()}
         json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
         json_reader.print_html_all(html_body)
 
     def print_markdown_all(self) -> None:
         """Print full HTML report."""
-        self.logger.info("Markdown")
+        self.logger.info("Print as Markdown")
         devsdict = {f"{self.dev_name}": self.make_json()}
         json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
         json_reader.print_markdown_all()
 
     def print_txt_all(self) -> None:
         """Print full HTML report."""
-        self.logger.info("Text")
+        self.logger.info("Print as Text")
         devsdict = {f"{self.dev_name}": self.make_json()}
         json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
         json_reader.print_txt_all()
@@ -730,7 +734,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
 
         :param html_body: Flag to print HTML header and footer
         """
-        self.logger.info("HTML")
+        self.logger.info("Print as shortened HTML")
         devsdict = {f"{self.dev_name}": self.make_json()}
         json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
         json_reader.print_html_quick(html_body)
