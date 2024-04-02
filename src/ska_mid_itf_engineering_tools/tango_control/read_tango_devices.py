@@ -122,7 +122,7 @@ class TangoctlDevicesBasic:
     def print_txt_list(self) -> None:
         """Print list of devices."""
         self.logger.info("List %d devices in text format...", len(self.devices))
-        print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN':11} {'VERSION':8} CLASS")
+        print(f"{'DEVICE NAME':64} {'STATE':10} {'ADMIN':11} {'VERSION':8} CLASS")
         for device in self.devices:
             self.devices[device].print_list()
 
@@ -497,7 +497,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
     def print_txt_list_attributes(self) -> None:
         """Print list of devices."""
         self.logger.info("List %d devices...", len(self.devices))
-        print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN':11} {'VERSION':8} {'CLASS':24} ATTRIBUTE")
+        print(f"{'DEVICE NAME':64} {'STATE':10} {'ADMIN':11} {'VERSION':8} {'CLASS':24} ATTRIBUTE")
         for device in self.devices:
             if self.devices[device].attributes:
                 self.devices[device].print_list_attribute()
@@ -505,7 +505,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
     def print_txt_list_commands(self) -> None:
         """Print list of devices."""
         self.logger.info("List %d devices...", len(self.devices))
-        print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN':11} {'VERSION':8} {'CLASS':24} COMMAND")
+        print(f"{'DEVICE NAME':64} {'STATE':10} {'ADMIN':11} {'VERSION':8} {'CLASS':24} COMMAND")
         for device in self.devices:
             if self.devices[device].commands:
                 self.devices[device].print_list_command()
@@ -513,7 +513,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
     def print_txt_list_properties(self) -> None:
         """Print list of properties."""
         self.logger.info("List %d properties...", len(self.devices))
-        print(f"{'DEVICE NAME':40} {'STATE':10} {'ADMIN':11} {'VERSION':8} {'CLASS':24} PROPERTY")
+        print(f"{'DEVICE NAME':64} {'STATE':10} {'ADMIN':11} {'VERSION':8} {'CLASS':24} PROPERTY")
         for device in self.devices:
             if self.devices[device].properties:
                 self.devices[device].print_list_property()
