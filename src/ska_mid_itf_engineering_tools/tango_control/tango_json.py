@@ -885,7 +885,6 @@ class TangoJsonReader:
                     print(f"{prop_vals[0]}", file=self.outf)
                     for prop_val in prop_vals[1:]:
                         print(f"{' ':102} {prop_val}", file=self.outf)
-            # print(file=self.outf)
 
         for device in self.devices_dict:
             self.logger.info("Print device %s", device)
@@ -951,13 +950,16 @@ class TangoJsonReader:
                 try:
                     print(f"{devdict['attributes'][attrib]['data']['value']}", file=self.outf)
                 except KeyError as oerr:
-                    self.logger.info("Could not read attribute %s : %s", attrib, oerr)
+                    self.logger.debug("Could not read attribute %s : %s", attrib, oerr)
                     print("N/A", file=self.outf)
 
         def print_commands() -> None:
             """Print commands with values."""
-            self.logger.info("Print commands : %s", devdict["commands"])
+            self.logger.debug("Print commands : %s", devdict["commands"])
             print(f"{'commands':20}", end="", file=self.outf)
+            if not devdict["commands"]:
+                print("N/A", file=self.outf)
+                return
             i = 0
             for cmd in devdict["commands"]:
                 if "value" in devdict["commands"][cmd]:
@@ -967,6 +969,8 @@ class TangoJsonReader:
                         print(f"{' ':20} {cmd:40}", end="", file=self.outf)
                     i += 1
                     print(f"{devdict['commands'][cmd]['value']}", file=self.outf)
+            if not i:
+                print("N/A", file=self.outf)
 
         for device in self.devices_dict:
             devdict = self.devices_dict[device]
@@ -998,7 +1002,7 @@ class TangoJsonReader:
                         file=self.outf,
                     )
                 except KeyError as oerr:
-                    self.logger.info("Could not read attribute %s : %s", attrib, oerr)
+                    self.logger.debug("Could not read attribute %s : %s", attrib, oerr)
                     print("<td>N/A</td>", file=self.outf)
                 print("</td></tr>")
             print("</table></td></tr>")

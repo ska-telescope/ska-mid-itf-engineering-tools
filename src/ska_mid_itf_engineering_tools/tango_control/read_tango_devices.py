@@ -21,10 +21,12 @@ class TangoctlDevicesBasic:
 
     devices: dict = {}
     quiet_mode: bool = True
+    dev_classes: list = []
 
     def __init__(  # noqa: C901s
         self,
         logger: logging.Logger,
+        uniq_cls: bool,
         quiet_mode: bool,
         evrythng: bool,
         cfg_data: Any,
@@ -35,6 +37,7 @@ class TangoctlDevicesBasic:
         Read list of Tango devices.
 
         :param logger: logging handle
+        :param uniq_cls: only read one device per class
         :param quiet_mode: flag for displaying progress bar
         :param evrythng: read and display the whole thing
         :param cfg_data: configuration data
@@ -91,7 +94,17 @@ class TangoctlDevicesBasic:
                     self.logger.debug("Ignore basic device %s", device)
                     continue
             new_dev = TangoctlDeviceBasic(logger, device, list_values)
-            self.devices[device] = new_dev
+            if uniq_cls:
+                dev_class = new_dev.dev_class
+                if dev_class == "---":
+                    self.logger.info(f"Skip basic device {device} with unknown class {dev_class}")
+                elif dev_class not in self.dev_classes:
+                    self.dev_classes.append(dev_class)
+                    self.devices[device] = new_dev
+                else:
+                    self.logger.info(f"Skip basic device {device} with known class {dev_class}")
+            else:
+                self.devices[device] = new_dev
 
     def read_config(self) -> None:
         """Read additional data."""
@@ -198,10 +211,12 @@ class TangoctlDevices(TangoctlDevicesBasic):
     attribs_found: list = []
     tgo_space: str = ""
     quiet_mode: bool = True
+    dev_classes: list = []
 
     def __init__(  # noqa: C901s
         self,
         logger: logging.Logger,
+        uniq_cls: bool,
         quiet_mode: bool,
         evrythng: bool,
         cfg_data: dict,
@@ -218,6 +233,7 @@ class TangoctlDevices(TangoctlDevicesBasic):
         Get a dict of devices.
 
         :param logger: logging handle
+        :param uniq_cls: only read one device per class
         :param cfg_data: configuration data in JSON format
         :param quiet_mode: flag for displaying progress bars
         :param evrythng: get commands and attributes regadrless of state
@@ -320,7 +336,17 @@ class TangoctlDevices(TangoctlDevicesBasic):
                         self.devices[device] = new_dev
                     else:
                         logger.debug("Skip device %s (command %s not found)", device, tgo_cmd)
-
+                elif uniq_cls:
+                    dev_class = new_dev.dev_class
+                    if dev_class == "---":
+                        self.logger.info(
+                            f"Skip basic device {device} with unknown class {dev_class}"
+                        )
+                    elif dev_class not in self.dev_classes:
+                        self.dev_classes.append(dev_class)
+                        self.devices[device] = new_dev
+                    else:
+                        self.logger.info(f"Skip device {device} with known class {dev_class}")
                 else:
                     self.logger.debug("Add device %s", device)
                     self.devices[device] = new_dev

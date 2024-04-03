@@ -198,6 +198,7 @@ class TangoControlKubernetes(TangoControl):
         print("\t-j|--json\t\t\toutput in JSON format")
         print("\t-m|--md\t\t\t\toutput in markdown format")
         print("\t-y|--yaml\t\t\toutput in YAML format")
+        print("\t-u|--unique\t\t\tonly read one device for each class")
         print("\t--json-dir=<PATH>\t\tdirectory with JSON input file, e.g. 'resources'")
         print("\t-J <PATH>")
         print(
@@ -484,6 +485,7 @@ class TangoControlKubernetes(TangoControl):
 
     def run_info(  # noqa: C901
         self,
+        uniq_cls: bool,
         file_name: str | None,
         fmt: str,
         evrythng: bool,
@@ -498,6 +500,7 @@ class TangoControlKubernetes(TangoControl):
         """
         Read information on Tango devices.
 
+        :param uniq_cls: only read one device per class
         :param file_name: output file name
         :param fmt: output format
         :param evrythng: get commands and attributes regadrless of state
@@ -546,6 +549,7 @@ class TangoControlKubernetes(TangoControl):
             and tgo_attrib is None
             and tgo_cmd is None
             and tgo_prop is None
+            and (not disp_action)
             and (not evrythng)
         ):
             self.logger.error(
@@ -557,6 +561,7 @@ class TangoControlKubernetes(TangoControl):
         try:
             devices = TangoctlDevices(
                 self.logger,
+                uniq_cls,
                 quiet_mode,
                 evrythng,
                 self.cfg_data,

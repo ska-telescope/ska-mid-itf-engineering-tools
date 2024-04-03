@@ -57,6 +57,7 @@ def main() -> int:  # noqa: C901
     tgo_value: str | None = None
     tango_host: str | None = None
     tango_port: int = 10000
+    uniq_cls: bool = False
     fmt: str = "txt"
 
     # Read configuration file
@@ -76,7 +77,7 @@ def main() -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             sys.argv[1:],
-            "acdefhjklmnoqstvwxyVA:C:H:D:I:J:K:p:O:P:X:T:W:X:",
+            "acdefhjklmnoqstuvwxyVA:C:H:D:I:J:K:p:O:P:X:T:W:X:",
             [
                 "class",
                 "cmd",
@@ -99,6 +100,7 @@ def main() -> int:  # noqa: C901
                 "show-dev",
                 "show-ns",
                 "show-pod",
+                "unique",
                 "version",
                 "yaml",
                 "admin=",
@@ -196,6 +198,8 @@ def main() -> int:  # noqa: C901
         elif opt in ("--type", "-T"):
             tgo_in_type = arg.lower()
             _module_logger.info("Input type %s not implemented", tgo_in_type)
+        elif opt in ("--unique", "-u"):
+            uniq_cls = True
         elif opt == "-v":
             _module_logger.setLevel(logging.INFO)
         elif opt == "-V":
@@ -300,6 +304,7 @@ def main() -> int:  # noqa: C901
 
     tangoktl = TangoControlKubernetes(_module_logger, cfg_data)
     rc = tangoktl.run_info(
+        uniq_cls,
         output_file,
         fmt,
         evrythng,

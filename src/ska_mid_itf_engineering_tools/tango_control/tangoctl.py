@@ -256,6 +256,7 @@ def main() -> int:  # noqa: C901
 
     tangoctl = TangoControl(_module_logger, cfg_data)
     rc = tangoctl.run_info(
+        uniq_cls,
         output_file,
         fmt,
         evrythng,

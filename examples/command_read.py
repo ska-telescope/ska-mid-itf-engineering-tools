@@ -56,7 +56,7 @@ def read_command_config(device_name: str, command_name: str) -> int:
         cmd_cfg = dev.get_command_config(command_name)
     except tango.DevFailed as terr:
         err_msg = terr.args[0].desc.strip()
-        print(f"Could not not read command config {command_name} : {err_msg}")
+        print(f"Could not not read command {command_name} config for {device_name} : {err_msg}")
         return 1
     print(f"Tango device {device_name} : command {command_name} configuration")
     print(f"\t{'cmd_tag':40} {cmd_cfg.cmd_tag}")
