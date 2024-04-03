@@ -116,7 +116,7 @@ def main() -> None:  # noqa C901
         "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
         "dish_parameters": {
             "SKA001": {"vcc": 1, "k": 1},
-            "SKA036": {"vcc": 2, "k": 101},
+            "SKA036": {"vcc": 2, "k": 1},
             "SKA063": {"vcc": 3, "k": 1127},
             "SKA100": {"vcc": 4, "k": 620},
         },
