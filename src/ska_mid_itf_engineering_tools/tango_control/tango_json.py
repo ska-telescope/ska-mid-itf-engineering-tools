@@ -866,7 +866,7 @@ class TangoJsonReader:
             if not devdict["properties"]:
                 return
             print(f"{'properties':20} ", end="", file=self.outf)
-            if not devdict['properties']:
+            if not devdict["properties"]:
                 print(file=self.outf)
                 return
             ti = 0

@@ -52,6 +52,7 @@ def main() -> int:  # noqa: C901
     tgo_value: str | None = None
     tango_host: str | None = None
     tango_port: int = 10000
+    uniq_cls: bool = False
     fmt: str = "txt"
 
     # Read configuration file
@@ -67,7 +68,7 @@ def main() -> int:  # noqa: C901
     try:
         opts, _args = getopt.getopt(
             sys.argv[1:],
-            "acdefhjklmnoqstvwyVA:C:H:D:I:J:p:O:P:T:W:",
+            "acdefhjklmnoqstuvwyVA:C:H:D:I:J:p:O:P:T:W:",
             [
                 "class",
                 "cmd",
@@ -88,6 +89,7 @@ def main() -> int:  # noqa: C901
                 "show-acronym",
                 "show-db",
                 "show-dev",
+                "unique",
                 "version",
                 "yaml",
                 "admin=",
@@ -176,6 +178,8 @@ def main() -> int:  # noqa: C901
         elif opt in ("--type", "-T"):
             tgo_in_type = arg.lower()
             _module_logger.info("Input type %s not implemented", tgo_in_type)
+        elif opt in ("--unique", "-u"):
+            uniq_cls = True
         elif opt == "-v":
             _module_logger.setLevel(logging.INFO)
         elif opt == "-V":
