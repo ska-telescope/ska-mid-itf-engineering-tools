@@ -8,6 +8,8 @@ This repo provides a suite of utilities for use in the Mid ITF environment:
 * *tangoctl*, a utility to query and test Tanfo devices
 * *tangoktl*, a utility to query and test Tanfo devices running in a Kubernetes cluster
 * *dependency_checker*, a utility to check Helm and Poetry dependencies
+* *cbf_config*, a utility for configuring the CBF
+* *tmc_config*, a utility for configuring the TMC with the correct Dishes in the SUT.
 
 ## How to Use
 
@@ -18,6 +20,41 @@ $ git clone https://gitlab.com/ska-telescope/ska-mid-itf-engineering-tools.git
 $ cd ska-mid-itf-engineering-tools
 $ git submodule update --init --recursive
 ```
+
+## How to make a release
+The following steps happen in different locations.
+1. Complete the feature/story/bug related branch MR(s) and get it approved and merged.
+2. JIRA:
+   1. create a release (REL) ticket in [REL JIRA project](https://jira.skatelescope.org/secure/Dashboard.jspa?selectPageId=15204)
+   2. set ticket status to `IN PROGRESS`
+3. Local repo:
+   1. `git checkout main && git pull`
+   2. show current version: `make show-version`
+   3. create release branch: `git checkout -b rel-1319-release-v0-5-2`
+   4. bump version: `make bump-<major|minor|patch>-release`
+   5. Manually edit whatever is not yet up-to-date
+   6. `git push` (and convince Git to create the remote branch by running the suggested command)
+4. Gitlab:
+   1. Create new MR and get it
+   2. approved and 
+   3. merged
+5. Local repo:
+   1. `git checkout main && git pull`
+   2. Tag step 1: `make git-create-tag`
+   3. Tag step 2: `make git-push-tag`
+6. Gitlab:
+   1. Check if your new tag pipeline successfully ran and automatically linked the new Release to the Jira ticket
+7. Jira:
+   1. Mark the ticket as `READY FOR RELEASE`
+8. Downstream repo / local test bed & Jira:
+   1. install/use the new artifact and convince yourself that this release is fit for use
+   2. If not fit for use:
+      1. Set JIRA ticket status to `DO NOT USE`
+      2. Notify colleagues / collaborators
+   3. If fit for use:
+      1. Set JIRA ticket status to `RELEASED`
+
+*NOTE: Step 8 should be carried out by the Product Owner, not Developers.*
 
 ## Installation of *tangoctl*
 
