@@ -4,7 +4,7 @@ import json
 import logging
 import os
 import socket
-from typing import Any
+from typing import Any, OrderedDict
 
 import tango
 
@@ -78,7 +78,6 @@ class TangoControl:
         # TODO make this work
         # print("\nDisplay known acronyms")
         # print(f"\t{p_name} -j")
-        # _______________________
         # Testing with input file
         print(f"\nDisplay {p_name} test input files")
         print(f"\t{p_name} --json-dir=<PATH>")
@@ -149,7 +148,6 @@ class TangoControl:
             " --k8s-ns=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2"
             " -D mid_csp_cbf/talon_board/001 -f --in resources/dev_online.json -V\033[0m"
         )
-        # _______
         # Testing
         print("\n\033[1mTest Tango devices:\033[0m")
         print("\nTest a Tango device")
@@ -170,7 +168,6 @@ class TangoControl:
         print(f"\t{p_name} --status[-H <HOST>] -D <DEVICE>")
         print("\nCheck events for attribute of a Tango device")
         print(f"\t{p_name}[-H <HOST>] -D <DEVICE> -A <ATTRIBUTE>")
-        # ______________________
         # Options and parameters
         print("\n\033[1mParameters:\033[0m\n")
         print("\t-a\t\t\t\tflag for reading attributes during tests")
@@ -218,7 +215,6 @@ class TangoControl:
             f"\nRun commands with device name as parameter where applicable:\n"
             f"\t{','.join(self.cfg_data['run_commands_name'])}"
         )
-        # __________________
         # Some more examples
         print("\n\033[1mExamples:\033[0m\n")
         print(f"\t{p_name} -l")
@@ -248,7 +244,7 @@ class TangoControl:
         if input_file is None:
             return
         inf: str = input_file
-        tgo_script = TangoScript(self.logger, inf, tgo_name, dry_run)
+        tgo_script: TangoScript = TangoScript(self.logger, inf, tgo_name, dry_run)
         tgo_script.run()
 
     def check_tango(
@@ -302,8 +298,8 @@ class TangoControl:
         :return: dictionary with devices
         """
         try:
-            devices = TangoctlDevicesBasic(
-                self.logger, quiet_mode, evrythng, self.cfg_data, tgo_name, fmt
+            devices: TangoctlDevicesBasic = TangoctlDevicesBasic(
+                self.logger, False, quiet_mode, evrythng, self.cfg_data, tgo_name, fmt
             )
         except tango.ConnectionFailed:
             self.logger.error("Tango connection failed")
@@ -332,14 +328,14 @@ class TangoControl:
         if fmt == "json":
             self.logger.info("Get device classes")
             try:
-                devices = TangoctlDevicesBasic(
-                    self.logger, quiet_mode, evrythng, self.cfg_data, tgo_name, fmt
+                devices: TangoctlDevicesBasic = TangoctlDevicesBasic(
+                    self.logger, False, quiet_mode, evrythng, self.cfg_data, tgo_name, fmt
                 )
             except tango.ConnectionFailed:
                 self.logger.error("Tango connection failed")
                 return 1
             devices.read_config()
-            dev_classes = devices.get_classes()
+            dev_classes: OrderedDict = devices.get_classes()
             print(json.dumps(dev_classes, indent=4))
         return 0
 
@@ -363,11 +359,12 @@ class TangoControl:
         :param tgo_name: device name
         :return: error condition
         """
+        devices: TangoctlDevicesBasic
         if disp_action == 4:
             self.logger.info("List devices (%s) with name %s", fmt, tgo_name)
             try:
                 devices = TangoctlDevicesBasic(
-                    self.logger, quiet_mode, evrythng, self.cfg_data, tgo_name, fmt
+                    self.logger, False, quiet_mode, evrythng, self.cfg_data, tgo_name, fmt
                 )
             except tango.ConnectionFailed:
                 self.logger.error("Tango connection failed")
@@ -383,7 +380,7 @@ class TangoControl:
             self.logger.info("List device classes (%s)", fmt)
             try:
                 devices = TangoctlDevicesBasic(
-                    self.logger, quiet_mode, evrythng, self.cfg_data, tgo_name, fmt
+                    self.logger, False, quiet_mode, evrythng, self.cfg_data, tgo_name, fmt
                 )
             except tango.ConnectionFailed:
                 self.logger.error("Tango connection failed")
@@ -396,29 +393,31 @@ class TangoControl:
 
     def read_input_files(self, json_dir: str, quiet_mode: bool = True) -> int:
         """
-        Read info from script files.
+        Read info from JSON script files.
 
         :param json_dir: directory with script files
         :param quiet_mode: turn off progress bar
         :return: error condition
         """
-        rv = 0
-        self.logger.info("List JSON and YAML files in %s", json_dir)
-        relevant_path = json_dir
-        included_extensions = ["json", "yaml"]
-        file_names = [
+        rv: int = 0
+        self.logger.info("List JSON files in %s", json_dir)
+        relevant_path: str = json_dir
+        # TODO read YAML files as well
+        # included_extensions = ["json", "yaml"]
+        included_extensions: list = ["json"]
+        file_names: list = [
             fn
             for fn in os.listdir(relevant_path)
             if any(fn.endswith(ext) for ext in included_extensions)
         ]
         if not file_names:
-            self.logger.info("No JSON and YAML files found in %s", json_dir)
+            self.logger.info("No JSON files found in %s", json_dir)
             return 1
         for file_name in file_names:
             file_name = os.path.join(json_dir, file_name)
             with open(file_name) as cfg_file:
                 try:
-                    cfg_data = json.load(cfg_file)
+                    cfg_data: Any = json.load(cfg_file)
                     try:
                         description = cfg_data["description"]
                         if not quiet_mode:
@@ -440,8 +439,7 @@ class TangoControl:
         :param tgo_value: attribute value
         :return: error condition
         """
-        # dev = TangoctlDevice(_module_logger, tgo_name, tgo_attrib, None, None)
-        dev = TangoctlDevice(self.logger, quiet_mode, tgo_name, None, None, None)
+        dev: Any = TangoctlDevice(self.logger, quiet_mode, tgo_name, None, None, None)
         dev.read_attribute_value()
         self.logger.info("Set device %s attribute %s value to %s", tgo_name, tgo_attrib, tgo_value)
         dev.write_attribute_value(tgo_attrib, tgo_value)
@@ -488,7 +486,7 @@ class TangoControl:
 
         # List Tango devices
         if disp_action in (4, 5) and tgo_attrib is None and tgo_cmd is None and tgo_prop is None:
-            rc = self.list_devices(
+            rc: int = self.list_devices(
                 file_name,
                 fmt,
                 evrythng,
@@ -522,6 +520,8 @@ class TangoControl:
             )
             return 1
 
+        # Read devices while applying filters
+        devices: TangoctlDevices
         try:
             devices = TangoctlDevices(
                 self.logger,

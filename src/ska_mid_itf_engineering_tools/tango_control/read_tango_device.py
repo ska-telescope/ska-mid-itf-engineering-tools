@@ -16,23 +16,6 @@ class TangoctlDeviceBasic:
     """Compile a basic dictionary for a Tango device."""
 
     logger: logging.Logger
-    dev: tango.DeviceProxy
-    info: str = "---"
-    version: str = "---"
-    status: str = "---"
-    adminMode: Any = None
-    adminModeStr: str = "---"
-    dev_name: str = "---"
-    dev_class: str = "---"
-    dev_state: Any = None
-    dev_str: str = "---"
-    list_values: dict = {}
-    green_mode: Any = None
-    dev_access: str
-    dev_errors: list = []
-    attribs: list
-    cmds: list
-    props: list
 
     def __init__(  # noqa: C901
         self,
@@ -51,6 +34,22 @@ class TangoctlDeviceBasic:
         """
         self.logger = logger
         self.logger.debug("Open device %s", device)
+        self.dev: tango.DeviceProxy
+        self.info: str = "---"
+        self.version: str = "---"
+        self.status: str = "---"
+        self.adminMode: Any = None
+        self.adminModeStr: str = "---"
+        self.dev_name: str
+        self.dev_class: str
+        self.dev_state: Any = None
+        self.dev_str: str = "---"
+        self.list_values: dict
+        self.dev_errors: list = []
+        self.attribs: list
+        self.cmds: list
+        self.props: list
+        # Set up Tango device
         self.dev = tango.DeviceProxy(device)
         self.dev.set_timeout_millis(timeout_millis)
         try:
@@ -66,8 +65,8 @@ class TangoctlDeviceBasic:
             self.dev_name = f"{device} (N/A)"
             self.dev_errors.append(f"Could not read info : {err_msg}")
         self.list_values = list_values
-        self.green_mode = str(self.dev.get_green_mode())
-        self.dev_access = str(self.dev.get_access_control())
+        self.green_mode: Any = str(self.dev.get_green_mode())
+        self.dev_access: str = str(self.dev.get_access_control())
         # Read attributes
         try:
             self.attribs = sorted(self.dev.get_attribute_list())
@@ -191,7 +190,7 @@ class TangoctlDeviceBasic:
 
         :return: dictionary with device data
         """
-        devdict = {}
+        devdict: dict = {}
         devdict["name"] = self.dev_name
         devdict["state"] = self.dev_str
         devdict["adminMode"] = self.adminModeStr
@@ -202,17 +201,6 @@ class TangoctlDeviceBasic:
 
 class TangoctlDevice(TangoctlDeviceBasic):
     """Compile a dictionary for a Tango device."""
-
-    commands: dict = {}
-    attributes: dict = {}
-    properties: dict = {}
-    command_config: Any
-    attribs_found: list = []
-    props_found: list = []
-    cmds_found: list = []
-    info: Any
-    quiet_mode: bool = True
-    outf = sys.stdout
 
     def __init__(  # noqa: C901
         self,
@@ -233,6 +221,16 @@ class TangoctlDevice(TangoctlDeviceBasic):
         :param tgo_cmd: command filter
         :param tgo_prop: property filter
         """
+        self.commands: dict = {}
+        self.attributes: dict = {}
+        self.properties: dict = {}
+        self.command_config: Any
+        self.attribs_found: list = []
+        self.props_found: list = []
+        self.cmds_found: list = []
+        self.info: Any
+        self.quiet_mode: bool = True
+        self.outf = sys.stdout
         # Run base class constructor
         super().__init__(logger, device)
         self.logger.debug(
@@ -374,7 +372,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
         self.cmds_found = []
         if not tgo_cmd:
             return self.cmds_found
-        chk_cmd = tgo_cmd.lower()
+        chk_cmd: str = tgo_cmd.lower()
         for cmd in self.commands:
             if chk_cmd in cmd.lower():
                 self.cmds_found.append(cmd)
@@ -393,7 +391,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
         self.props_found = []
         if not tgo_prop:
             return self.props_found
-        chk_prop = tgo_prop.lower()
+        chk_prop: str = tgo_prop.lower()
         for cmd in self.properties:
             if chk_prop in cmd.lower():
                 self.props_found.append(cmd)
@@ -433,7 +431,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
             if "data" not in self.attributes[attr_name]:
                 pass
             elif "value" in self.attributes[attr_name]["data"]:
-                data_val = self.attributes[attr_name]["data"]["value"]
+                data_val: Any = self.attributes[attr_name]["data"]["value"]
                 self.logger.debug(
                     "Attribute %s data type %s: %s", attr_name, type(data_val), data_val
                 )
@@ -553,7 +551,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
             """
             # Check that value has been read
             if "value" in self.properties[prop_name]:
-                prop_val = self.properties[prop_name]["value"]
+                prop_val: Any = self.properties[prop_name]["value"]
                 devdict["properties"][prop_name] = {}
                 # pylint: disable-next=c-extension-no-member
                 if type(prop_val) is tango._tango.StdStringVector:
@@ -628,7 +626,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
             self.logger.error("Attribute %s not found in %s", attrib, self.attributes.keys())
             return 1
         # Check type
-        devtype = self.attributes[attrib]["data"]["type"]
+        devtype: Any = self.attributes[attrib]["data"]["type"]
         wval: Any
         if devtype == "DevEnum":
             wval = int(value)
@@ -667,7 +665,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
         :param run_commands: commands safe to run without parameters
         :param run_commands_name: commands safe to run with device name as parameter
         """
-        self.logger.info(f"Read %d commands for %s", len(self.commands), self.dev_name)
+        self.logger.info("Read %d commands for %s", len(self.commands), self.dev_name)
         for cmd in self.commands:
             if cmd in run_commands:
                 # Run command in/out
@@ -700,7 +698,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
                         self.dev_name,
                         self.commands[cmd]["value"],
                     )
-                except tango.DevFailed:
+                except tango.DevFailed as terr:
                     err_msg = terr.args[0].desc.strip()
                     self.logger.info(
                         "Could not run command %s with device name : %s", cmd, err_msg
@@ -772,21 +770,27 @@ class TangoctlDevice(TangoctlDeviceBasic):
         """
         self.logger.info("Print as HTML")
         devsdict = {f"{self.dev_name}": self.make_json()}
-        json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
+        json_reader: TangoJsonReader = TangoJsonReader(
+            self.logger, self.quiet_mode, None, devsdict, None
+        )
         json_reader.print_html_all(html_body)
 
     def print_markdown_all(self) -> None:
         """Print full HTML report."""
         self.logger.info("Print as Markdown")
         devsdict = {f"{self.dev_name}": self.make_json()}
-        json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
+        json_reader: TangoJsonReader = TangoJsonReader(
+            self.logger, self.quiet_mode, None, devsdict, None
+        )
         json_reader.print_markdown_all()
 
     def print_txt_all(self) -> None:
         """Print full HTML report."""
         self.logger.info("Print as Text")
         devsdict = {f"{self.dev_name}": self.make_json()}
-        json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
+        json_reader: TangoJsonReader = TangoJsonReader(
+            self.logger, self.quiet_mode, None, devsdict, None
+        )
         json_reader.print_txt_all()
 
     def print_html_quick(self, html_body: bool) -> None:
@@ -797,5 +801,7 @@ class TangoctlDevice(TangoctlDeviceBasic):
         """
         self.logger.info("Print as shortened HTML")
         devsdict = {f"{self.dev_name}": self.make_json()}
-        json_reader = TangoJsonReader(self.logger, self.quiet_mode, None, devsdict, None)
+        json_reader: TangoJsonReader = TangoJsonReader(
+            self.logger, self.quiet_mode, None, devsdict, None
+        )
         json_reader.print_html_quick(html_body)

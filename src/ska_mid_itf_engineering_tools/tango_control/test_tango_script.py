@@ -27,7 +27,16 @@ class TangoScript:
         :param device_name: device name
         :param dry_run: flag for dry run
         """
+        tango_host: str | None
+        self.dev: tango.DeviceProxy
+        err_msg: str
         self.logger = logger
+        self.dev_name: str
+        # Read configuration file
+        self.logger.warning("Read file %s", input_file)
+        cfg_file: TextIO = open(input_file)
+        self.cfg_data: Any = json.load(cfg_file)
+        cfg_file.close()
         # Get Tango database host
         tango_host = os.getenv("TANGO_HOST")
         if device_name is None:
@@ -35,7 +44,11 @@ class TangoScript:
             raise Exception("Tango device name not set")
         try:
             self.logger.info("Connect device %s", device_name)
-            self.dev: tango.DeviceProxy = tango.DeviceProxy(device_name)
+            self.dev = tango.DeviceProxy(device_name)
+            self.dev_name = self.dev.name()
+            self.attributes: list = sorted(self.dev.get_attribute_list())
+            self.commands: list = sorted(self.dev.get_command_list())
+            self.properties: list = sorted(self.dev.get_property_list("*"))
         except tango.ConnectionFailed as terr:
             err_msg = terr.args[0].desc.strip()
             print(f"[FAILED] {device_name} connection to {tango_host} failed : {err_msg}")
@@ -45,20 +58,8 @@ class TangoScript:
             err_msg = terr.args[0].desc.strip()
             print(f"[FAILED] {device_name} device failed : {err_msg}")
             self.logger.debug(terr)
-            self.dev = None
-        try:
-            self.dev_name = self.dev.name()
-        except tango.DevFailed:
             self.dev_name = device_name + " (N/A)"
         self.logger.info("Read device name %s", self.dev_name)
-        # Read configuration file
-        self.logger.warning("Read file %s", input_file)
-        cfg_file: TextIO = open(input_file)
-        self.cfg_data: Any = json.load(cfg_file)
-        cfg_file.close()
-        self.attributes = sorted(self.dev.get_attribute_list())
-        self.commands = sorted(self.dev.get_command_list())
-        self.properties = sorted(self.dev.get_property_list("*"))
 
     def run(self) -> int:
         """
@@ -66,6 +67,10 @@ class TangoScript:
 
         :return: error condition
         """
+        test_cfg: Any
+        thing: Any
+        attr_read: Any
+        attr_write: Any
         self.logger.info("Process : %s", self.cfg_data)
         for test in self.cfg_data:
             test_cfg = self.cfg_data[test]
@@ -110,6 +115,10 @@ class TangoScript:
         :param attr_write: write value
         :return: error condition
         """
+        env_name: str
+        attrib_data: tango.DeviceAttribute
+        attr_type: str
+        write_val: Any
         if attr_thing not in self.attributes:
             self.logger.error("Device does not have a '%s' attribute", attr_thing)
             return 1
@@ -131,7 +140,6 @@ class TangoScript:
                     attr_write = os.getenv(env_name)
                     self.logger.info("Read environment variable %s : %s", env_name, attr_write)
             self.logger.info("Write attrbute %s value %s", attr_thing, str(attr_write))
-            write_val: Any
             if attr_type == "DevEnum":
                 write_val = int(attr_write)  # type: ignore[arg-type]
             else:
@@ -154,6 +162,7 @@ class TangoScript:
         :param cmd_args: command arguments
         :return: error condition
         """
+        cmd_val: Any
         if cmd_thing not in self.commands:
             self.logger.error("Device does not have a '%s' command", cmd_thing)
             return 1

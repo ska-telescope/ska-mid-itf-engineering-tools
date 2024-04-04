@@ -26,7 +26,7 @@ def main() -> int:  # noqa: C901
     """
     kube_namespace: str | None = None
     # TODO Feature to dispaly a pod, not implemented yet
-    kube_pod: str | None = None
+    # kube_pod: str | None = None
     dry_run: bool = False
     tgo_name: str | None = None
     dev_on: bool = False
@@ -164,8 +164,9 @@ def main() -> int:  # noqa: C901
             fmt = "md"
         elif opt in ("--k8s-ns", "-K"):
             kube_namespace = arg
-        elif opt in ("--k8s-pod", "-X"):
-            kube_pod = arg
+        # TODO make this work
+        # elif opt in ("--k8s-pod", "-X"):
+        #     kube_pod = arg
         elif opt in ("--property", "-P"):
             tgo_prop = arg.lower()
         elif opt == "--off":
@@ -276,7 +277,7 @@ def main() -> int:  # noqa: C901
         dev_test = True
     if dev_admin is not None:
         dev_test = True
-    if dev_test:
+    if dev_test and tgo_name:
         dut = TestTangoDevice(_module_logger, tgo_name)
         if dut.dev is None:
             print(f"[FAILED] could not open device {tgo_name}")

@@ -19,13 +19,15 @@ class TestTangoDevice:
         :param logger: logging handle
         :param device_name: Tango device name
         """
-        self.logger = logger
+        self.logger: logging.Logger = logger
         self.adminMode: int | None = None
-        self.attribs = []
-        self.cmds = []
+        self.attribs: list = []
+        self.cmds: list = []
+        self.dev: tango.DeviceProxy | None
+        err_msg: str
         self.logger.info("Connect device proxy to %s", device_name)
         try:
-            self.dev: tango.DeviceProxy = tango.DeviceProxy(device_name)
+            self.dev = tango.DeviceProxy(device_name)
         except tango.ConnectionFailed as terr:
             err_msg = terr.args[0].desc.strip()
             print(f"[FAILED] {device_name} connection failed : {err_msg}")
@@ -65,6 +67,8 @@ class TestTangoDevice:
 
         :return: attribute value
         """
+        if self.dev is None:
+            return None
         if "  " not in self.attribs:
             print(f"[ WARN ] {self.dev_name} does not have an adminMode attribute")
             self.adminMode = None
@@ -84,6 +88,8 @@ class TestTangoDevice:
 
         :return: attribute value
         """
+        if self.dev is None:
+            return None
         if "simulationMode" not in self.attribs:
             print(f"[ WARN ] {self.dev_name} does not have a simulationMode attribute")
         try:
@@ -102,6 +108,8 @@ class TestTangoDevice:
         :param dev_sim: attribute value
         :return: error condition
         """
+        if self.dev is None:
+            return None
         if "simulationMode" not in self.attribs:
             print(f"[ WARN ] {self.dev_name} does not have a simulationMode attribute")
         try:
@@ -123,6 +131,8 @@ class TestTangoDevice:
 
         :return: online condition
         """
+        if self.dev is None:
+            return False
         try:
             self.dev.ping()
             print(f"[  OK  ] {self.dev_name} is online")
@@ -146,6 +156,8 @@ class TestTangoDevice:
     def read_device_attributes(self) -> None:
         """Read all attributes of this device."""
         self.logger.debug("Read attribute %s values", self.dev_name)
+        if self.dev is None:
+            return
         print(f"[  OK  ] {self.dev_name} read {len(self.attribs)} attributes")
         for attrib in sorted(self.attribs):
             time.sleep(2)
@@ -170,6 +182,8 @@ class TestTangoDevice:
 
     def admin_mode_off(self) -> None:
         """Turn admin mode off."""
+        if self.dev is None:
+            return
         if self.adminMode is None:
             return
         if self.adminMode == 1:
@@ -191,6 +205,8 @@ class TestTangoDevice:
 
         :return: device state
         """
+        if self.dev is None:
+            return None
         if "Status" not in self.cmds:
             print(f"[FAILED] {self.dev.dev_name} does not have Status command")
         if "State" not in self.cmds:
@@ -208,11 +224,16 @@ class TestTangoDevice:
 
         :return: error condition
         """
+        dev_on: Any
+        err_msg: str
+
         self.logger.debug("Turn device %s on", self.dev_name)
+        if self.dev is None:
+            return 1
         if "On" not in self.cmds:
             print(f"[FAILED] {self.dev_name} does not have On command")
             return 1
-        cmd_cfg = self.dev.get_command_config("On")
+        cmd_cfg: tango.CommandInfo = self.dev.get_command_config("On")
         if cmd_cfg.in_type_desc == "Uninitialised":
             try:
                 dev_on = self.dev.On()
@@ -249,11 +270,16 @@ class TestTangoDevice:
 
         :return: error condition
         """
+        dev_off: Any
+        err_msg : str
+
         self.logger.debug("Turn device %s off", self.dev_name)
+        if self.dev is None:
+            return 1
         if "Off" not in self.cmds:
             print(f"[FAILED] {self.dev_name} does not have Off command")
             return 1
-        cmd_cfg = self.dev.get_command_config("Off")
+        cmd_cfg: tango.CommandInfo = self.dev.get_command_config("Off")
         if cmd_cfg.in_type_desc == "Uninitialised":
             try:
                 dev_off = self.dev.Off()
@@ -280,11 +306,16 @@ class TestTangoDevice:
 
         :return: error condition
         """
+        dev_standby: Any
+        err_msg: str
+
         self.logger.debug("Set device %s on standby", self.dev_name)
+        if self.dev is None:
+            return 1
         if "Standby" not in self.cmds:
             print(f"[FAILED] {self.dev.dev_name} does not have Standby command")
             return 1
-        cmd_cfg = self.dev.get_command_config("Standby")
+        cmd_cfg: tango.CommandInfo = self.dev.get_command_config("Standby")
         if cmd_cfg.in_type_desc == "Uninitialised":
             try:
                 dev_standby = self.dev.Standby()
@@ -307,7 +338,11 @@ class TestTangoDevice:
 
     def admin_mode_on(self) -> None:
         """Turn admin mode on."""
+        err_msg: str
+
         self.logger.info("Turn device admin mode on")
+        if self.dev is None:
+            return
         try:
             self.dev.adminMode = 1
             self.adminMode = self.dev.adminMode
@@ -325,7 +360,11 @@ class TestTangoDevice:
         :param admin_mode: new value
         :return: error condition
         """
+        err_msg: str
+
         self.logger.info("Set device admin mode to %d", admin_mode)
+        if self.dev is None:
+            return 1
         try:
             self.dev.adminMode = admin_mode
             self.adminMode = self.dev.adminMode
@@ -457,6 +496,9 @@ class TestTangoDevice:
         :param show_attrib: flag for attributes display.
         :return: error condition
         """
+        init_admin_mode: int | None
+        init_state: int | None
+
         self.check_device()
         self.get_simulation_mode()
         self.show_device_attributes()
@@ -505,8 +547,14 @@ class TestTangoDevice:
         :param attrib: attribute name
         :return: error condition
         """
+        err_msg: str
+        evnt_id: int
+        events: Any
+
         print(f"[  OK  ] subscribe to events for {self.dev_name} {attrib}")
-        evnt_id: Any = self.dev.subscribe_event(
+        if self.dev is None:
+            return 1
+        evnt_id = self.dev.subscribe_event(
             attrib, tango.EventType.CHANGE_EVENT, tango.utils.EventCallback()
         )
         print(f"[  OK  ] subscribed to event ID {evnt_id}")
@@ -579,7 +627,7 @@ class TestTangoDevice:
         elif tgo_attrib is not None and tgo_name is not None:
             self.test_subscribe(tgo_attrib)
         elif tgo_name is not None:
-            dut = TestTangoDevice(self.logger, tgo_name)
+            dut: TestTangoDevice = TestTangoDevice(self.logger, tgo_name)
             if dut.dev is None:
                 print(f"[FAILED] could not open device {tgo_name}")
                 return 1
@@ -601,6 +649,10 @@ class TestTangoDevices:
         :param cfg_data: configuration data
         :raises Exception: connect to Tango database failed
         """
+        database: tango.Database
+        device_list: tango.DbDatum
+        device: str
+
         self.logger = logger
         self.tango_devices: list = []
         # Connect to database
@@ -617,7 +669,7 @@ class TestTangoDevices:
         for device in sorted(device_list.value_string):
             # Check device name against mask
             if not evrythng:
-                chk_fail = False
+                chk_fail: bool = False
                 for dev_chk in cfg_data["ignore_device"]:
                     chk_len = len(dev_chk)
                     if device[0:chk_len] == dev_chk:

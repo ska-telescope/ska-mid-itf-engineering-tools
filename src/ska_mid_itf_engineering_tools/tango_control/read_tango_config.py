@@ -14,15 +14,6 @@ from ska_mid_itf_engineering_tools.tango_control.read_tango_device import (
 class TangoctlDeviceConfig(TangoctlDeviceBasic):
     """Read all the configuration on offer."""
 
-    logger: logging.Logger
-    prog_bar: bool = True
-    dev: tango.DeviceProxy
-    attributes: dict = {}
-    commands: dict = {}
-    properties: dict = {}
-    dev_name: str
-    green_mode: Any = None
-
     def __init__(
         self,
         logger: logging.Logger,
@@ -36,6 +27,14 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
         :param quiet_mode: do not display progress bar
         :param device: device name
         """
+        self.prog_bar: bool = True
+        self.dev: tango.DeviceProxy
+        self.attributes: dict = {}
+        self.commands: dict = {}
+        self.properties: dict = {}
+        self.dev_name: str
+        self.green_mode: Any = None
+
         super().__init__(logger, device)
         self.logger.info("Open device %s config", device)
 
@@ -78,7 +77,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
 
         def set_attribute() -> None:
             """Add attribute to dictionary."""
-            data = self.attributes[attrib]["data"]
+            data: Any = self.attributes[attrib]["data"]
             if data is None:
                 return
             devdict["attributes"][attrib]["data"] = {}
@@ -113,8 +112,8 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
         def set_attribute_config() -> None:
             """Add attribute configuration to dictionary."""
             devdict["attributes"][attrib]["config"] = {}
-            dcfg = self.attributes[attrib]["config"]
-            alarms = dcfg.alarms
+            dcfg: Any = self.attributes[attrib]["config"]
+            alarms: Any = dcfg.alarms
             devdict["attributes"][attrib]["config"]["alarms"] = {}
             devdict["attributes"][attrib]["config"]["alarms"]["delta_t"] = alarms.delta_t
             devdict["attributes"][attrib]["config"]["alarms"]["delta_val"] = alarms.delta_val
@@ -166,7 +165,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
             devdict["attributes"][attrib]["config"]["events"]["per_event"][
                 "period"
             ] = per_event.period
-            extensions = dcfg.extensions
+            extensions: Any = dcfg.extensions
             devdict["attributes"][attrib]["config"]["extensions"] = f"{extensions}"
             devdict["attributes"][attrib]["config"]["format"] = dcfg.format
             devdict["attributes"][attrib]["config"]["label"] = dcfg.label
@@ -180,7 +179,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
             devdict["attributes"][attrib]["config"]["name"] = dcfg.name
             devdict["attributes"][attrib]["config"]["root_attr_name"] = dcfg.root_attr_name
             devdict["attributes"][attrib]["config"]["standard_unit"] = dcfg.standard_unit
-            sys_extensions = dcfg.sys_extensions
+            sys_extensions: Any = dcfg.sys_extensions
             devdict["attributes"][attrib]["config"]["sys_extensions"] = f"{sys_extensions}"
             devdict["attributes"][attrib]["config"]["unit"] = dcfg.unit
             devdict["attributes"][attrib]["config"]["writable"] = str(dcfg.writable)
@@ -223,6 +222,7 @@ class TangoctlDeviceConfig(TangoctlDeviceBasic):
             set_attribute()
             set_attribute_config()
         devdict["commands"] = {}
+        cmd: str
         for cmd in self.commands:
             self.logger.debug("Set command %s", cmd)
             set_command_config()

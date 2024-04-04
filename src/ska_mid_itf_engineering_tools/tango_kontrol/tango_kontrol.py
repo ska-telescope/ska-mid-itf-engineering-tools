@@ -291,6 +291,8 @@ class TangoControlKubernetes(TangoControl):
         :param tango_port: port number
         :return: error condition
         """
+        tango_addr: tuple[str, list[str], list[str]]
+        tango_ip: str
         self.logger.info("Check Tango host %s:%d", tango_fqdn, tango_port)
         try:
             tango_addr = socket.gethostbyname_ex(tango_fqdn)
@@ -309,8 +311,8 @@ class TangoControlKubernetes(TangoControl):
 
         :return: list with devices
         """
-        k8s = KubernetesControl(self.logger)
-        ns_list = k8s.get_namespaces_list()
+        k8s: KubernetesControl = KubernetesControl(self.logger)
+        ns_list: list = k8s.get_namespaces_list()
         self.logger.info("Read %d namespaces", len(ns_list))
         return ns_list
 
@@ -320,8 +322,8 @@ class TangoControlKubernetes(TangoControl):
 
         :return: dictionary with devices
         """
-        k8s = KubernetesControl(self.logger)
-        ns_dict = k8s.get_namespaces_dict()
+        k8s: KubernetesControl = KubernetesControl(self.logger)
+        ns_dict: dict = k8s.get_namespaces_dict()
         self.logger.info("Read %d namespaces", len(ns_dict))
         return ns_dict
 
@@ -332,6 +334,9 @@ class TangoControlKubernetes(TangoControl):
         :param output_file: output file name
         :param fmt: output format
         """
+        ns_dict: dict
+        ns_list: list
+        ns_name: str
         if fmt == "json":
             ns_dict = self.get_namespaces_dict()
             if output_file is not None:
@@ -376,16 +381,18 @@ class TangoControlKubernetes(TangoControl):
         if ns_name is None:
             self.logger.error("K8S namespace not specified")
             return
-        k8s = KubernetesControl(self.logger)
-        pods_dict = self.get_pods_dict(ns_name)
+        k8s: KubernetesControl = KubernetesControl(self.logger)
+        pods_dict: dict = self.get_pods_dict(ns_name)
         print(f"Pods in namespace {ns_name} : {len(pods_dict)}")
+        pod_name: str
         for pod_name in pods_dict:
             print(f"\t{pod_name}")
             if not quiet_mode:
-                resps = k8s.exec_command(ns_name, pod_name, ["ps", "-ef"])
+                resps: str = k8s.exec_command(ns_name, pod_name, ["ps", "-ef"])
                 if not resps:
                     pass
                 elif "\n" in resps:
+                    resp: str
                     for resp in resps.split("\n"):
                         self.logger.debug("Got '%s'", resp)
                         if not resp:
@@ -406,7 +413,7 @@ class TangoControlKubernetes(TangoControl):
                 else:
                     print(f"\t\t- {resps}")
 
-    def get_pods_json(self, ns_name: str | None, quiet_mode: bool) -> dict:
+    def get_pods_json(self, ns_name: str | None, quiet_mode: bool) -> dict:  # noqa: C901
         """
         Read pods in Kubernetes namespace.
 
@@ -419,19 +426,21 @@ class TangoControlKubernetes(TangoControl):
         if ns_name is None:
             self.logger.error("K8S namespace not specified")
             return pods
-        k8s = KubernetesControl(self.logger)
+        k8s: KubernetesControl = KubernetesControl(self.logger)
         self.logger.debug("Read pods running in namespace %s", ns_name)
-        pods_list = k8s.get_pods(ns_name, None)
+        pods_list: dict = k8s.get_pods(ns_name, None)
         self.logger.info("Found %d pods running in namespace %s", len(pods_list), ns_name)
+        pod_name: str
         for pod_name in pods_list:
             self.logger.info("Read processes running in pod %s", pod_name)
-            resps = k8s.exec_command(ns_name, pod_name, pod_exec)
+            resps: str = k8s.exec_command(ns_name, pod_name, pod_exec)
             pods[pod_name] = []
             if quiet_mode:
                 continue
             if not resps:
                 pass
             elif "\n" in resps:
+                resp: str
                 for resp in resps.split("\n"):
                     if not resp:
                         pass
@@ -441,6 +450,7 @@ class TangoControlKubernetes(TangoControl):
                         pass
                     elif resp[0:3] == "PID":
                         pass
+                    # TODO to show nginx or not to show nginx
                     # elif "nginx" in resp:
                     #     pass
                     else:
@@ -460,6 +470,7 @@ class TangoControlKubernetes(TangoControl):
         :param output_file: output file name
         :param fmt: output format
         """
+        pods: dict
         if fmt == "json":
             pods = self.get_pods_json(ns_name, quiet_mode)
             if output_file is not None:
@@ -513,6 +524,8 @@ class TangoControlKubernetes(TangoControl):
         :param tango_port: device port
         :return: error condition
         """
+        rc: int
+        devices: TangoctlDevices
         self.logger.info(
             "Info %d : device %s attribute %s command %s property %s",
             disp_action,
