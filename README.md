@@ -228,7 +228,8 @@ The dependency checker Gitlab job, *check-dependencies*, is run as part of a sch
 
 To obtain help:
 
-```$ tangoctl --help
+```
+$ tangoctl --help
 Read Tango devices:
 
 Display version number
@@ -436,7 +437,8 @@ Examples:
 
 The user must be logged into the Mid ITF VPN, otherwise this will time out.
 
-```$ tangoctl --show-ns
+```
+$ tangoctl --show-ns
 Namespaces : 53
         advanced-tango-training
         advanced-tango-training-sdp
@@ -501,7 +503,8 @@ This will display the name, current state and admin mode setting for each Tango 
 in the database. Note that output has been shorteneded. By default, device names starting 
 with **dserver** or **sys** are not listed.
 
-```$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 --list
+```
+$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 --list
 DEVICE NAME                              STATE      ADMIN MODE  VERSION  CLASS
 mid-csp/capability-fsp/0                 ON         ONLINE      2        MidCspCapabilityFsp
 mid-csp/capability-vcc/0                 ON         ONLINE      2        MidCspCapabilityVcc
@@ -577,7 +580,8 @@ ska_mid/tm_subarray_node/1               ON         OFFLINE     0.13.19  Subarra
 
 To find all devices with **talon** in the name:
 
-```$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -l
+```
+$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D talon -l
 DEVICE NAME                              STATE      ADMIN MODE  VERSION  CLASS
 mid_csp_cbf/talon_board/001              DISABLE    OFFLINE     0.11.4   TalonBoard
 mid_csp_cbf/talon_board/002              DISABLE    OFFLINE     0.11.4   TalonBoard
@@ -602,7 +606,8 @@ It is possible to search for attributes, commands or properties by part of the n
 
 To find all devices with attributes that contain **timeout**:
 
-```$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout
+```
+$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout
 DEVICE                                           ATTRIBUTE                                VALUE
 mid-csp/control/0                                commandTimeout                           5
                                                  offCmdTimeoutExpired                     False
@@ -627,7 +632,8 @@ mid_csp_cbf/sub_elt/subarray_03                  assignResourcesTimeoutExpiredFl
 
 To find all devices with attributes that contain **timeout**, without displaying values:
 
-```$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout --dry-run
+```
+$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -A timeout --dry-run
 DEVICE                                           ATTRIBUTE
 mid-csp/control/0                                commandTimeout                          
                                                  offCmdTimeoutExpired                    
@@ -663,7 +669,8 @@ ska_mid/tm_central/central_node                  TelescopeOff
 
 To find all devices with commands that have **Outlet** in the name:
 
-```$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -C Outlet
+```
+$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -C Outlet
 mid_csp_cbf/power_switch/001                     GetOutletPowerMode
                                                  TurnOffOutlet
                                                  TurnOnOutlet
@@ -679,7 +686,8 @@ mid_csp_cbf/power_switch/003                     GetOutletPowerMode
 
 To find all devices with properties that have **Power** in the name:
 
-```$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -P Power
+```
+$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -P Power
 mid_csp_cbf/power_switch/001                     PowerSwitchIp
                                                  PowerSwitchLogin
                                                  PowerSwitchModel
@@ -709,7 +717,8 @@ mid_csp_cbf/talon_lru/004                        PDU1PowerOutlet
 
 This display all information about a device. The input and output of commands are displayed where available.
 
-```$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -f
+```
+$ tangoctl --namespace=ci-ska-mid-itf-at-1820-tmc-test-sdp-notebook-v2 -D mid_csp_cbf/talon_lru/001 -f
 Device            : mid_csp_cbf/talon_lru/001
 Admin mode        : 1
 State             : DISABLE
