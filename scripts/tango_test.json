@@ -1,5 +1,0 @@
-{
-  "run_commands":  ["QueryClass", "QueryDevice", "QuerySubDevice"],
-  "run_commands_name": ["DevLockStatus", "DevPollStatus", "GetLoggingTarget"],
-  "ignore_device": ["sys", "dserver"]
-}
