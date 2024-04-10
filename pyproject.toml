@@ -8,7 +8,7 @@ license = "BSD 3-Clause"
 readme = "README.md"
 packages = [{ include = "src/ska_mid_itf_engineering_tools" }, { include = "tests" } ]
 
-[[tool.poetry.source]]
+[tool.poetry.source]
 name = 'skao'
 url = 'https://artefact.skao.int/repository/pypi-internal/simple'
 
