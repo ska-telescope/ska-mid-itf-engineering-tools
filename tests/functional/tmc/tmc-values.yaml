@@ -1,5 +1,5 @@
 ### tmc
-tmc:
+ska-tmc-mid:
   global:
     namespace_dish:
       dish_names:

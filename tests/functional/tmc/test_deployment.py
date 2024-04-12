@@ -68,20 +68,20 @@ def test_instances(tmc_dishes: dict, tmc_dishes_1: dict) -> None:
     :type tmc_dishes_1: dict
     """
     assert (
-        tmc_dishes["tmc"]["deviceServers"]["dishleafnode"]["instances"]
-        == tmc_dishes_1["tmc"]["deviceServers"]["dishleafnode"]["instances"]
+        tmc_dishes["ska-tmc-mid"]["deviceServers"]["dishleafnode"]["instances"]
+        == tmc_dishes_1["ska-tmc-mid"]["deviceServers"]["dishleafnode"]["instances"]
     ), (
         f"ERROR:\nExpected: "
-        f"{tmc_dishes['tmc']['deviceServers']['dishleafnode']['instances']}\n "
-        f"Actual:\n{tmc_dishes_1['tmc']['deviceServers']['dishleafnode']['instances']}"
+        f"{tmc_dishes['ska-tmc-mid']['deviceServers']['dishleafnode']['instances']}\n "
+        f"Actual:\n{tmc_dishes_1['ska-tmc-mid']['deviceServers']['dishleafnode']['instances']}"
     )
     assert (
-        tmc_dishes["tmc"]["deviceServers"]["dishleafnode"]["instances"]
-        == tmc_dishes_1["tmc"]["deviceServers"]["dishleafnode"]["instances"]
+        tmc_dishes["ska-tmc-mid"]["deviceServers"]["dishleafnode"]["instances"]
+        == tmc_dishes_1["ska-tmc-mid"]["deviceServers"]["dishleafnode"]["instances"]
     ), (
         f"ERROR:\nExpected: "
-        f"{tmc_dishes['tmc']['deviceServers']['dishleafnode']['instances']}\n"
-        f"Actual:\n{tmc_dishes_1['tmc']['deviceServers']['dishleafnode']['instances']}"
+        f"{tmc_dishes['ska-tmc-mid']['deviceServers']['dishleafnode']['instances']}\n"
+        f"Actual:\n{tmc_dishes_1['ska-tmc-mid']['deviceServers']['dishleafnode']['instances']}"
     )
 
 
