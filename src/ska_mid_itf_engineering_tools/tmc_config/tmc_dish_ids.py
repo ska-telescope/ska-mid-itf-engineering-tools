@@ -173,7 +173,7 @@ def tmc_values(
     if "KUBE_NAMESPACE_POSTFIX" in os.environ:
         namespace_postfix = os.environ["KUBE_NAMESPACE_POSTFIX"]
     values = {
-        "tmc": {
+        "ska-tmc-mid": {
             "deviceServers": {
                 "centralnode": {"DishIDs": dish_ids_array_from_str(dish_ids)},
                 "subarraynode": {"DishIDs": dish_ids_array_from_str(dish_ids)},
