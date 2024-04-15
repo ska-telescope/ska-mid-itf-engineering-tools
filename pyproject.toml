@@ -20,8 +20,6 @@ url = 'https://pypi.org/simple'
 tmc_dish_ids = 'src.ska_mid_itf_engineering_tools.tmc_config.tmc_dish_ids:main'
 talon_on = 'src.ska_mid_itf_engineering_tools.cbf_config.talon_on:main'
 check_dependencies = 'src.ska_mid_itf_engineering_tools.dependency_checker.dependency_checker:main'
-tangoctl = 'src.ska_mid_itf_engineering_tools.tango_control.tangoctl:main'
-tangoktl = 'src.ska_mid_itf_engineering_tools.tango_kontrol.tangoktl:main'
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
