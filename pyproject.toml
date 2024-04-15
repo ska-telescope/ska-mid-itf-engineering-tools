@@ -1,7 +1,7 @@
 [tool.poetry]
 include = ["MANIFEST.skao.int"]
 name = "ska-mid-itf-engineering-tools"
-version = "0.7.0"
+version = "0.7.1"
 description = "SKA MID ITF Engineering tools"
 authors = ["Matteo Di Carlo", "Adriaan de Beer", "Nkosing'phile Nzotho", "Pieter Jordaan", "Dave Horn", "Johan Coetzer"]
 license = "BSD 3-Clause"
@@ -11,6 +11,10 @@ packages = [{ include = "src/ska_mid_itf_engineering_tools" }, { include = "test
 [[tool.poetry.source]]
 name = 'skao'
 url = 'https://artefact.skao.int/repository/pypi-internal/simple'
+
+[[tool.poetry.source]]
+name = "PyPI-public"
+url = 'https://pypi.org/simple'
 
 [tool.poetry.scripts]
 tmc_dish_ids = 'src.ska_mid_itf_engineering_tools.tmc_config.tmc_dish_ids:main'
@@ -56,6 +60,7 @@ darglint = "^1.8.1"
 mypy = "^1.8.0"
 twine = "^5.0.0"
 python-build = "^0.2.13"
+httpx = "^0.27.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
