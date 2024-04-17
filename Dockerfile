@@ -1,7 +1,7 @@
 ARG OCI_IMAGE_VERSION
 FROM $OCI_IMAGE_VERSION as base
 
-ARG POETRY_VERSION=1.3.2
+ARG POETRY_VERSION=1.8.2
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=Etc/UTC
 
@@ -28,6 +28,9 @@ FROM base
 COPY . /app
 
 RUN poetry install
+
+ENV PYTHONPATH="/app/src:${PYTHONPATH}:/app/.venv/lib/python3.10/site-packages"
+ENV PATH=/app/bin:/app/.venv/bin:/root/.local/bin:$PATH
 
 USER root
 
