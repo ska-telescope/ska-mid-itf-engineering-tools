@@ -111,20 +111,21 @@ def main() -> None:  # noqa C901
             cbf_subarray2,
             cbf_subarray3,
         )
+    
+    if os.environ.get("SWITCH_CSP_ON") == "true":
+        dish_config = {
+            "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
+            "dish_parameters": {
+                "SKA001": {"vcc": 1, "k": 1},
+                "SKA036": {"vcc": 2, "k": 101},
+                "SKA063": {"vcc": 3, "k": 1127},
+                "SKA100": {"vcc": 4, "k": 620},
+            },
+        }
 
-    dish_config = {
-        "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
-        "dish_parameters": {
-            "SKA001": {"vcc": 1, "k": 1},
-            "SKA036": {"vcc": 2, "k": 101},
-            "SKA063": {"vcc": 3, "k": 1127},
-            "SKA100": {"vcc": 4, "k": 620},
-        },
-    }
-
-    csp.loaddishcfg(json.dumps(dish_config))
-    vcc_config = csp.dishVccConfig
-    logger.debug(f"CSP Controller dishVccConfig is now {vcc_config}")
+        csp.loaddishcfg(json.dumps(dish_config))
+        vcc_config = csp.dishVccConfig
+        logger.debug(f"CSP Controller dishVccConfig is now {vcc_config}")
 
     # Next set simulation to false - hardware use!
     cbf.simulationMode = False
@@ -142,29 +143,30 @@ def main() -> None:  # noqa C901
     csp.set_timeout_millis(TIMEOUT * 1000)
     logger.debug(f"Sent set_timeout_millis({TIMEOUT * 1000}) command")
 
-    logger.info("Turning CSP ON - this may take a while...")
-    csp.on([])
-    k = 0
-    while k < 10:
-        logger.warning(f"Sleeping for {TIMEOUT-k*10} seconds while CBF is turning on.")
-        time.sleep(10)
-        k += 1
-    k = 1
-    while cbf.State() != DevState.ON:
-        if k == 5:
-            logger.error("Could not turn the CBF Controller on. Exiting.")
-            sys.exit(1)
+    if os.environ.get("SWITCH_CSP_ON") == "true":
+        logger.info("Turning CSP ON - this may take a while...")
+        csp.on([])
+        k = 0
+        while k < 10:
+            logger.warning(f"Sleeping for {TIMEOUT-k*10} seconds while CBF is turning on.")
+            time.sleep(10)
+            k += 1
+        k = 1
+        while cbf.State() != DevState.ON:
+            if k == 5:
+                logger.error("Could not turn the CBF Controller on. Exiting.")
+                sys.exit(1)
 
-        def fib(n: int) -> int:
-            return n if n <= 1 else fib(n - 1) + fib(n - 2)
+            def fib(n: int) -> int:
+                return n if n <= 1 else fib(n - 1) + fib(n - 2)
 
-        logger.info(
-            f"Waiting for CBF to change state from {cbf.State()} to ON "
-            "for another {fib(k)} seconds"
-        )
-        time.sleep(fib(k))
-        k += 1
-    logger.info("CBF is ON")
+            logger.info(
+                f"Waiting for CBF to change state from {cbf.State()} to ON "
+                "for another {fib(k)} seconds"
+            )
+            time.sleep(fib(k))
+            k += 1
+        logger.info("CBF is ON")
     return
 
 
