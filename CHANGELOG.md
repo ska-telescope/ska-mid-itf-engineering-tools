@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.8.0
+
+* [AT-2008] - Update Dockerfile to not require poetry install.
+* [AT-2008] - Add dev tag to Gitlab images.
+* [AT-1989] - Update README.
+* [AT-1989] - Remove tangoctl. 
+
 ## 0.7.1
 
 * [AT-2007] - Stop using alias for TMC because CIA does not support it.
