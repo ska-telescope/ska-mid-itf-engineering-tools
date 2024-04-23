@@ -111,7 +111,7 @@ def main() -> None:  # noqa C901
             cbf_subarray2,
             cbf_subarray3,
         )
-    
+
     if os.environ.get("SWITCH_CSP_ON") == "true":
         dish_config = {
             "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
