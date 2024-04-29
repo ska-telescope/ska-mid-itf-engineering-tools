@@ -1,7 +1,7 @@
 [tool.poetry]
 include = ["MANIFEST.skao.int"]
 name = "ska-mid-itf-engineering-tools"
-version = "0.8.1"
+version = "0.8.2"
 description = "SKA MID ITF Engineering tools"
 authors = ["Matteo Di Carlo", "Adriaan de Beer", "Nkosing'phile Nzotho", "Pieter Jordaan", "Dave Horn", "Johan Coetzer"]
 license = "BSD 3-Clause"
@@ -37,6 +37,8 @@ semver = "^3.0.2"
 requests-mock = "^1.11.0"
 pytango = "^9.5.1"
 black = "24.3.0"
+pytest = "^8.2.0"
+pytest-bdd = "^7.1.2"
 
 [tool.poetry.group.docs.dependencies]
 Sphinx = "^7.2.6"
