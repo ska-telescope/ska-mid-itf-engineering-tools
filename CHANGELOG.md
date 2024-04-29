@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.8.2
+
+* [AT-2026] - Update version of skallop to enable use of newer pytest-bdd.
+
 ## 0.8.1
 
 * [AT-1990] - Add feature flag to switching on of CSP-LMC in talon_on.py.
