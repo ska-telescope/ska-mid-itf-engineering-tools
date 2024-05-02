@@ -36,7 +36,6 @@ slack-sdk = "^3.27.1"
 semver = "^3.0.2"
 requests-mock = "^1.11.0"
 pytango = "^9.5.1"
-black = "24.3.0"
 pytest = "^8.2.0"
 pytest-bdd = "^7.1.2"
 
