@@ -20,6 +20,7 @@ url = 'https://pypi.org/simple'
 tmc_dish_ids = 'src.ska_mid_itf_engineering_tools.tmc_config.tmc_dish_ids:main'
 talon_on = 'src.ska_mid_itf_engineering_tools.cbf_config.talon_on:main'
 check_dependencies = 'src.ska_mid_itf_engineering_tools.dependency_checker.dependency_checker:main'
+prepare_commit_msg = 'src.ska_mid_itf_engineering_tools.git.prepare_commit_msg:main'
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
@@ -39,6 +40,7 @@ pytango = "^9.5.1"
 black = "24.3.0"
 pytest = "^8.2.0"
 pytest-bdd = "^7.1.2"
+gitpython = "^3.1.43"
 
 [tool.poetry.group.docs.dependencies]
 Sphinx = "^7.2.6"
