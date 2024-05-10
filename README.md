@@ -65,3 +65,22 @@ The only configuration needed is to set the environment variable `DEPENDENCY_CHE
 ### Execution
 
 The dependency checker Gitlab job, *check-dependencies*, is run as part of a scheduled pipeline on a weekly basis. It can also be executed manually from any pipeline. For this project, it reports stale dependencies to the [#atlas-dependencies](https://skao.slack.com/archives/C06MR162K24) channel.
+
+## Commit Message Preparer
+
+The Commit Message Preparer is used to prepend a Jira issue ID to your commit message, if there is one present.
+You can install it as follows:
+
+```
+# Installs it for this repo only
+make install-prepare-commit-msg-local
+# Installs it globally
+make install-prepare-commit-msg-global
+```
+
+**The global install will only affect working with SKA repositories.**
+The tool uses a whitelist of origin prefixes to determine which repos it should be used in and it is configured to only work with SKA repos.
+
+**The tool only works on branches prefixed with the Jira issue ID.**
+
+**The tool will not add the Jira issue ID if the commit message already starts with one.**
