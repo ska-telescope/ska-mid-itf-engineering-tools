@@ -12,6 +12,12 @@ DEV_TAG := $(VERSION)-dev.c$(CI_COMMIT_SHORT_SHA)
 OCI_BUILD_ADDITIONAL_TAGS += $(DEV_TAG)
 endif
 
+install-prepare-commit-msg-global:
+	scripts/git/install-prepare-commit-msg-global.sh
+
+install-prepare-commit-msg-local:
+	scripts/git/install-prepare-commit-msg-local.sh
+
 # include OCI Images support
 include .make/oci.mk
 
