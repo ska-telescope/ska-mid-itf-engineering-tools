@@ -5,22 +5,51 @@
 ## Introduction
 
 This repo provides a suite of utilities for use in the Mid ITF environment:
+
 * *dependency_checker*, a utility to check Helm and Poetry dependencies
 * *cbf_config*, a utility for configuring the CBF
 * *tmc_config*, a utility for configuring the TMC with the correct Dishes in the SUT.
+* *git*, tools for working with git. Currently contains a hook for adding Jira issue IDs to commit messages.
 
 ## How to Use
 
 Clone this repo:
 
 ```
-$ git clone https://gitlab.com/ska-telescope/ska-mid-itf-engineering-tools.git
-$ cd ska-mid-itf-engineering-tools
-$ git submodule update --init --recursive
+git clone https://gitlab.com/ska-telescope/ska-mid-itf-engineering-tools.git
+cd ska-mid-itf-engineering-tools
+git submodule update --init --recursive
 ```
 
-## How to make a release
+Build the image
+
+```
+make oci-build
+```
+
+Install python requirements
+
+```
+poetry install
+```
+
+Run tests
+
+```
+poetry shell
+make python-test
+```
+
+Lint code
+
+```
+make python-lint
+```
+
+### Making a release
+
 The following steps happen in different locations.
+
 1. Complete the feature/story/bug related branch MR(s) and get it approved and merged.
 2. JIRA:
    1. create a release (REL) ticket in [REL JIRA project](https://jira.skatelescope.org/secure/Dashboard.jspa?selectPageId=15204)
@@ -34,7 +63,7 @@ The following steps happen in different locations.
    6. `git push` (and convince Git to create the remote branch by running the suggested command)
 4. Gitlab:
    1. Create new MR and get it
-   2. approved and 
+   2. approved and
    3. merged
 5. Local repo:
    1. `git checkout main && git pull`
