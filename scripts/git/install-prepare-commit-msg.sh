@@ -30,13 +30,10 @@ EOF
 set -eu
 set -o pipefail
 
-echo "commit msg file: \${1}"
 (cd ${script_dir}/../../ && ${command})
-cp \${1} ../../commit-msg.txt
 EOF
     fi
 
     chmod +x ${hook_file}
     echo "Installed prepare-commit-msg at ${hook_file}"
-    git config core.hooksPath $(dirname ${hook_file})
 }

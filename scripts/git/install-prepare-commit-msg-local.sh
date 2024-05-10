@@ -10,3 +10,4 @@ export hook_file=${script_dir}/../../.git/hooks/prepare-commit-msg
 
 install_prepare_commit_msg
 
+git config core.hooksPath $(dirname ${hook_file})
