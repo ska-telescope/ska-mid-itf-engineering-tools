@@ -23,7 +23,7 @@ check_dependencies = 'src.ska_mid_itf_engineering_tools.dependency_checker.depen
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.11"
-ska-ser-skallop = { version = "2.31.0", extras = ["bit"]  }
+ska-ser-skallop = { version = "^2.31.0", extras = ["bit"]  }
 ska-tmc-cdm = "8.3.0"
 pytest-json-report = "^1.5.0"
 pytest-repeat = "^0.9.1"
