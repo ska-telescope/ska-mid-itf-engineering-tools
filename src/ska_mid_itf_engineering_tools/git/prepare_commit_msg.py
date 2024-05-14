@@ -92,12 +92,30 @@ class CommitMsgPreparer:
         :param commit_message_file: the file containing the commit message to modify.
         :type commit_message_file: str
         """
-        branch = self.current_branch()
+        try:
+            branch = self.current_branch()
+        except TypeError as te:
+            self.logger.warn(
+                "Failed to retrieve branch info: not adding Jira ID to commit message."
+            )
+            # log this at debug level so that we don't log exceptions while creating commits.
+            self.logger.debug("Exception: %s", te)
+            return
+
         if any(branch.startswith(excluded) for excluded in self.excluded_branches):
             self.logger.debug("not modifying commit: on excluded branch: %s", branch)
             return
 
-        origin = self.origin_url()
+        try:
+            origin = self.origin_url()
+        except ValueError as ve:
+            self.logger.warn(
+                "Failed to retrieve origin info: not adding Jira ID to commit message."
+            )
+            # log this at debug level so that we don't log exceptions while creating commits.
+            self.logger.debug("Exception: %s", ve)
+            return
+
         if not any(origin.startswith(url) for url in self.included_origins):
             self.logger.debug(
                 "not modifying commit: origin %s does not match included origins %s",
