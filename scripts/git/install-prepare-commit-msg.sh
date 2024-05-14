@@ -8,8 +8,9 @@ set -o pipefail
 # Environment Variables (REQUIRED):
 #   hook_file: file location to install the hook.
 install_prepare_commit_msg () {
-    script_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
-    command='poetry run prepare_commit_msg ${1}'
+    command='prepare_commit_msg ${1}'
+    venv_dir=$(poetry env info -p)
+    full_command=${venv_dir}/bin/${command}
 
     if grep -q "${command}" "${hook_file}"; then
         echo "Hook already installed at ${hook_file}, not installing it again."
@@ -21,7 +22,7 @@ install_prepare_commit_msg () {
 
     if [ -f ${hook_file} ]; then
         cat <<EOF >> ${hook_file}
-(cd ${script_dir}/../../ && ${command})
+${full_command}
 EOF
     else
         cat <<EOF >> ${hook_file}
@@ -30,7 +31,7 @@ EOF
 set -eu
 set -o pipefail
 
-(cd ${script_dir}/../../ && ${command})
+${full_command}
 EOF
     fi
 

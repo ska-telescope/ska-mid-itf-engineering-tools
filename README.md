@@ -89,7 +89,19 @@ The dependency checker is a tool which looks at a project's dependencies and rep
 
 ### Configuration
 
-The only configuration needed is to set the environment variable `DEPENDENCY_CHECKER_WEBHOOK_URL`. This is typically set as a masked Gitlab variable.
+First, include the dependency checker Gitlab template in your Gitlab CI:
+
+```yaml
+include:
+  - project: "ska-telescope/ska-mid-itf-engineering-tools"
+    file: .gitlab/ci/check-dependencies/.pipeline.yaml
+```
+
+Then, set the environment variable `DEPENDENCY_CHECKER_WEBHOOK_URL` to the webhook you want to send Slack messages to. This is typically set as a masked Gitlab variable. For Atlas, you can get the webhook secret from [Vault](https://vault.skao.int/ui/vault/secrets/kv/kv/groups%252Fska-dev%252Fatlas/) under the Atlas namespace where it is called `ATLAS_DEPENDENCY_CHECKER_WEBHOOK_URL`.
+
+Lastly, create a scheduled pipeline for the execution of the Job. Navigate to *Build* -> *Pipeline schedules* and click on *New Schedule*. Configure when you want to run the dependency checker. See the screenshot for an example configuration which runs the Dependency Checker every Tuesday at 3:15 am.
+
+![Scheduled Pipeline Configuration](static/images/scheduled_pipeline.png)
 
 ### Execution
 

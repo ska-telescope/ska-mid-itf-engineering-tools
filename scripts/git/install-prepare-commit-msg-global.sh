@@ -12,6 +12,4 @@ export hook_file=${HOME}/.git/hooks/prepare-commit-msg
 
 install_prepare_commit_msg
 
-git config --unset core.hooksPath
 git config --global core.hooksPath $(dirname ${hook_file})
-
