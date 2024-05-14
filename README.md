@@ -5,22 +5,51 @@
 ## Introduction
 
 This repo provides a suite of utilities for use in the Mid ITF environment:
+
 * *dependency_checker*, a utility to check Helm and Poetry dependencies
 * *cbf_config*, a utility for configuring the CBF
 * *tmc_config*, a utility for configuring the TMC with the correct Dishes in the SUT.
+* *git*, tools for working with git. Currently contains a hook for adding Jira issue IDs to commit messages.
 
 ## How to Use
 
 Clone this repo:
 
 ```
-$ git clone https://gitlab.com/ska-telescope/ska-mid-itf-engineering-tools.git
-$ cd ska-mid-itf-engineering-tools
-$ git submodule update --init --recursive
+git clone https://gitlab.com/ska-telescope/ska-mid-itf-engineering-tools.git
+cd ska-mid-itf-engineering-tools
+git submodule update --init --recursive
 ```
 
-## How to make a release
+Build the image
+
+```
+make oci-build
+```
+
+Install python requirements
+
+```
+poetry install
+```
+
+Run tests
+
+```
+poetry shell
+make python-test
+```
+
+Lint code
+
+```
+make python-lint
+```
+
+### Making a release
+
 The following steps happen in different locations.
+
 1. Complete the feature/story/bug related branch MR(s) and get it approved and merged.
 2. JIRA:
    1. create a release (REL) ticket in [REL JIRA project](https://jira.skatelescope.org/secure/Dashboard.jspa?selectPageId=15204)
@@ -34,7 +63,7 @@ The following steps happen in different locations.
    6. `git push` (and convince Git to create the remote branch by running the suggested command)
 4. Gitlab:
    1. Create new MR and get it
-   2. approved and 
+   2. approved and
    3. merged
 5. Local repo:
    1. `git checkout main && git pull`
@@ -60,8 +89,39 @@ The dependency checker is a tool which looks at a project's dependencies and rep
 
 ### Configuration
 
-The only configuration needed is to set the environment variable `DEPENDENCY_CHECKER_WEBHOOK_URL`. This is typically set as a masked Gitlab variable.
+First, include the dependency checker Gitlab template in your Gitlab CI:
+
+```yaml
+include:
+  - project: "ska-telescope/ska-mid-itf-engineering-tools"
+    file: .gitlab/ci/check-dependencies/.pipeline.yaml
+```
+
+Then, set the environment variable `DEPENDENCY_CHECKER_WEBHOOK_URL` to the webhook you want to send Slack messages to. This is typically set as a masked Gitlab variable. For Atlas, you can get the webhook secret from [Vault](https://vault.skao.int/ui/vault/secrets/kv/kv/groups%252Fska-dev%252Fatlas/) under the Atlas namespace where it is called `ATLAS_DEPENDENCY_CHECKER_WEBHOOK_URL`.
+
+Lastly, create a scheduled pipeline for the execution of the Job. Navigate to *Build* -> *Pipeline schedules* and click on *New Schedule*. Configure when you want to run the dependency checker. See the screenshot for an example configuration which runs the Dependency Checker every Tuesday at 3:15 am.
+
+![Scheduled Pipeline Configuration](static/images/scheduled_pipeline.png)
 
 ### Execution
 
 The dependency checker Gitlab job, *check-dependencies*, is run as part of a scheduled pipeline on a weekly basis. It can also be executed manually from any pipeline. For this project, it reports stale dependencies to the [#atlas-dependencies](https://skao.slack.com/archives/C06MR162K24) channel.
+
+## Commit Message Preparer
+
+The Commit Message Preparer is used to prepend a Jira issue ID to your commit message, if there is one present.
+You can install it as follows:
+
+```
+# Installs it for this repo only
+make install-prepare-commit-msg-local
+# Installs it globally
+make install-prepare-commit-msg-global
+```
+
+**The global install will only affect working with SKA repositories.**
+The tool uses a whitelist of origin prefixes to determine which repos it should be used in and it is configured to only work with SKA repos.
+
+**The tool only works on branches prefixed with the Jira issue ID.**
+
+**The tool will not add the Jira issue ID if the commit message already starts with one.**

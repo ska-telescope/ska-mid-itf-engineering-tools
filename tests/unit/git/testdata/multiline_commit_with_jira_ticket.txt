@@ -1,0 +1,5 @@
+AT-1940 - Fix Helm chart search
+
+I introduced an infinite loop when doing refactoring.
+Fixed by extracting search request logic to a separate method which makes it more obvious what is going on.
+Added tests as well. Further testing was done manually with chart from ska-mid-itf repo.

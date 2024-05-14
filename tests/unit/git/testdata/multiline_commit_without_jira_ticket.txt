@@ -1,0 +1,4 @@
+Create a dependency checker.
+    
+A dependency checker which sends slack alerts on out-of-date dependencies.
+Uses `poetry show` to determine which python dependencies are outadated.
