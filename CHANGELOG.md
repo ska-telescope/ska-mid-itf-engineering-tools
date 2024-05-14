@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.8.3
+
+* [AT-2027] - Update version of skallop to enable use of bearer token for authentication with confluence
+
 ## 0.8.2
 
 * [AT-2026] - Update version of skallop to enable use of newer pytest-bdd.
