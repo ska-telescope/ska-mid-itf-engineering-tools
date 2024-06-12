@@ -84,6 +84,15 @@ def main() -> None:  # noqa C901
     logger.debug(f"Path of hw_config.yaml is {src_pth}")
     logger.debug(f"Destination Path of hw_config.yaml is {dest_pth}")
 
+    ec_deployer = DeviceProxy("mid_csp_cbf/ec/deployer")
+
+    ec_deployer.targetTalons = [1, 2, 3, 4]
+    ec_deployer.generate_config_jsons()
+    ec_deployer.set_timeout_millis(240000)
+    ec_deployer.download_artifacts()
+    ec_deployer.configure_db()
+    ec_deployer.set_timeout_millis(3000)
+
     cbf = DeviceProxy("mid_csp_cbf/sub_elt/controller")
     csp = DeviceProxy("mid-csp/control/0")
     csp_subarray1 = DeviceProxy("mid-csp/subarray/01")
