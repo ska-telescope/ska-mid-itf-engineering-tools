@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* [AT-2115] - Update talon_on script to configure Talons using the new EC Tango Device server
+
 ## 0.8.3
 
 * [AT-2027] - Update version of skallop to enable use of bearer token for authentication with confluence
