@@ -33,13 +33,13 @@ RUN poetry self update -n ${POETRY_VERSION} && \
 
 WORKDIR /app
 
-COPY --chown=tango:tango pyproject.toml poetry.lock ./
+COPY pyproject.toml poetry.lock ./
 
 RUN poetry export --format requirements.txt --output poetry-requirements.txt --without-hashes && \
     pip install -r poetry-requirements.txt && \
     rm poetry-requirements.txt 
 
-COPY --chown=tango:tango src ./
+# COPY --chown=tango:tango src ./
 
 FROM base
 
