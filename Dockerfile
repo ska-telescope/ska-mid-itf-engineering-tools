@@ -1,4 +1,4 @@
-ARG OCI_IMAGE_VERSION
+ARG OCI_IMAGE_VERSION=harbor.skao.int/production/ska-cicd-k8s-tools-build-deploy:0.13.1
 FROM $OCI_IMAGE_VERSION as base
 
 ARG POETRY_VERSION=1.8.2
