@@ -1,5 +1,9 @@
-ARG OCI_IMAGE_VERSION=ubuntu:22.04
+ARG OCI_IMAGE_VERSION=harbor.skao.int/production/ska-cicd-k8s-tools-build-deploy:0.13.1
+ARG TANGO_BUILD_IMAGE="harbor.skao.int/production/ska-tango-images-pytango-builder:9.5.0"
+ARG TANGO_BASE_IMAGE="harbor.skao.int/production/ska-tango-images-pytango-runtime:9.5.0"
 FROM $OCI_IMAGE_VERSION as base
+
+USER root
 
 ARG POETRY_VERSION=1.8.2
 ARG DEBIAN_FRONTEND=noninteractive
@@ -11,29 +15,49 @@ RUN apt-get update && \
     apt install ./infra_*.deb && \
     apt-get clean && apt clean
 
-ENV PATH=/app/bin:/root/.local/bin:$PATH
+RUN poetry self update -n ${POETRY_VERSION} && \
+    poetry config virtualenvs.create false && \
+    pip install --upgrade pip
 
-ENV PYTHONPATH="/app/src:${PYTHONPATH}"
 
-RUN python3 -m pip install --user pipx && \
-    python3 -m pipx ensurepath && \
-    pipx install poetry==$POETRY_VERSION && \
-    pipx install build && \
-    poetry config virtualenvs.in-project true && \
-    pip install virtualenv
+# ENV PATH=/app/bin:/root/.local/bin:$PATH
+
+# ENV PYTHONPATH="/app/src:${PYTHONPATH}"
+
+# RUN python3 -m pip install --user pipx && \
+#     python3 -m pipx ensurepath && \
+#     pipx install poetry==$POETRY_VERSION && \
+#     pipx install build && \
+#     poetry config virtualenvs.in-project true && \
+#     pip install virtualenv
 
 WORKDIR /app
 
+COPY --chown=tango:tango pyproject.toml poetry.lock ./
+
+RUN poetry export --format requirements.txt --output poetry-requirements.txt --without-hashes && \
+    pip install -r poetry-requirements.txt && \
+    rm poetry-requirements.txt 
+
+COPY --chown=tango:tango src ./
+
 FROM base
+
 COPY . /app
 
-RUN poetry install
+# FROM $TANGO_BUILD_IMAGE AS buildenv
+# FROM $TANGO_BASE_IMAGE AS base_env
+# USER tango
 
-ENV PYTHONPATH="/app/src:${PYTHONPATH}:/app/.venv/lib/python3.10/site-packages"
-ENV PATH=/app/bin:/app/.venv/bin:/root/.local/bin:$PATH
+ENV PYTHONPATH=/app/src:/usr/local/lib/python3.10/site-packages
 
-USER root
+# RUN poetry install
 
-ENV PATH=/app/.venv/bin/:$PATH
+# ENV PYTHONPATH="/app/src:${PYTHONPATH}:/app/.venv/lib/python3.10/site-packages"
+# ENV PATH=/app/bin:/app/.venv/bin:/root/.local/bin:$PATH
+
+# USER root
+
+# ENV PATH=/app/.venv/bin/:$PATH
 
 CMD ["bash"]
