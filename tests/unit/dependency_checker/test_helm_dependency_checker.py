@@ -32,7 +32,7 @@ ska-log-consumer        0.1.6   https://artefact.skao.int/repository/helm-intern
 ska-tango-alarmhandler  0.4.0   https://artefact.skao.int/repository/helm-internal      ok
 ska-tango-archiver      2.7.0   https://artefact.skao.int/repository/helm-internal      ok
 
-WARNING: "charts/system-under-test/charts/test-0.12.2.tgz" is not in Chart.yaml."""
+WARNING: "charts/ska-mid-itf-sut/charts/test-0.12.2.tgz" is not in Chart.yaml."""
 
 
 @pytest.fixture(name="helm_output_invalid")
@@ -49,7 +49,7 @@ ska-tango-base          0.4.9   https://artefact.skao.int/repository/helm-intern
 ska-tmc-mid
 ska-tango-util          https://artefact.skao.int/repository/helm-internal      wrong version
 
-WARNING: "charts/system-under-test/charts/test-0.12.2.tgz" is not in Chart.yaml."""
+WARNING: "charts/ska-mid-itf-sut/charts/test-0.12.2.tgz" is not in Chart.yaml."""
 
 
 @pytest.fixture(name="helm_dependencies_valid")

@@ -183,7 +183,7 @@ cython_debug/
 PrivateRules.mak
 
 # helm stuff
-charts/system-under-test/tmc-values.yaml
+charts/ska-mid-itf-sut/tmc-values.yaml
 charts/test-parent/charts/*
 charts/ska-ser-test-equipment/charts/*
 Chart.lock
