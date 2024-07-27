@@ -1,9 +1,9 @@
-ARG OCI_IMAGE_VERSION
+ARG OCI_IMAGE_VERSION=artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.13.2
 FROM $OCI_IMAGE_VERSION as base
 
 ARG POETRY_VERSION=1.8.2
 ARG DEBIAN_FRONTEND=noninteractive
-ARG TZ=Etc/UTC
+ARG TZ=Etc/
 
 RUN apt-get update && \
     apt-get install gnupg2 gawk yamllint vim telnet expect sshpass inetutils-ping netcat wget -y && \
@@ -12,6 +12,8 @@ RUN apt-get update && \
     apt-get clean && apt clean
 
 ENV PATH=/app/bin:/root/.local/bin:$PATH
+
+ENV USER=newuser
 
 ENV PYTHONPATH="/app/src:${PYTHONPATH}"
 
@@ -32,8 +34,9 @@ RUN poetry install
 ENV PYTHONPATH="/app/src:${PYTHONPATH}:/app/.venv/lib/python3.10/site-packages"
 ENV PATH=/app/bin:/app/.venv/bin:/root/.local/bin:$PATH
 
-USER root
-
 ENV PATH=/app/.venv/bin/:$PATH
+
+RUN useradd -u 1001 ${USER}
+USER ${USER}
 
 CMD ["bash"]
