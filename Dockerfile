@@ -11,7 +11,10 @@ ARG TZ=Etc/UTC
 
 #Change from root user
 ENV USER=newuser
-RUN adduser --system --home /home/${USER} --shell /usr/bin --gid 0 ${USER}
+#RUN adduser --system --home /home/${USER} --shell /usr/bin --gid 0 ${USER}
+ENV HOME /home/${USER}
+RUN useradd --create-home --home-dir ${HOME} ${USER}
+RUN usermod -u 1000 -g 1000 ${USER}
 ENV PATH=/home/${USER}/.local/bin:$PATH
 
 #RUN adduser -D ${USER}
