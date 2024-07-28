@@ -7,28 +7,31 @@ ARG TZ=Etc/UTC
 
 
 
-ENV PATH=/root/.local/bin:$PATH
+#ENV PATH=/root/.local/bin:$PATH
 
 #Change from root user
 ENV USER=newuser
 RUN adduser --system --home /home/${USER} --shell /usr/bin --gid 0 ${USER}
+ENV PATH=/home/${USER}/.local/bin:$PATH
+
 #RUN adduser -D ${USER}
 USER ${USER}
 WORKDIR /home/${USER}
-
-RUN python3 -m pip install --user pipx && \
-    python3 -m pipx ensurepath && \
-    python3 -m pipx install poetry==$POETRY_VERSION && \
-    python3 pipx install build && \
-    poetry config virtualenvs.in-project true && \
-    pip install virtualenv
+ENV PATH=/usr/bin:$PATH
+#RUN python3 -m pip install pipx
+#RUN python3 -m pipx ensurepath
+#RUN  python3 -m pipx install poetry==$POETRY_VERSION
+RUN python3 -m pip install poetry==$POETRY_VERSION
+RUN python3 -m pip install build
+RUN poetry config virtualenvs.in-project true
+RUN python3 -mpip install virtualenv
 
 WORKDIR /app
 
 FROM base
 COPY . /app
 
-RUN poetry install
+#RUN poetry install
 
 USER root
 
