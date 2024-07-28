@@ -1,26 +1,25 @@
-ARG OCI_IMAGE_VERSION=artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.13.2
+ARG OCI_IMAGE_VERSION=artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.11.0
 FROM $OCI_IMAGE_VERSION as base
 
-ARG POETRY_VERSION=1.8.2
+ARG POETRY_VERSION=1.3.2
 ARG DEBIAN_FRONTEND=noninteractive
-ARG TZ=Etc/
+ARG TZ=Etc/UTC
 
-RUN apt-get update && \
-    apt-get install gnupg2 gawk yamllint vim telnet expect sshpass inetutils-ping netcat wget -y && \
-    wget https://github.com/infrahq/infra/releases/download/v0.21.0/infra_0.21.0_amd64.deb && \
-    apt install ./infra_*.deb && \
-    apt-get clean && apt clean
 
-ENV PATH=/app/bin:/root/.local/bin:$PATH
 
+ENV PATH=/root/.local/bin:$PATH
+
+#Change from root user
 ENV USER=newuser
-
-ENV PYTHONPATH="/app/src:${PYTHONPATH}"
+RUN adduser --system --home /home/${USER} --shell /usr/bin --gid 0 ${USER}
+#RUN adduser -D ${USER}
+USER ${USER}
+WORKDIR /home/${USER}
 
 RUN python3 -m pip install --user pipx && \
     python3 -m pipx ensurepath && \
-    pipx install poetry==$POETRY_VERSION && \
-    pipx install build && \
+    python3 -m pipx install poetry==$POETRY_VERSION && \
+    python3 pipx install build && \
     poetry config virtualenvs.in-project true && \
     pip install virtualenv
 
@@ -31,12 +30,8 @@ COPY . /app
 
 RUN poetry install
 
-ENV PYTHONPATH="/app/src:${PYTHONPATH}:/app/.venv/lib/python3.10/site-packages"
-ENV PATH=/app/bin:/app/.venv/bin:/root/.local/bin:$PATH
+USER root
 
 ENV PATH=/app/.venv/bin/:$PATH
-
-RUN useradd -u 1001 ${USER}
-USER ${USER}
 
 CMD ["bash"]
