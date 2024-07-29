@@ -5,7 +5,7 @@ ARG POETRY_VERSION=1.8.2
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=Etc/UTC
 
-ENV USER=newuser
+ENV USER=tango
 ENV HOME /home/${USER}
 RUN useradd --create-home --home-dir ${HOME} ${USER}
 RUN usermod -u 1000 -g 1000 ${USER}
