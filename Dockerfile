@@ -24,6 +24,7 @@ WORKDIR /app
 FROM base
 COPY . /app
 
+#Commands below require root privileges
 USER root
 
 RUN apt-get update && \
