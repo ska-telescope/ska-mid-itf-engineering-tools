@@ -19,10 +19,9 @@ RUN python3 -m pip install build
 RUN poetry config virtualenvs.in-project true
 RUN python3 -mpip install virtualenv
 
-WORKDIR /app
+WORKDIR /build/ska-telescope/ska-mid-itf
 
 FROM base as tools
-COPY . /app
 
 #Commands below require root privileges
 USER root
@@ -35,10 +34,10 @@ RUN apt-get update && \
 
 FROM tools
 
-ENV PATH=/app/.venv/bin/:$PATH
+ENV PATH=/build/ska-telescope/ska-mid-itf/.venv/bin/:$PATH
 
-RUN mkdir /build && mkdir /build/ska-telescope/ && mkdir /build/ska-telescope/ska-mid-itf/ && \
-    cd /build/ska-telescope/ska-mid-itf/ && \
-    poetry install
+COPY . .
+
+RUN poetry shell && poetry install
 
 CMD ["bash"]
