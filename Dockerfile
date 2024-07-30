@@ -21,7 +21,7 @@ RUN python3 -mpip install virtualenv
 
 WORKDIR /app
 
-FROM base
+FROM base as tools
 COPY . /app
 
 #Commands below require root privileges
@@ -33,6 +33,12 @@ RUN apt-get update && \
     apt install ./infra_*.deb && \
     apt-get clean && apt clean
 
+FROM tools
+
 ENV PATH=/app/.venv/bin/:$PATH
+
+RUN mkdir /build && mkdir /build/ska-telescope/ && mkdir /build/ska-telescope/ska-mid-itf/ && \
+    cd /build/ska-telescope/ska-mid-itf/ && \
+    poetry install
 
 CMD ["bash"]
