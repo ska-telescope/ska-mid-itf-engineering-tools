@@ -6,14 +6,18 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=Etc/UTC
 
 ENV USER=tango
-ENV HOME /home/${USER}
+ENV HOME /app
 RUN useradd --create-home --home-dir ${HOME} ${USER}
 RUN usermod -u 1000 -g 1000 ${USER}
-ENV PATH=/home/${USER}/.local/bin:$PATH
+ENV PATH=${HOME}/.local/bin:$PATH
 
 USER ${USER}
 WORKDIR ${HOME}
-ENV PATH=/usr/bin:$PATH
+
+ENV PATH=/app/bin:/root/.local/bin:$PATH
+
+ENV PYTHONPATH="/app/src:${PYTHONPATH}"
+
 RUN python3 -m pip install poetry==$POETRY_VERSION
 RUN python3 -m pip install build
 RUN poetry config virtualenvs.in-project true
@@ -21,18 +25,17 @@ RUN python3 -m pip install virtualenv
 RUN python3 -m pip install --user pipx
 RUN python3 -m pipx ensurepath
 
-ENV PYTHONPATH="/app/src:${PYTHONPATH}" 
-
 COPY . /app
 
 WORKDIR /app
 
 FROM base
+
 COPY . /app
 
 RUN poetry install --no-interaction --no-root
 
-ENV PYTHONPATH="/app/src:${PYTHONPATH}:/app/.venv/lib/python3.10/site-packages"
+ENV PYTHONPATH="/app/src:${PYTHONPATH}/app/.venv/lib/python3.10/site-packages"
 ENV PATH=/app/bin:/app/.venv/bin:/root/.local/bin:$PATH
 
 #Commands below require root privileges
@@ -44,6 +47,7 @@ RUN apt-get update && \
     apt install ./infra_*.deb && \
     apt-get clean && apt clean
 
+USER ${USER}
 ENV PATH=/app/.venv/bin:$PATH
 
 CMD ["bash"]
