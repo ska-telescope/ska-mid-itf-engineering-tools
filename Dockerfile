@@ -14,7 +14,7 @@ ENV PATH=${HOME}/.local/bin:$PATH
 USER ${USER}
 WORKDIR ${HOME}
 
-ENV PATH=/app/bin:/root/.local/bin:$PATH
+ENV PATH=/app/bin:/app/.local/bin:$PATH
 
 ENV PYTHONPATH="/app/src:${PYTHONPATH}"
 
@@ -36,7 +36,7 @@ COPY . /app
 RUN poetry install --no-interaction --no-root
 
 ENV PYTHONPATH="/app/src:${PYTHONPATH}/app/.venv/lib/python3.10/site-packages"
-ENV PATH=/app/bin:/app/.venv/bin:/root/.local/bin:$PATH
+ENV PATH=/app/bin:/app/.venv/bin:/app/.local/bin:$PATH
 
 #Commands below require root privileges
 USER root
@@ -47,7 +47,7 @@ RUN apt-get update && \
     apt install ./infra_*.deb && \
     apt-get clean && apt clean
 
-USER ${USER}
+
 ENV PATH=/app/.venv/bin:$PATH
 
 CMD ["bash"]
