@@ -23,8 +23,6 @@ ENV PATH=${HOME}/.local/bin:$PATH
 USER ${USER}
 WORKDIR ${HOME}
 
-RUN chown -R tango:1000 /app
-
 ENV PATH=/app/bin:/app/.local/bin:$PATH
 
 ENV PYTHONPATH="/app/src:${PYTHONPATH}"
@@ -48,6 +46,8 @@ ENV PYTHONPATH="/app/src:${PYTHONPATH}/app/.venv/lib/python3.10/site-packages"
 ENV PATH=/app/bin:/app/.venv/bin:/app/.local/bin:$PATH
 
 ENV PATH=/app/.venv/bin:$PATH
+
+RUN chown -R tango:1000 /app
 
 USER root
 
