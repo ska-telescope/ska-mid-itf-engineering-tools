@@ -47,4 +47,6 @@ ENV PATH=/app/bin:/app/.venv/bin:/app/.local/bin:$PATH
 
 ENV PATH=/app/.venv/bin:$PATH
 
+USER root
+
 CMD ["bash"]
