@@ -5,6 +5,15 @@ ARG POETRY_VERSION=1.8.2
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=Etc/UTC
 
+#Commands below require root privileges
+USER root
+
+RUN apt-get update && \
+    apt-get install gnupg2 gawk yamllint vim telnet expect sshpass inetutils-ping netcat wget -y && \
+    wget https://github.com/infrahq/infra/releases/download/v0.21.0/infra_0.21.0_amd64.deb && \
+    apt install ./infra_*.deb && \
+    apt-get clean && apt clean
+
 ENV USER=tango
 ENV HOME /app
 RUN useradd --create-home --home-dir ${HOME} ${USER}
@@ -18,12 +27,10 @@ ENV PATH=/app/bin:/app/.local/bin:$PATH
 
 ENV PYTHONPATH="/app/src:${PYTHONPATH}"
 
-RUN python3 -m pip install poetry==$POETRY_VERSION
-RUN python3 -m pip install build
-RUN poetry config virtualenvs.in-project true
-RUN python3 -m pip install virtualenv
-RUN python3 -m pip install --user pipx
-RUN python3 -m pipx ensurepath
+RUN python3 -m pip install poetry==$POETRY_VERSION && \
+    python3 -m pip install build && \
+    poetry config virtualenvs.in-project true && \
+    python3 -m pip install virtualenv
 
 COPY . /app
 
@@ -37,16 +44,6 @@ RUN poetry install --no-interaction --no-root
 
 ENV PYTHONPATH="/app/src:${PYTHONPATH}/app/.venv/lib/python3.10/site-packages"
 ENV PATH=/app/bin:/app/.venv/bin:/app/.local/bin:$PATH
-
-#Commands below require root privileges
-USER root
-
-RUN apt-get update && \
-    apt-get install gnupg2 gawk yamllint vim telnet expect sshpass inetutils-ping netcat wget -y && \
-    wget https://github.com/infrahq/infra/releases/download/v0.21.0/infra_0.21.0_amd64.deb && \
-    apt install ./infra_*.deb && \
-    apt-get clean && apt clean
-
 
 ENV PATH=/app/.venv/bin:$PATH
 
