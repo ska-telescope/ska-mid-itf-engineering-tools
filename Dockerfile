@@ -1,4 +1,4 @@
-ARG OCI_IMAGE_VERSION
+ARG OCI_IMAGE_VERSION=artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.13.2
 FROM $OCI_IMAGE_VERSION as base
 
 ARG POETRY_VERSION=1.8.2
@@ -47,8 +47,8 @@ ENV PATH=/app/bin:/app/.venv/bin:/app/.local/bin:$PATH
 
 ENV PATH=/app/.venv/bin:$PATH
 
-RUN chown -R tango:1000 /app
-
 USER root
+
+RUN chown -R tango:1000 /app
 
 CMD ["bash"]
