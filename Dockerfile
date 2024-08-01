@@ -15,7 +15,7 @@ RUN apt-get update && \
     apt-get clean && apt clean
 
 ENV USER=tango
-ENV HOME /app
+ENV HOME /home/${USER}
 RUN useradd --create-home --home-dir ${HOME} ${USER}
 RUN usermod -u 1000 -g 1000 ${USER}
 ENV PATH=${HOME}/.local/bin:$PATH
