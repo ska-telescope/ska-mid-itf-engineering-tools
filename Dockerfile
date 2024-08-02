@@ -16,8 +16,9 @@ RUN apt-get update && \
 
 ENV USER=tango
 ENV HOME /app
+ENV TANGO_GRP 1001
 RUN useradd --create-home --home-dir ${HOME} ${USER}
-RUN usermod -u 1000 -g 1000 ${USER}
+RUN usermod -u ${TANGO_GRP} -g ${TANGO_GRP} ${USER}
 ENV PATH=${HOME}/.local/bin:$PATH
 
 USER ${USER}
@@ -27,18 +28,20 @@ ENV PATH=/app/bin:/app/.local/bin:$PATH
 
 ENV PYTHONPATH="/app/src:${PYTHONPATH}"
 
+#RUN chown tango:1000 /app/.venv/bin/python
+
 RUN python3 -m pip install poetry==$POETRY_VERSION && \
     python3 -m pip install build && \
     poetry config virtualenvs.in-project true && \
     python3 -m pip install virtualenv
 
-COPY . /app
+COPY --chown=${USER} . /app
 
 WORKDIR /app
 
 FROM base
 
-COPY . /app
+COPY --chown=${USER} . /app
 
 RUN poetry install --no-interaction --no-root
 
@@ -49,6 +52,7 @@ ENV PATH=/app/.venv/bin:$PATH
 
 USER root
 
-RUN chown -R tango:1000 /app
+#Ensure all non users can run poetry and python binaries
+RUN chown -R ${USER}:${TANGO_GRP} /root
 
 CMD ["bash"]
