@@ -1,4 +1,4 @@
-ARG OCI_IMAGE_VERSION=artefact.skao.int/ska-cicd-k8s-tools-build-deploy:0.13.2
+ARG OCI_IMAGE_VERSION
 FROM $OCI_IMAGE_VERSION as base
 
 ARG POETRY_VERSION=1.8.2
@@ -27,8 +27,6 @@ WORKDIR ${HOME}
 ENV PATH=/app/bin:/app/.local/bin:$PATH
 
 ENV PYTHONPATH="/app/src:${PYTHONPATH}"
-
-#RUN chown tango:1000 /app/.venv/bin/python
 
 RUN python3 -m pip install poetry==$POETRY_VERSION && \
     python3 -m pip install build && \
