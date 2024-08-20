@@ -43,7 +43,7 @@ COPY --chown=${USER} . /app
 
 RUN poetry install --no-interaction --no-root
 
-ENV PYTHONPATH="/app/src:${PYTHONPATH}/app/.venv/lib/python3.10/site-packages"
+ENV PYTHONPATH="${PYTHONPATH}/app/src:/app/.venv/lib/python3.10/site-packages:/builds/ska-telescope/ska-mid-itf-engineering-tools/.venv/bin/python"
 ENV PATH=/app/bin:/app/.venv/bin:/app/.local/bin:$PATH
 
 ENV PATH=/app/.venv/bin:$PATH
