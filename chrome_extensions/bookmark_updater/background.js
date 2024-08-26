@@ -20,8 +20,18 @@ function updateBookmarks() {
         chrome.bookmarks.search({ title: bookmarkName }, function(results) {
             results.forEach(function(bookmark) {
                 if (bookmark.url && bookmark.url.includes(oldNamespace)) {
+                    let newNamespaceToUse = newNamespace
+
+                    // Special case for the dishes and staging
+                    if (newNamespace === 'staging' && 
+                        (bookmarkName === 'SKA001' || bookmarkName === 'SKA036'))
+                    {
+                        newNamespaceToUse = `${newNamespace}-dish-lmc-${bookmarkName.toLowerCase()}`;
+                    }
+
+                    // Update the URL
                     chrome.bookmarks.update(bookmark.id, {
-                        url: bookmark.url.replace(oldNamespace, newNamespace)
+                        url: bookmark.url.replace(oldNamespace, newNamespaceToUse)
                     }, function(updatedBookmark) {
                         console.log(`Bookmark "${bookmarkName}" updated:`, updatedBookmark);
                     });
