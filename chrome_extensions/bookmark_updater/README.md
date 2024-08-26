@@ -1,15 +1,15 @@
 # Bookmark Updater Chrome Extension
 
 ## Overview
-The Bookmark Updater is a Chrome extension designed to automatically update specified bookmarks with new URLs based on defined namespaces. It operates in the background, ensuring that the bookmarks are updated whenever the extension is installed or updated.
+The Bookmark Updater is a Chrome extension designed to automatically update specified bookmarks' URLs to defined namespaces. It is meant to be used in Alfred's profile but can be adjusted to work on any bookmarks. It operates in the background, ensuring that the bookmarks are updated whenever the extension is installed or updated.
 
 ## Installation
 To install the extension locally:
 1. Clone the repository or download the files to your local machine.
 2. Open Chrome and navigate to `chrome://extensions/`.
 3. Enable "Developer mode" by toggling the switch in the upper right corner.
-4. Click "Load unpacked" and select the `bookmark_updater` directory.
-5. The extension should now be visible in the Chrome toolbar.
+4. Click "Load unpacked" and select the `bookmark_updater` project in the `chrome_extensions` directory.
+5. The extension should now be visible in the Chrome extension manager.
 
 ## Configuration
 The extension uses the following configuration:
@@ -24,7 +24,6 @@ const oldNamespace = 'ci-ska-mid-itf-at-2226-determine-stable-versions';
 const newNamespace = 'staging';
 
 const bookmarksToUpdate = [
-    'Test Equipment',
     'Telescope',
     'TMC',
     'CSP Monitoring',
@@ -35,6 +34,7 @@ const bookmarksToUpdate = [
     'SKA036'
 ];
 ```
+Note: the last two are in the `Dishes` folder in the bookmarks bar, however child bookmarks can be specified directly and should not have the parent folder name listed.
 
 ## Usage
 - Once installed, the extension runs automatically in the background.
@@ -52,7 +52,7 @@ To modify the list of bookmarks or the namespaces that need changing:
     ![alt text](reload_and_enable_toggle.png)
 
 ## Additional Notes
-- The extension logs updates to the Chrome DevTools console, which can be accessed via `chrome://extensions/` > "Inspect views" under the Bookmark Updater extension.
+- The extension logs updates to the Chrome DevTools console, which can be accessed via `chrome://extensions/` > "Inspect views" under the Bookmark Updater extension details.
 - If you encounter issues, try reloading the extension from the Chrome Extensions page.
 - The extension does not require any permissions beyond access to bookmarks, ensuring it operates securely and efficiently.
 
