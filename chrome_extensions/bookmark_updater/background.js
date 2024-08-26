@@ -5,13 +5,13 @@ const newNamespace = 'staging';
 // Define the list of bookmark titles to update
 const bookmarksToUpdate = [
     'Telescope',
-    // 'TMC',
-    // 'CSP Monitoring',
-    // 'SDP Integration', 
-    // 'CBF Overview',
-    // 'SDP Signal Displays',
-    // 'SKA001',
-    // 'SKA036'
+    'TMC',
+    'CSP Monitoring',
+    'SDP Integration', 
+    'CBF Overview',
+    'SDP Signal Displays',
+    'SKA001',
+    'SKA036'
 ];
 
 // Function to update bookmarks
