@@ -1,19 +1,19 @@
 # Bookmark Updater Chrome Extension
 
 ## Overview
-The Bookmark Updater is a Chrome extension designed to automatically update specified bookmarks' URLs to defined namespaces. It is meant to be used in Alfred's profile but can be adjusted to work on any bookmarks. It operates in the background, ensuring that the bookmarks are updated whenever the extension is installed or updated.
+The Bookmark Updater is a Chrome extension designed to automatically update specified bookmarks' URLs to new namespaces. It is meant to be used in Alfred's profile, as the default bookmarks are from there, but can be adjusted to work on any bookmarks and be added to any profile. It operates in the background, ensuring that the bookmarks are updated whenever the extension is installed or updated.
 
 ## Installation
 To install the extension locally:
 1. Clone the repository or download the files to your local machine.
 2. Open Chrome and navigate to `chrome://extensions/`.
 3. Enable "Developer mode" by toggling the switch in the upper right corner.
-4. Click "Load unpacked" and select the `bookmark_updater` project in the `chrome_extensions` directory.
+4. Click "Load unpacked" and select the `bookmark_updater` project from the `chrome_extensions` directory.
 5. The extension should now be visible in the Chrome extension manager.
 
 ## Configuration
 The extension uses the following configuration:
-- **Old Namespace**: The part of the URL that needs to be replaced.
+- **Old Namespace**: The part of the URL to be replaced.
 - **New Namespace**: The new part of the URL that replaces the old namespace.
 - **Bookmarks to Update**: A list of bookmark titles that the extension will search for and update.
 
@@ -34,7 +34,7 @@ const bookmarksToUpdate = [
     'SKA036'
 ];
 ```
-Note: the last two are in the `Dishes` folder in the bookmarks bar, however child bookmarks can be specified directly and should not have the parent folder name listed.
+Note: the last two are in the `Dishes` folder in the bookmarks bar. However, child bookmarks are specified directly and should not include the parent folder name.
 
 ## Usage
 - Once installed, the extension runs automatically in the background.
@@ -43,16 +43,16 @@ Note: the last two are in the `Dishes` folder in the bookmarks bar, however chil
 - No user interaction is required after the initial setup.
 
 ## Modifying the Extension
-To modify the list of bookmarks or the namespaces that need changing:
+To modify the list of bookmarks or the namespace:
 1. Open `background.js` in the `bookmark_updater` directory.
 2. Edit the `oldNamespace`, `newNamespace`, and `bookmarksToUpdate` variables as needed.
 3. Save your changes.
-4. Reload the extension in Chrome by going to `chrome://extensions/` and clicking the "Reload" button under the Bookmark Updater extension next to the enable toggle.
+4. Reload the extension in Chrome by going to `chrome://extensions/` and clicking the "Reload" button under the Bookmark Updater extension.
 
     ![alt text](reload_and_enable_toggle.png)
 
 ## Additional Notes
-- The extension logs updates to the Chrome DevTools console, which can be accessed via `chrome://extensions/` > "Inspect views" under the Bookmark Updater extension details.
+- The extension logs updates to the Chrome DevTools console, accessible via `chrome://extensions/` > "Inspect views" under the Bookmark Updater extension details.
 - If you encounter issues, try reloading the extension from the Chrome Extensions page.
-- The extension does not require any permissions beyond access to bookmarks, ensuring it operates securely and efficiently.
+- The extension requires only access to bookmarks, ensuring it operates securely and efficiently.
 
