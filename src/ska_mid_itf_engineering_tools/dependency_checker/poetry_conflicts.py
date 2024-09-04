@@ -7,7 +7,7 @@ import gitlab
 import toml
 
 
-def detect_conflicts(dictionary, toml_kv) -> dict:
+def get_unique_repos(dictionary, toml_kv) -> dict:
     for k, v in dict(toml_kv).items():
         if v != "*":
             if type(v) != str:
@@ -22,11 +22,12 @@ def detect_conflicts(dictionary, toml_kv) -> dict:
     return dictionary
 
 
-def main():
-    """This method is designed to only process two repositories at a time."""
+def DetectConflicts(repo1, repo2):
+    """This method is designed to detect poetry conflicts between two repositories at a time."""
     gitlab_base_link = "ska-telescope/"
     # "aiv/ska-mid-itf-environments",
-    repo_list = ["ska-mid-itf-engineering-tools", "ska-te-mid-skysimctl"]
+    #repo_list = ["ska-mid-itf-engineering-tools", "ska-te-mid-skysimctl"]
+    repo_list = [repo1, repo2]
 
     gl = gitlab.Gitlab("https://gitlab.com/")
     tmp_dict = {}
@@ -38,19 +39,15 @@ def main():
         print(f"========================{repo}========================")
         toml_file = toml.loads(pytoml_file_contents)
         if "tool.poetry.dependencies" in pytoml_file_contents:
-            detect_conflicts(tmp_dict, toml_file["tool"]["poetry"]["dependencies"])
+            get_unique_repos(tmp_dict, toml_file["tool"]["poetry"]["dependencies"])
         if "tool.poetry.group.docs.dependencies" in pytoml_file_contents:
-            detect_conflicts(
+            get_unique_repos(
                 tmp_dict, toml_file["tool"]["poetry"]["group"]["docs"]["dependencies"]
             )
         if "tool.poetry.group.dev.dependencies" in pytoml_file_contents:
-            detect_conflicts(tmp_dict, toml_file["tool"]["poetry"]["group"]["dev"]["dependencies"])
+            get_unique_repos(tmp_dict, toml_file["tool"]["poetry"]["group"]["dev"]["dependencies"])
     print(f"*** Detected conflicts... between {repo_list[0]} and {repo_list[1]} *** ")
     print("-------------------------------------------------------------------------")
     for module, conflicting_versions in tmp_dict.items():
         if len(conflicting_versions) > 1:
             print(f"{module}, conflicting_versions={conflicting_versions}")
-
-
-if __name__ == "__main__":
-    main()

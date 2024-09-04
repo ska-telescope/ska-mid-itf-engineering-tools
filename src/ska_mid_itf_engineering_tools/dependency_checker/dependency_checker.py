@@ -14,7 +14,7 @@ from .log_notifier import LogDependencyNotifier
 from .poetry_dependency_checker import PoetryDependencyChecker
 from .slack_notifier import SlackDependencyNotifier
 from .types import DependencyChecker, DependencyGroup, DependencyNotifier, ProjectInfo
-
+from .poetry_conflicts import DetectConflicts
 
 def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
     """
@@ -87,6 +87,12 @@ def main():
         help="Dependency notifiers to run.",
         default=["slack", "log"],
     )
+    parser.add_argument(
+        "--poetry-conflicts",
+        nargs="+",
+        help="Show poetry conflicts between two repositories.",
+        default=["repo1", "repo2"],
+    )
     args = parser.parse_args()
     dependency_checkers: List[DependencyChecker] = []
     for d in args.dependency_checkers:
@@ -111,6 +117,10 @@ def main():
             dependency_notifiers.append(LogDependencyNotifier())
         else:
             raise RuntimeError(f"Unsupported checker {d}")
+
+    for d in args.poetry_conflicts:
+        if d == "poetry_conflicts":
+            print("Poetry conflicts!")
 
     run(checkers=dependency_checkers, notifiers=dependency_notifiers)
 
