@@ -117,11 +117,14 @@ def main():
             dependency_notifiers.append(LogDependencyNotifier())
         else:
             raise RuntimeError(f"Unsupported checker {d}")
-
+    cnflicts_args = []
     for d in args.poetry_conflicts:
         if d == "poetry_conflicts":
-            print("Poetry conflicts!")
-
+            print(f"***Poetry conflicts argument: {d}")
+        else:
+            print(f"!!! No Poetry conflicts argument: {d}")
+            cnflicts_args.append(d)
+    DetectConflicts(cnflicts_args[0], cnflicts_args[1])
     run(checkers=dependency_checkers, notifiers=dependency_notifiers)
 
 
