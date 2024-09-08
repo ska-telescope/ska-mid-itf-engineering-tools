@@ -11,12 +11,17 @@ from ska_ser_logging import configure_logging
 
 from .helm_dependency_checker import HelmDependencyChecker
 from .log_notifier import LogDependencyNotifier
+from .poetry_conflicts import DetectConflicts
 from .poetry_dependency_checker import PoetryDependencyChecker
 from .slack_notifier import SlackDependencyNotifier
 from .types import DependencyChecker, DependencyGroup, DependencyNotifier, ProjectInfo
-from .poetry_conflicts import DetectConflicts
 
-def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
+
+def run(
+    checkers: List[DependencyChecker],
+    notifiers: List[DependencyNotifier],
+    poetry_conflicts: List[str],
+):
     """
     Run the dependency checker.
 
@@ -24,6 +29,8 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
     :type checkers: List[DependencyChecker]
     :param notifiers: The list of dependency notifiers.
     :type notifiers: List[DependencyNotifier]
+    :param poetry_conflicts: The list of poetry conflicts.
+    :type poetry_conflicts: List[str]
     """
     project_info = get_project_info()
     dependency_map: OrderedDict[str : List[DependencyGroup]] = OrderedDict()
@@ -36,6 +43,8 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
         dependency_map[dc.name()] = deps
     for n in notifiers:
         n.send_notification(project_info, dependency_map)
+    if len(poetry_conflicts) > 0:
+        SlackDependencyNotifier.send_slack_message(poetry_conflicts)
 
 
 def get_project_info() -> ProjectInfo:
@@ -117,15 +126,15 @@ def main():
             dependency_notifiers.append(LogDependencyNotifier())
         else:
             raise RuntimeError(f"Unsupported checker {d}")
-    cnflicts_args = []
+    cnflicts_from_repo = []
     for d in args.poetry_conflicts:
         if d == "poetry_conflicts":
             print(f"***Poetry conflicts argument: {d}")
         else:
             print(f"!!! No Poetry conflicts argument: {d}")
-            cnflicts_args.append(d)
-    DetectConflicts(cnflicts_args[0], cnflicts_args[1])
-    run(checkers=dependency_checkers, notifiers=dependency_notifiers)
+            cnflicts_from_repo.append(d)
+    conf_list = DetectConflicts(cnflicts_from_repo[0], cnflicts_from_repo[1])
+    run(checkers=dependency_checkers, notifiers=dependency_notifiers, poetry_conflicts=conf_list)
 
 
 if __name__ == "__main__":
