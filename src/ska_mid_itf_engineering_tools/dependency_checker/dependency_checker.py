@@ -41,9 +41,10 @@ def run(
         logging.info("running %s dependency checker", dc.name())
         deps = dc.collect_stale_dependencies()
         dependency_map[dc.name()] = deps
+
+    if len(poetry_conflicts) > 0:
+        dependency_map["poetry_conflicts"] = poetry_conflicts
     for n in notifiers:
-        if len(poetry_conflicts) > 0:
-            dependency_map["poetry_conflicts"] = poetry_conflicts
         n.send_notification(project_info, dependency_map)
 
 
