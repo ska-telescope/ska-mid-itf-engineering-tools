@@ -42,9 +42,9 @@ def run(
         deps = dc.collect_stale_dependencies()
         dependency_map[dc.name()] = deps
     for n in notifiers:
+        if len(poetry_conflicts) > 0:
+            dependency_map["poetry_conflicts"] = poetry_conflicts
         n.send_notification(project_info, dependency_map)
-    if len(poetry_conflicts) > 0:
-        SlackDependencyNotifier.send_slack_message(poetry_conflicts)
 
 
 def get_project_info() -> ProjectInfo:
