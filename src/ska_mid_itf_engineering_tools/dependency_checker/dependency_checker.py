@@ -17,11 +17,7 @@ from .slack_notifier import SlackDependencyNotifier
 from .types import DependencyChecker, DependencyGroup, DependencyNotifier, ProjectInfo
 
 
-def run(
-    checkers: List[DependencyChecker],
-    notifiers: List[DependencyNotifier],
-    poetry_conflicts: List[str],
-):
+def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
     """
     Run the dependency checker.
 
@@ -29,8 +25,6 @@ def run(
     :type checkers: List[DependencyChecker]
     :param notifiers: The list of dependency notifiers.
     :type notifiers: List[DependencyNotifier]
-    :param poetry_conflicts: The list of poetry conflicts.
-    :type poetry_conflicts: List[str]
     """
     project_info = get_project_info()
     dependency_map: OrderedDict[str : List[DependencyGroup]] = OrderedDict()
@@ -42,8 +36,6 @@ def run(
         deps = dc.collect_stale_dependencies()
         dependency_map[dc.name()] = deps
 
-    if len(poetry_conflicts) > 0:
-        dependency_map["poetry_conflicts"] = poetry_conflicts
     for n in notifiers:
         n.send_notification(project_info, dependency_map)
 
@@ -129,13 +121,10 @@ def main():
             raise RuntimeError(f"Unsupported checker {d}")
     cnflicts_from_repo = []
     for d in args.poetry_conflicts:
-        if d == "poetry_conflicts":
-            print(f"***Poetry conflicts argument: {d}")
-        else:
-            print(f"!!! No Poetry conflicts argument: {d}")
+        if d != "poetry_conflicts":
             cnflicts_from_repo.append(d)
-    conf_list = DetectConflicts(cnflicts_from_repo[0], cnflicts_from_repo[1])
-    run(checkers=dependency_checkers, notifiers=dependency_notifiers, poetry_conflicts=conf_list)
+    DetectConflicts(cnflicts_from_repo[0], cnflicts_from_repo[1])
+    run(checkers=dependency_checkers, notifiers=dependency_notifiers)
 
 
 if __name__ == "__main__":
