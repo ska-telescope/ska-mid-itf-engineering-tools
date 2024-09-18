@@ -1,4 +1,5 @@
 // Define the old and new namespaces
+// For branch namespaces include 'ci-ska-mid-itf-' in front of the branch name
 const oldNamespace = 'ci-ska-mid-itf-at-2226-determine-stable-versions';
 const newNamespace = 'staging';
 
@@ -22,11 +23,16 @@ function updateBookmarks() {
                 if (bookmark.url && bookmark.url.includes(oldNamespace)) {
                     let newNamespaceToUse = newNamespace
 
-                    // Special case for the dishes and staging
-                    if (newNamespace === 'staging' && 
-                        (bookmarkName === 'SKA001' || bookmarkName === 'SKA036'))
-                    {
-                        newNamespaceToUse = `${newNamespace}-dish-lmc-${bookmarkName.toLowerCase()}`;
+                    // Special case for the dishes
+                    if (bookmarkName === 'SKA001' || bookmarkName === 'SKA036') {
+                        // Staging and integration namespaces
+                        if (newNamespace === 'staging' || newNamespace === 'integration') {
+                            newNamespaceToUse = `${newNamespace}-dish-lmc-${bookmarkName.toLowerCase()}`;
+                        }
+                        // On-demand / branch namespaces
+                        else if (newNamespace.includes('ci')) {
+                            newNamespaceToUse = `ci-dish-lmc-${bookmarkName.toLowerCase()}-${newNamespace.slice(15)}`
+                        }
                     }
 
                     // Update the URL
