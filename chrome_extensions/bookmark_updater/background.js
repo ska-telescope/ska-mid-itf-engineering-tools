@@ -8,7 +8,7 @@ const bookmarksToUpdate = [
     'Telescope',
     'TMC',
     'CSP Monitoring',
-    'SDP Integration', 
+    'SDP Integration',
     'CBF Overview',
     'SDP Signal Displays',
     'SKA001',
@@ -20,24 +20,33 @@ function updateBookmarks() {
     bookmarksToUpdate.forEach((bookmarkName) => {
         chrome.bookmarks.search({ title: bookmarkName }, function(results) {
             results.forEach(function(bookmark) {
-                if (bookmark.url && bookmark.url.includes(oldNamespace)) {
+                if (bookmark.url && (bookmark.url.includes(oldNamespace) || bookmark.url.includes('ci-dish-lmc'))) {
                     let newNamespaceToUse = newNamespace
+                    let oldNamespaceToReplace = oldNamespace
 
                     // Special case for the dishes
                     if (bookmarkName === 'SKA001' || bookmarkName === 'SKA036') {
-                        // Staging and integration namespaces
+                        // New staging and integration namespaces
                         if (newNamespace === 'staging' || newNamespace === 'integration') {
                             newNamespaceToUse = `${newNamespace}-dish-lmc-${bookmarkName.toLowerCase()}`;
                         }
-                        // On-demand / branch namespaces
+                        // New on-demand / branch namespaces
                         else if (newNamespace.includes('ci')) {
-                            newNamespaceToUse = `ci-dish-lmc-${bookmarkName.toLowerCase()}-${newNamespace.slice(15)}`
+                            newNamespaceToUse = `ci-dish-lmc-${bookmarkName.toLowerCase()}-${newNamespace.slice(15)}`;
+                        }
+                        // Replacing staging or integration namespaces
+                        if (oldNamespace.includes('staging') || oldNamespace.includes('integration')) {
+                            oldNamespaceToReplace = `${oldNamespace}-dish-lmc-${bookmarkName.toLowerCase()}`;
+                        }
+                        // Replacing on-demand / branch namespaces
+                        else if (oldNamespace.includes('ci')) {
+                            oldNamespaceToReplace = `ci-dish-lmc-${bookmarkName.toLowerCase()}-${oldNamespace.slice(15)}`;
                         }
                     }
 
                     // Update the URL
                     chrome.bookmarks.update(bookmark.id, {
-                        url: bookmark.url.replace(oldNamespace, newNamespaceToUse)
+                        url: bookmark.url.replace(oldNamespaceToReplace, newNamespaceToUse)
                     }, function(updatedBookmark) {
                         console.log(`Bookmark "${bookmarkName}" updated:`, updatedBookmark);
                     });
