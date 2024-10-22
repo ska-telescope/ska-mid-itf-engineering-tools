@@ -16,7 +16,7 @@ def instance(x: str) -> str:
     :param x: SKA DishID string
     :return: DishID for deviceserver instance name
     """
-    return x[-3:]
+    return str(x[-3:])
 
 
 def instances(ids: str = "SKA000") -> list[str]:
