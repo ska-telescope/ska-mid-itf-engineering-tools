@@ -127,7 +127,7 @@ class HelmDependencyChecker(DependencyChecker):
                     )
                     continue
                 fixed_result_version = fix_known_semver_violations(result.get("version", "0.0.0"))
-                result_version = fixed_result_version
+                result_version = semver.Version.parse(fixed_result_version)
                 if latest.compare(result_version) < 0 and (
                     result_version.prerelease is None or len(result_version.prerelease) == 0
                 ):
