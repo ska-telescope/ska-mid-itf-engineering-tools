@@ -1,6 +1,7 @@
 """Types for the dependency checker."""
 
 import logging
+import re
 from collections import OrderedDict
 from typing import Any, Dict, List
 
@@ -27,8 +28,10 @@ class Dependency:
         :type available_version: str
         """
         self.name = name
-        self.project_version = semver.Version.parse(project_version)
-        self.available_version = semver.Version.parse(available_version)
+        fixed_project_version = fix_known_semver_violations(project_version)
+        self.project_version = semver.Version.parse(fixed_project_version)
+        fixed_available_version = fix_known_semver_violations(available_version)
+        self.available_version = semver.Version.parse(fixed_available_version)
 
     def __members(self):
         return (self.name, self.project_version, self.available_version)
@@ -90,6 +93,26 @@ class Dependency:
                 },
             ],
         }
+
+
+def fix_known_semver_violations(version: str):
+    """Fix known errors in version specification.
+
+    :param version: Version to be checked
+    :return: Version fixed for known errors
+    """
+    # Fix X.X.XrcX cases
+    pattern = r"^(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+)rc(?P<prerelease>.*?)$"
+    match = re.match(pattern, version)
+
+    if match:
+        fixed_version = (
+            f"{match.group('major')}.{match.group('minor')}"
+            f".{match.group('patch')}-rc.{match.group('prerelease')}"
+        )
+        return fixed_version
+    else:
+        return version
 
 
 @dataclass

@@ -8,7 +8,7 @@ from typing import Dict, List
 import requests
 import semver
 
-from .types import Dependency, DependencyChecker, DependencyGroup
+from .types import Dependency, DependencyChecker, DependencyGroup, fix_known_semver_violations
 
 
 class HelmDependencyChecker(DependencyChecker):
@@ -126,7 +126,8 @@ class HelmDependencyChecker(DependencyChecker):
                         "Invalid version found in nexus search: %s -- %s", result_name, raw_version
                     )
                     continue
-                result_version = semver.Version.parse(result.get("version", "0.0.0"))
+                fixed_result_version = fix_known_semver_violations(result.get("version", "0.0.0"))
+                result_version = semver.Version.parse(fixed_result_version)
                 if latest.compare(result_version) < 0 and (
                     result_version.prerelease is None or len(result_version.prerelease) == 0
                 ):
