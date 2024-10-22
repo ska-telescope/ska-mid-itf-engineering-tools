@@ -1,7 +1,7 @@
 [tool.poetry]
 include = ["MANIFEST.skao.int"]
 name = "ska-mid-itf-engineering-tools"
-version = "0.9.2"
+version = "0.9.4-rc.1"
 description = "SKA MID ITF Engineering tools"
 authors = ["Matteo Di Carlo", "Adriaan de Beer", "Nkosing'phile Nzotho", "Pieter Jordaan", "Dave Horn", "Johan Coetzer"]
 license = "BSD 3-Clause"
