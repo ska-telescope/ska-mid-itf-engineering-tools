@@ -16,7 +16,8 @@ def instance(x: str) -> str:
     :param x: SKA DishID string
     :return: DishID for deviceserver instance name
     """
-    return str(x[-3:])
+    return x[-3:]
+    # return f"'{x[-3:]}'" #GPT's suggestion - also not working as it breaks all the functional tests - see tests/functional/tmc/test_deployment.py
 
 
 def instances(ids: str = "SKA000") -> list[str]:
@@ -205,7 +206,7 @@ def main() -> None:
     values_file_path = os.path.join(chart_dir, "tmc-values.yaml")
     logger.debug(f"values_file_path: {values_file_path}")
     with open(values_file_path, "w") as file:
-        safe_dump(values, file)
+        safe_dump(values, file, default_style='"')
 
 
 if __name__ == "__main__":
