@@ -4,17 +4,13 @@ from ska_mid_itf_engineering_tools.tmc_config.tmc_dish_ids import instance, inst
 
 
 def test_instance_is_always_string():
-    """
-    Assert whether a string with SKA007 and one with SKA008 successfully returns as a string
-    """
+    """Assert a string with SKA007 and one with SKA008 successfully returns as a string."""
     assert instance("SKA007") == "007", "expected '007', instead received " + instance("SKA007")
     assert instance("SKA008") == "008", "expected '008', instead received " + instance("SKA008")
 
 
 def test_instance_list_is_always_string():
-    """
-    Assert whether a string with SKA007, SKA008 and SKA009 successfully returns as a string
-    """
+    """Assert a string with SKA007, SKA008 and SKA009 successfully returns as a string."""
     ids = "SKA007 SKA008 SKA009"
     assert instances(ids) == [
         "007",
@@ -24,9 +20,7 @@ def test_instance_list_is_always_string():
 
 
 def test_dish_values_is_string_list():
-    """
-    Assert a string with SKA007 and SKA008 populates the values dict with string indexes
-    """
+    """Assert a string with SKA007 and SKA008 populates the values dict with string indexes."""
     ids = "SKA007 SKA008"
     values = tmc_values(dish_ids=ids)
     dish_instances = values["ska-tmc-mid"]["deviceServers"]["dishleafnode"]["instances"]
