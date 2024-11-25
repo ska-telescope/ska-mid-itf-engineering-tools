@@ -16,7 +16,7 @@ def instance(x: str) -> str:
     :param x: SKA DishID string
     :return: DishID for deviceserver instance name
     """
-    return x[-3:]
+    return str(x[-3:])
     # return f"'{x[-3:]}'" #GPT's suggestion - also not working as it breaks all the functional tests - see tests/functional/tmc/test_deployment.py
 
 
