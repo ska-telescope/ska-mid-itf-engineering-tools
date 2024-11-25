@@ -5,8 +5,8 @@ from ska_mid_itf_engineering_tools.tmc_config.tmc_dish_ids import instance, inst
 
 def test_instance_is_always_string():
     """Assert a string with SKA007 and one with SKA008 successfully returns as a string."""
-    assert instance("SKA007") == "007", "expected '007', instead received " + instance("SKA007")
-    assert instance("SKA008") == "008", "expected '008', instead received " + instance("SKA008")
+    assert instance("SKA007") == "007", f"expected '007', instead received {instance('SKA007')}"
+    assert instance("SKA008") == "008", f"expected '008', instead received {instance('SKA008')}"
 
 
 def test_instance_list_is_always_string():
@@ -16,7 +16,7 @@ def test_instance_list_is_always_string():
         "007",
         "008",
         "009",
-    ], "expected ['007', '008', '009'], instead received " + instance(ids)
+    ], f"expected ['007', '008', '009'], instead received {instance(ids)}"
 
 
 def test_dish_values_is_string_list():
@@ -24,6 +24,7 @@ def test_dish_values_is_string_list():
     ids = "SKA007 SKA008"
     values = tmc_values(dish_ids=ids)
     dish_instances = values["ska-tmc-mid"]["deviceServers"]["dishleafnode"]["instances"]
+    print(f"Type of dish_instances: {type(dish_instances)}, Value: {dish_instances}") # debug
     assert dish_instances == ["007", "008"], (
-        "expected ['007', '008'], instead received " + dish_instances
+        f"expected ['007', '008'], instead received {dish_instances}"
     )
