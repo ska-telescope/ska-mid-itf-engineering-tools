@@ -24,7 +24,8 @@ def test_dish_values_is_string_list():
     ids = "SKA007 SKA008"
     values = tmc_values(dish_ids=ids)
     dish_instances = values["ska-tmc-mid"]["deviceServers"]["dishleafnode"]["instances"]
-    print(f"Type of dish_instances: {type(dish_instances)}, Value: {dish_instances}") # debug
-    assert dish_instances == ["007", "008"], (
-        f"expected ['007', '008'], instead received {dish_instances}"
-    )
+    print(f"Type of dish_instances: {type(dish_instances)}, Value: {dish_instances}")  # debug
+    assert dish_instances == [
+        "007",
+        "008",
+    ], f"expected ['007', '008'], instead received {dish_instances}"
