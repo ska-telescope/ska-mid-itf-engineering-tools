@@ -102,16 +102,20 @@ def main() -> None:  # noqa C901
     cbf_subarray2 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_02")
     cbf_subarray3 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_03")
 
-    # Exit if CSP is already ON
     if os.environ.get("SWITCH_CSP_ON") == "true":
-        if csp.State() == DevState.ON and csp.adminmode == 0 and cbf.simulationMode == False:
+        # Exit if CSP is already ON
+        if csp.State() == DevState.ON and csp.adminmode == 0 and cbf.simulationMode is False:
             logger.info("CSP is already ON and ONLINE with CBF Simulation mode False")
             return
 
-        if csp.adminmode == 0 and cbf.simulationMode != False:
+        if csp.adminmode == 0 and cbf.simulationMode is False:
             # Simulation mode needs to be changed, this requires adminmode to be offline first
+            logger.info("Setting CSP adminmode to False")
             csp.adminmode = 1
-            sleep(5)
+            while csp.adminmode != 1:
+                logger.info("Waiting for CSP adminmode to change to False")
+                time.sleep(1)
+            logger.info("CBF simulationMode is now False")
 
         # Set simulation to false - hardware use!
         cbf.simulationMode = False
