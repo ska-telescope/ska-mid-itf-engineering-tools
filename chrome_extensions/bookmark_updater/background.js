@@ -4,6 +4,12 @@ const oldNamespace = 'ci-ska-mid-itf-at-2226-determine-stable-versions';
 const newNamespace = 'staging';
 
 // Define the list of bookmark titles to update
+const dishBookmarks = [
+    'SKA001',
+    'SKA036',
+    'SKA063',
+    'SKA100'
+]
 const bookmarksToUpdate = [
     'Telescope',
     'TMC',
@@ -11,8 +17,7 @@ const bookmarksToUpdate = [
     'SDP Integration',
     'CBF Overview',
     'SDP Signal Displays',
-    'SKA001',
-    'SKA036'
+    ...dishBookmarks
 ];
 
 // Function to update bookmarks
@@ -25,7 +30,7 @@ function updateBookmarks() {
                     let oldNamespaceToReplace = oldNamespace
 
                     // Special case for the dishes
-                    if (bookmarkName === 'SKA001' || bookmarkName === 'SKA036') {
+                    if (dishBookmarks.includes(bookmarkName)) {
                         // New staging and integration namespaces
                         if (newNamespace === 'staging' || newNamespace === 'integration') {
                             newNamespaceToUse = `${newNamespace}-dish-lmc-${bookmarkName.toLowerCase()}`;
