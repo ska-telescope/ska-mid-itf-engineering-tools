@@ -16,7 +16,7 @@ def instance(x: str) -> str:
     :param x: SKA DishID string
     :return: DishID for deviceserver instance name
     """
-    return x[-3:]
+    return str(x[-3:])
 
 
 def instances(ids: str = "SKA000") -> list[str]:
@@ -205,7 +205,7 @@ def main() -> None:
     values_file_path = os.path.join(chart_dir, "tmc-values.yaml")
     logger.debug(f"values_file_path: {values_file_path}")
     with open(values_file_path, "w") as file:
-        safe_dump(values, file)
+        safe_dump(values, file, default_style='"')
 
 
 if __name__ == "__main__":
