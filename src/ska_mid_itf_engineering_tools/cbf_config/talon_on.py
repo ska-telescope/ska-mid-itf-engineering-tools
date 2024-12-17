@@ -102,12 +102,30 @@ def main() -> None:  # noqa C901
     cbf_subarray2 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_02")
     cbf_subarray3 = DeviceProxy("mid_csp_cbf/sub_elt/subarray_03")
 
-    # Exit if CSP is already ON
-    if csp.State() == DevState.ON and csp.adminmode == 0:
-        logger.info("CSP is already ON")
-        return
+    if os.environ.get("SWITCH_CSP_ON") == "true":
+        # Exit if CSP is already ON
+        if csp.State() == DevState.ON and csp.adminmode == 0 and cbf.simulationMode is False:
+            logger.info("CSP is already ON and ONLINE with CBF Simulation mode False")
+            return
 
-    if csp.adminmode != 0:
+        if csp.adminmode == 0 and cbf.simulationMode is False:
+            # Simulation mode needs to be changed, this requires adminmode to be offline first
+            logger.info("Setting CSP adminmode to False")
+            csp.adminmode = 1
+            while csp.adminmode != 1:
+                logger.info("Waiting for CSP adminmode to change to False")
+                time.sleep(1)
+            logger.info("CBF simulationMode is now False")
+
+        # Set simulation to false - hardware use!
+        cbf.simulationMode = False
+        cbf_sim_mode = cbf.simulationMode
+        while cbf_sim_mode != 0:
+            logger.info("Waiting for CBF to change simulationMode to False")
+            time.sleep(1)
+            cbf_sim_mode = cbf.simulationMode
+        logger.info("CBF simulationMode is now False")
+
         logger.info("Setting CSP adminmode to ONLINE")
         csp.adminmode = 0
         wait_for_devices(
@@ -121,14 +139,13 @@ def main() -> None:  # noqa C901
             cbf_subarray3,
         )
 
-    if os.environ.get("SWITCH_CSP_ON") == "true":
         dish_config = {
             "interface": "https://schema.skao.int/ska-mid-cbf-initsysparam/1.0",
             "dish_parameters": {
                 "SKA001": {"vcc": 1, "k": 1},
-                "SKA036": {"vcc": 2, "k": 101},
-                "SKA063": {"vcc": 3, "k": 1127},
-                "SKA100": {"vcc": 4, "k": 620},
+                "SKA036": {"vcc": 2, "k": 1},
+                "SKA063": {"vcc": 3, "k": 1},
+                "SKA100": {"vcc": 4, "k": 1},
             },
         }
 
@@ -136,23 +153,13 @@ def main() -> None:  # noqa C901
         vcc_config = csp.dishVccConfig
         logger.debug(f"CSP Controller dishVccConfig is now {vcc_config}")
 
-    # Next set simulation to false - hardware use!
-    cbf.simulationMode = False
-    cbf_sim_mode = cbf.simulationMode
-    while cbf_sim_mode != 0:
-        logger.info("Waiting for CBF to change simulationMode to False")
-        time.sleep(1)
-        cbf_sim_mode = cbf.simulationMode
-    logger.info("CBF simulationMode is now False")
+        # Timeout for long-running command
+        csp.commandTimeout = TIMEOUT
+        logger.debug(f"commandTimeout simply set to {TIMEOUT * 1000}")
 
-    # Timeout for long-running command
-    csp.commandTimeout = TIMEOUT
-    logger.debug(f"commandTimeout simply set to {TIMEOUT * 1000}")
+        csp.set_timeout_millis(TIMEOUT * 1000)
+        logger.debug(f"Sent set_timeout_millis({TIMEOUT * 1000}) command")
 
-    csp.set_timeout_millis(TIMEOUT * 1000)
-    logger.debug(f"Sent set_timeout_millis({TIMEOUT * 1000}) command")
-
-    if os.environ.get("SWITCH_CSP_ON") == "true":
         logger.info("Turning CSP ON - this may take a while...")
         csp.on([])
         k = 0
