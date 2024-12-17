@@ -17,9 +17,6 @@ def instance(x: str) -> str:
     :return: DishID for deviceserver instance name
     """
     return str(x[-3:])
-    # GPT's suggestion - also not working as it breaks all the
-    # functional tests - see tests/functional/tmc/test_deployment.py
-    # return f"'{x[-3:]}'"
 
 
 def instances(ids: str = "SKA000") -> list[str]:
