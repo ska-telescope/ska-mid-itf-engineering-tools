@@ -35,10 +35,10 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
         deps = dc.collect_stale_dependencies()
         dependency_map[dc.name()] = deps
     for n in notifiers:
-        #Split dependencies to chunks of less than 50 items
+        # Split dependencies to chunks of less than 50 items
         chunk_size = 49
         for i in range(0, len(dependency_map), chunk_size):
-            chunk = dependency_map[i:i+chunk_size]
+            chunk = dependency_map[i : i + chunk_size]
             n.send_notification(project_info, chunk)
 
 
