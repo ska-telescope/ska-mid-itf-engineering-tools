@@ -48,7 +48,7 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
         logging.info("running %s dependency checker", dc.name())
         deps = dc.collect_stale_dependencies()
 
-        for ls_dp in split_by_chunks(deps, 10):
+        for ls_dp in split_by_chunks(deps, 49):
             dependency_map[dc.name()] = ls_dp
             for n in notifiers:
                 n.send_notification(project_info, dependency_map)
