@@ -4,7 +4,8 @@ import argparse
 import logging
 import os
 import subprocess
-from collections import OrderedDict
+
+# from collections import OrderedDict
 from typing import List
 
 from ska_ser_logging import configure_logging
@@ -17,8 +18,19 @@ from .types import DependencyChecker, DependencyGroup, DependencyNotifier, Proje
 
 
 # Split a list into sub-lists of size chunk_size
-def split_by_chunks(lst:List[DependencyGroup], chunk_size):
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+def split_by_chunks(lst: List[DependencyGroup], chunk_size: int) -> List[DependencyGroup]:
+    """
+    Split thee dependencies.
+
+    :param lst: The list of dependency group.
+    :type lst: List[DependencyGroup]
+    :param chunk_size: chuck size of the lists.
+    :type chunk_size: int
+    :return: List of dependency groups.
+    :rtype: List[DependencyGroup]
+    """
+    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 
 def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
     """
@@ -30,15 +42,14 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
     :type notifiers: List[DependencyNotifier]
     """
     project_info = get_project_info()
-    dependency_map: OrderedDict[str : List[DependencyGroup]] = OrderedDict()
+    # dependency_map: OrderedDict[str : List[DependencyGroup]] = OrderedDict()
     for dc in checkers:
-        ls_deps:List[DependencyGroup] 
         if not dc.valid_for_project():
             logging.info("skipping %s dependency checker: not valid for this project", dc.name())
             continue
         logging.info("running %s dependency checker", dc.name())
         deps = dc.collect_stale_dependencies()
-        
+
     for dependency_list in split_by_chunks(deps, 49):
         for n in notifiers:
             n.send_notification(project_info, dependency_list)
