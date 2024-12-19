@@ -16,6 +16,10 @@ from .slack_notifier import SlackDependencyNotifier
 from .types import DependencyChecker, DependencyGroup, DependencyNotifier, ProjectInfo
 
 
+# Split a list into sub-lists of size chunk_size
+def split_by_chunks(lst:List[DependencyGroup], chunk_size):
+    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
+
 def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
     """
     Run the dependency checker.
@@ -28,17 +32,16 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
     project_info = get_project_info()
     dependency_map: OrderedDict[str : List[DependencyGroup]] = OrderedDict()
     for dc in checkers:
+        ls_deps:List[DependencyGroup] 
         if not dc.valid_for_project():
             logging.info("skipping %s dependency checker: not valid for this project", dc.name())
             continue
         logging.info("running %s dependency checker", dc.name())
         deps = dc.collect_stale_dependencies()
-        dependency_map[dc.name()] = deps
-    for n in notifiers:
-        print("****#########################################**********")
-        print(project_info)
-        print(dependency_map)
-        #n.send_notification(project_info, dependency_map)
+        
+    for dependency_list in split_by_chunks(deps, 49):
+        for n in notifiers:
+            n.send_notification(project_info, dependency_list)
 
 
 def get_project_info() -> ProjectInfo:
