@@ -42,8 +42,8 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
             print(f".......................project_info={project_info}.....................i={i}")
             for dg in deps:
                 for dp in dg.dependencies:
-                    dp_list.append(Dependency(dp.name, str(dp.project_version), str(dp.available_version)))
-                    if (i%chunk_size==0):
+                    dp_list.append(dp)
+                    if (i%chunk_size==0 and i > 0):
                         print(">>>>>>>>>>>>Sending>>>>>>>>>>>")
                         print(*dp_list, sep="||||")
                         dg_list.append(DependencyGroup(dp_list))
