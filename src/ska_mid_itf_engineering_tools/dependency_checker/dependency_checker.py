@@ -16,20 +16,6 @@ from .slack_notifier import SlackDependencyNotifier
 from .types import DependencyChecker, DependencyGroup, DependencyNotifier, ProjectInfo
 
 
-def split_by_chunks(lst: List[DependencyGroup], chunk_size: int) -> List[List[DependencyGroup]]:
-    """
-    Split thee dependencies.
-
-    :param lst: The list of dependency group.
-    :type lst: List[DependencyGroup]
-    :param chunk_size: chuck size of the lists.
-    :type chunk_size: int
-    :return: List of dependency grou pobjects.
-    :rtype: List[DependencyGroup]
-    """
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
 def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
     """
     Run the dependency checker.
@@ -41,17 +27,29 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
     """
     project_info = get_project_info()
     dependency_map: OrderedDict[str : List[DependencyGroup]] = OrderedDict()
+    chunk_size = 10
+    i = 0
     for dc in checkers:
         if not dc.valid_for_project():
             logging.info("skipping %s dependency checker: not valid for this project", dc.name())
             continue
         logging.info("running %s dependency checker", dc.name())
         deps = dc.collect_stale_dependencies()
-
-        for ls_dp in split_by_chunks(deps, 49):
-            dependency_map[dc.name()] = ls_dp
-            for n in notifiers:
-                n.send_notification(project_info, dependency_map)
+        #dependency_map[dc.name()] = deps
+        dp_list = []
+        for n in notifiers:
+            print(f".......................project_info={project_info}.....................i={i}")
+            for dg in deps:
+                for dp in dg.dependencies:
+                    dp_list.append(dp)
+                    if (i%chunk_size==0):
+                        dependency_map[dc.name()] = dp_list
+                        print(">>>>>>>>>>>>Sending>>>>>>>>>>>")
+                        print(*dp_list, sep="||||")
+                        n.send_notification(project_info, dependency_map)
+                        print("=============Done=============")
+                        dp_list.clear()
+                    i += 1
 
 
 def get_project_info() -> ProjectInfo:
