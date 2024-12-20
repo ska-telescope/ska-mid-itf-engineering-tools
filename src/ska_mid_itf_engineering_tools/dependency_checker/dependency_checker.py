@@ -13,7 +13,7 @@ from .helm_dependency_checker import HelmDependencyChecker
 from .log_notifier import LogDependencyNotifier
 from .poetry_dependency_checker import PoetryDependencyChecker
 from .slack_notifier import SlackDependencyNotifier
-from .types import DependencyChecker, DependencyGroup, DependencyNotifier, ProjectInfo
+from .types import Dependency, DependencyChecker, DependencyGroup, DependencyNotifier, ProjectInfo
 
 
 def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
@@ -35,20 +35,26 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
             continue
         logging.info("running %s dependency checker", dc.name())
         deps = dc.collect_stale_dependencies()
-        #dependency_map[dc.name()] = deps
-        dp_list = []
+        dependency_map[dc.name()] = deps
+        dp_list:List[Dependency] = []
+        dg_list:List[DependencyGroup]=[]
         for n in notifiers:
             print(f".......................project_info={project_info}.....................i={i}")
             for dg in deps:
                 for dp in dg.dependencies:
-                    dp_list.append(dp)
+                    dp_list.append(Dependency(dp.name, str(dp.project_version), str(dp.available_version)))
                     if (i%chunk_size==0):
-                        dependency_map[dc.name()] = dp_list
                         print(">>>>>>>>>>>>Sending>>>>>>>>>>>")
                         print(*dp_list, sep="||||")
+                        dg_list.append(DependencyGroup(dp_list))
+                        dependency_map[dc.name()] = ( dg_list  )
+                        print(f"000*********type(deps)={type(deps[0])}")
+                        print(f"111*********type(dg_list)={type ( dg_list[0]  )}")
                         n.send_notification(project_info, dependency_map)
                         print("=============Done=============")
                         dp_list.clear()
+                        dg_list.clear()
+
                     i += 1
 
 
