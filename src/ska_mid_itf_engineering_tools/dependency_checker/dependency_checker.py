@@ -41,18 +41,22 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
         for n in notifiers:
             print(f".......................project_info={project_info}.....................i={i}")
             for dg in deps:
+                #print(f"Testing...")
+                #print(dg, sep="$$$$$")
                 for dp in dg.dependencies:
-                    dp_list.append(dp)
+                    dep_group = DependencyGroup()
+                    dep_group.group_name = dg.group_name
+                    dep_group.dependencies.append(dp)
                     if (i%chunk_size==0 and i > 0):
-                        print(">>>>>>>>>>>>Sending>>>>>>>>>>>")
-                        print(*dp_list, sep="||||")
-                        dg_list.append(DependencyGroup(dp_list))
-                        dependency_map[dc.name()] = ( dg_list  )
-                        print(f"000*********type(deps)={type(deps[0])}")
-                        print(f"111*********type(dg_list)={type ( dg_list[0]  )}")
+                        dg_list.append((dep_group))
+                        dependency_map[dc.name()] = dg_list
+                        #print(">>>>>>>>>>>>Sending>>>>>>>>>>>")
+                        #print(*dg_list, sep="||||")
+                        #print(f"000*********type(deps)={type(deps[0])}")
+                        #print(f"111*********type(dg_list)={type ( dg_list[0]  )}")
                         n.send_notification(project_info, dependency_map)
-                        print("=============Done=============")
-                        dp_list.clear()
+                        #print("=============Done=============")
+                        dep_group.dependencies.clear()
                         dg_list.clear()
 
                     i += 1
