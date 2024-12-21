@@ -13,7 +13,7 @@ from .helm_dependency_checker import HelmDependencyChecker
 from .log_notifier import LogDependencyNotifier
 from .poetry_dependency_checker import PoetryDependencyChecker
 from .slack_notifier import SlackDependencyNotifier
-from .types import Dependency, DependencyChecker, DependencyGroup, DependencyNotifier, ProjectInfo
+from .types import DependencyChecker, DependencyGroup, DependencyNotifier, ProjectInfo
 
 
 def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
@@ -36,29 +36,19 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
         logging.info("running %s dependency checker", dc.name())
         deps = dc.collect_stale_dependencies()
         dependency_map[dc.name()] = deps
-        dp_list:List[Dependency] = []
-        dg_list:List[DependencyGroup]=[]
+        dg_list: List[DependencyGroup] = []
+        dep_group = DependencyGroup()
         for n in notifiers:
-            print(f".......................project_info={project_info}.....................i={i}")
             for dg in deps:
-                #print(f"Testing...")
-                #print(dg, sep="$$$$$")
                 for dp in dg.dependencies:
-                    dep_group = DependencyGroup()
                     dep_group.group_name = dg.group_name
                     dep_group.dependencies.append(dp)
-                    if (i%chunk_size==0 and i > 0):
-                        dg_list.append((dep_group))
+                    if i % chunk_size == 0 and i > 0:
+                        dg_list.append(dep_group)
                         dependency_map[dc.name()] = dg_list
-                        #print(">>>>>>>>>>>>Sending>>>>>>>>>>>")
-                        #print(*dg_list, sep="||||")
-                        #print(f"000*********type(deps)={type(deps[0])}")
-                        #print(f"111*********type(dg_list)={type ( dg_list[0]  )}")
                         n.send_notification(project_info, dependency_map)
-                        #print("=============Done=============")
                         dep_group.dependencies.clear()
                         dg_list.clear()
-
                     i += 1
 
 
