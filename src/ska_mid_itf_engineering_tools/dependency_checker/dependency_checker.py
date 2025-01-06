@@ -16,6 +16,20 @@ from .slack_notifier import SlackDependencyNotifier
 from .types import DependencyChecker, DependencyGroup, DependencyNotifier, ProjectInfo
 
 
+def chunk_is_full(dep_index: int, chunk_size: int) -> bool:
+    """
+    Check if chunk is full.
+
+    :param dep_index: The index for running through dependencies.
+    :type dep_index: int
+    :param chunk_size: The size of the chunk.
+    :type chunk_size: int
+    :return: A boolean value indicating whether a chunk is full.
+    :rtype: bool
+    """
+    return dep_index > 0 and dep_index % chunk_size == 0
+
+
 def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
     """
     Run the dependency checker.
@@ -27,6 +41,8 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
     """
     project_info = get_project_info()
     dependency_map: OrderedDict[str : List[DependencyGroup]] = OrderedDict()
+    chunk_size = 10
+    i = 1
     for dc in checkers:
         if not dc.valid_for_project():
             logging.info("skipping %s dependency checker: not valid for this project", dc.name())
@@ -34,8 +50,29 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
         logging.info("running %s dependency checker", dc.name())
         deps = dc.collect_stale_dependencies()
         dependency_map[dc.name()] = deps
-    for n in notifiers:
-        n.send_notification(project_info, dependency_map)
+        dg_list: List[DependencyGroup] = []
+        dep_group = DependencyGroup()
+        for n in notifiers:
+            for dg in deps:
+                dep_group.group_name = dg.group_name
+                for dp in dg.dependencies:
+                    dep_group.dependencies.append(dp)
+                    if chunk_is_full(i, chunk_size):
+                        dg_list.append(dep_group)
+                        dependency_map[dc.name()] = dg_list
+                        n.send_notification(project_info, dependency_map)
+                        dep_group.dependencies.clear()
+                        dg_list.clear()
+                    else:
+                        # Reached the end of the list, that won't fill up the chunk.
+                        # Send the remaining items.
+                        if i == len(dg.dependencies):
+                            dg_list.append(dep_group)
+                            dependency_map[dc.name()] = dg_list
+                            n.send_notification(project_info, dependency_map)
+                            dep_group.dependencies.clear()
+                            dg_list.clear()
+                    i += 1
 
 
 def get_project_info() -> ProjectInfo:

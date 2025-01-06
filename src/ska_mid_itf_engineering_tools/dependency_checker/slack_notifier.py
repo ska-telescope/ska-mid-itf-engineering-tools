@@ -35,6 +35,9 @@ class SlackDependencyNotifier(DependencyNotifier):
         :type dependency_map: _type_
         """
         msg_blocks = self.build_slack_message(project_info, dependency_map)
+        print(f"=============={project_info}========================")
+        print(*msg_blocks, sep="\n")
+        print("==================================================")
         self.send_slack_message(msg_blocks)
 
     def build_slack_message(

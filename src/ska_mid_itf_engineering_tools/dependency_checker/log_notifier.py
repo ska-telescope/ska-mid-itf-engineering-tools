@@ -22,6 +22,9 @@ class LogDependencyNotifier(DependencyNotifier):
         """
         msg = self.build_log_message(project_info, dependency_map)
         self.logger.debug("Stale dependencies:\n%s", msg)
+        print(f"=============={project_info}========================")
+        print(*dependency_map, sep="\n")
+        print("==================================================")
 
     def build_log_message(
         self,
