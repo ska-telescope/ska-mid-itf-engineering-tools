@@ -66,7 +66,7 @@ def run(checkers: List[DependencyChecker], notifiers: List[DependencyNotifier]):
                     else:
                         # Reached the end of the list, that won't fill up the chunk.
                         # Send the remaining items.
-                        if (i == len(dg.dependencies)):
+                        if i == len(dg.dependencies):
                             dg_list.append(dep_group)
                             dependency_map[dc.name()] = dg_list
                             n.send_notification(project_info, dependency_map)
